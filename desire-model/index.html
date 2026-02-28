@@ -350,7 +350,7 @@
       <div class="body-section reveal" id="essayBody">
 
 
-        <p>Each person $i$ has three parameters: baseline value-creation capacity $B_i$ (what you can produce without AI), AI investment $X_i$ (access to and direction of AI capacity &mdash; whether hands-on or autonomously deployed), and desired value $S_i$ &mdash; how much you actually want to create. AI efficiency $a(t)$ increases over time, augmenting everything: execution, analysis, design, judgment.</p>
+        <p>Each person $i$ has three parameters: baseline value-creation capacity $B_i$ (what you can produce without AI), AI investment $X_i$ (access to and direction of AI capacity &mdash; whether hands-on or autonomously deployed), and desired value $S_i$ (how much you actually want to create). AI efficiency $a(t)$ increases over time, augmenting everything: execution, analysis, design, judgment.</p>
 
         <div class="eq">$$C_i = aX_i + B_i, \qquad V_i = \bigl(C_i^{\,-\rho} + S_i^{\,-\rho}\bigr)^{-1/\rho}, \quad \rho > 0$$</div>
 
@@ -378,15 +378,15 @@
 
         <div class="eq">$$p(t) = \kappa \cdot \bar{V}(t)^{-\delta}, \qquad \delta \in (0,1)$$</div>
 
-        <p>Income is price times value: $I_i = p(t) \cdot V_i$. The parameter $\delta$ is the depreciation elasticity &mdash; how fast prices fall with abundance. Its severity depends on market structure: software faces near-zero marginal cost (high effective $\delta$), while bespoke services resist commoditization (low $\delta$). Since $p(t)$ is common to all agents, income ratios equal value ratios: $I_i / I_j = V_i / V_j$. Relative inequality depends on the desire model; depreciation affects absolute levels.</p>
+        <p>Income is price times value: $I_i = p(t) \cdot V_i$. The parameter $\delta$ is the depreciation elasticity &mdash; how fast prices fall with abundance. Its severity depends on market structure: software faces near-zero marginal cost (high effective $\delta$), while bespoke services resist commoditization (low $\delta$). Since $p(t)$ is common to everyone, income ratios equal value ratios: $I_i / I_j = V_i / V_j$. Relative inequality depends on the desire model; depreciation affects absolute levels.</p>
 
-        <p>This creates a treadmill. For an agent with fixed desire $S_i$:</p>
+        <p>This creates a treadmill. For a person with fixed desire $S_i$:</p>
 
         <div class="eq">$$I_i(t) = \kappa \cdot S_i \cdot \bar{V}(t)^{-\delta} \;\longrightarrow\; 0$$</div>
 
-        <p>As aggregate production grows, fixed-desire agents see their income collapse &mdash; not stagnate, collapse. To maintain a target income $\bar{I}$, required desire grows as $S_i^{\text{req}}(t) = (\bar{I}/\kappa) \cdot \bar{V}(t)^{\delta}$. You must want more just to stay in place.</p>
+        <p>As aggregate production grows, those with fixed desire see their income collapse &mdash; not stagnate, collapse. To maintain a target income $\bar{I}$, required desire grows as $S_i^{\text{req}}(t) = (\bar{I}/\kappa) \cdot \bar{V}(t)^{\delta}$. You must want more just to stay in place.</p>
 
-        <p><strong>Capital Dominance in the Transition.</strong> While both agents remain capacity-constrained:</p>
+        <p><strong>Capital Dominance in the Transition.</strong> While two people both remain capacity-constrained:</p>
 
         <div class="eq">$$\frac{V_i}{V_j} = \frac{aX_i + B_i}{aX_j + B_j} \;\xrightarrow{a\to\infty}\; \frac{X_i}{X_j}$$</div>
 
@@ -400,21 +400,21 @@
 
         <div class="eq">$$S_i^*(t) = C_i(t) - \frac{rX_i}{\gamma_i}$$</div>
 
-        <p>The aspiration gap $\Delta_i = rX_i / \gamma_i$ is the steady-state distance between capacity and desire. For two aspirational agents ($\gamma_i, \gamma_j > 0$):</p>
+        <p>The aspiration gap $\Delta_i = rX_i / \gamma_i$ is the steady-state distance between capacity and desire. For two aspirational people ($\gamma_i, \gamma_j > 0$):</p>
 
         <div class="eq">$$\frac{V_i}{V_j} \;\xrightarrow{a\to\infty}\; \frac{X_i}{X_j}$$</div>
 
         <p>The long-run ratio converges to the capital ratio, not the desire ratio. With endogenous desire, desire is shaped by capacity, so it can&rsquo;t independently drive the ratio.</p>
 
-        <p><strong>Investment Feedback.</strong> So far $X_i$ is exogenous. In practice, agents who want more invest more in AI &mdash; $X_i$ responds to $S_i$. This creates a reinforcing loop: higher desire drives higher AI investment, which raises capacity, which (with $\gamma_i > 0$) raises desire further. The trifurcation amplifies: aspirational agents pour resources into expanding capacity, while satiated agents see no reason to invest. Capital heterogeneity becomes endogenous to desire heterogeneity.</p>
+        <p><strong>Investment Feedback.</strong> So far $X_i$ is exogenous. In practice, people who want more invest more in AI &mdash; $X_i$ responds to $S_i$. This creates a reinforcing loop: higher desire drives higher AI investment, which raises capacity, which (with $\gamma_i > 0$) raises desire further. The trifurcation amplifies: aspirational people pour resources into expanding capacity, while satiated ones see no reason to invest. Capital heterogeneity becomes endogenous to desire heterogeneity.</p>
 
-        <p><strong>Population Trifurcation.</strong> Three groups emerge. <em>Aspirational agents</em> ($\gamma_i > 0$): ambitions expand with capacity; value and income grow. <em>Treadmill runners</em> ($\gamma_i = 0$, income-targeting): desire forced up by falling prices; income maintained at the cost of perpetually raising ambition. <em>Truly satiated</em> ($\gamma_i = 0$, fixed $S_i$): value plateaus; income collapses toward zero. The gap between the first and third group grows without bound.</p>
+        <p><strong>Population Trifurcation.</strong> Three groups emerge. <em>Aspirational</em> ($\gamma_i > 0$): ambitions expand with capacity; value and income grow. <em>Treadmill runners</em> ($\gamma_i = 0$, income-targeting): desire forced up by falling prices; income maintained at the cost of perpetually raising ambition. <em>Satiated</em> ($\gamma_i = 0$, fixed $S_i$): value plateaus; income collapses toward zero. The gap between the first and third group grows without bound.</p>
+
+        <p>Once desire constrains value, inequality in output approximately tracks inequality in desire: $\operatorname{Var}(V) \approx \operatorname{Var}(S)$. But depreciation amplifies the stakes &mdash; the same variance in desire produces divergent income trajectories as the treadmill forces some to expand their ambitions and others to fall behind.</p>
 
       </div>
 
       <div class="corollary-section reveal">
-
-        <p><strong>Inequality Implications.</strong> In the desire regime, $\operatorname{Var}(V) \approx \operatorname{Var}(S)$ &mdash; value inequality approximately equals desire inequality. But depreciation amplifies the stakes. The same variance in desire produces divergent income trajectories as the treadmill forces some agents to expand their ambitions and others to fall behind.</p>
 
         <p>Three phases emerge as AI improves:</p>
         <p><em>Phase 1 (Ability):</em> capacity $\approx$ baseline ability; value dispersion tracks skill.</p>
@@ -438,7 +438,7 @@
           </article>
           <article class="card">
             <button type="button"><strong>The affordability cliff</strong><span class="card-toggle">+</span></button>
-            <div class="card-body"><p>The results require $X_i > 0$ for all agents. Current AI pricing creates steep accessibility cliffs. If a significant fraction of agents have $X_i = 0$, they remain capacity-constrained regardless of how high $a(t)$ climbs. Solving the access problem is necessary but not sufficient: it changes the driver of inequality from access to desire.</p></div>
+            <div class="card-body"><p>The results require $X_i > 0$ for everyone. Current AI pricing creates steep accessibility cliffs. If a significant fraction of people have $X_i = 0$, they remain capacity-constrained regardless of how high $a(t)$ climbs. Solving the access problem is necessary but not sufficient: it changes the driver of inequality from access to desire.</p></div>
           </article>
           <article class="card">
             <button type="button"><strong>Depreciation is a single parameter</strong><span class="card-toggle">+</span></button>
@@ -450,7 +450,7 @@
           </article>
           <article class="card">
             <button type="button"><strong>Monopoly capture could dominate desire</strong><span class="card-toggle">+</span></button>
-            <div class="card-body"><p>The model assumes agents retain the value they create: $I_i = p(t) \cdot V_i$. If AI provision concentrates in a few firms that extract rent $r$, effective income becomes $(1-r) \cdot p(t) \cdot V_i$. Desire still governs relative outcomes among users &mdash; higher $S_i$ still means higher $V_i$ &mdash; but the monopolist captures a share from everyone. In the extreme ($r \to 1$), the provider-vs-user split dominates the desire-driven split. The affordability cliff worsens: monopoly pricing raises the floor for $X_i$, pushing more agents to effective zero.</p></div>
+            <div class="card-body"><p>The model assumes people retain the value they create: $I_i = p(t) \cdot V_i$. If AI provision concentrates in a few firms that extract rent $r$, effective income becomes $(1-r) \cdot p(t) \cdot V_i$. Desire still governs relative outcomes among users &mdash; higher $S_i$ still means higher $V_i$ &mdash; but the monopolist captures a share from everyone. In the extreme ($r \to 1$), the provider-vs-user split dominates the desire-driven split. The affordability cliff worsens: monopoly pricing raises the floor for $X_i$, pushing more people to effective zero.</p></div>
           </article>
         </div>
       </div>
