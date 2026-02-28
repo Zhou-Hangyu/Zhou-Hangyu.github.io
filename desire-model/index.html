@@ -1,0 +1,568 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The Desire Model</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script>
+    const __saved = localStorage.getItem("theme");
+    if (__saved) document.documentElement.setAttribute("data-theme", __saved);
+    else if (window.matchMedia("(prefers-color-scheme: light)").matches)
+      document.documentElement.setAttribute("data-theme", "light");
+  </script>
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --text: #d4d1cc;
+      --text-soft: #9e9a94;
+      --accent: #b0ada8;
+      --eq-text: #e0dedb;
+      --title: #e8e6e3;
+      --card-border: rgba(255, 255, 255, 0.08);
+      --divider: rgba(255, 255, 255, 0.05);
+      --footer-text: #555;
+      --toggle-border: rgba(255, 255, 255, 0.15);
+    }
+
+    [data-theme="light"] {
+      --bg: #faf9f6;
+      --text: #2c2b28;
+      --text-soft: #73706a;
+      --accent: #888;
+      --eq-text: #1c1b18;
+      --title: #1c1b18;
+      --card-border: rgba(0, 0, 0, 0.1);
+      --divider: rgba(0, 0, 0, 0.08);
+      --footer-text: #bbb;
+      --toggle-border: rgba(0, 0, 0, 0.15);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 18px;
+      line-height: 1.78;
+    }
+
+    html { overflow-x: hidden; }
+    body { overflow: hidden; }
+
+
+    .theme-toggle {
+      position: fixed;
+      top: 9px;
+      left: 14px;
+      z-index: 1001;
+      background: none;
+      border: 1px solid var(--toggle-border);
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      font-size: 13px;
+      cursor: pointer;
+      color: var(--text-soft);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color 0.2s, color 0.2s;
+      line-height: 1;
+      padding: 0;
+    }
+
+    .theme-toggle:hover {
+      color: var(--text);
+      border-color: var(--text-soft);
+    }
+
+    .essay {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    .hero {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 14vh 24px 4vh;
+    }
+
+    .hero h1 {
+      font-size: clamp(2rem, 4.5vw, 3.4rem);
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      margin: 0 0 10px;
+      color: var(--title);
+    }
+
+    .hero p {
+      color: var(--text-soft);
+      font-size: clamp(1rem, 1.5vw, 1.15rem);
+      margin: 0;
+      max-width: 520px;
+    }
+
+    .body-section {
+      padding: 4vh 0 10vh;
+    }
+
+    .body-section p {
+      margin: 0 0 1.4em;
+    }
+
+    .body-section p:last-child {
+      margin-bottom: 0;
+    }
+
+    .eq {
+      text-align: center;
+      margin: 1.6em 0;
+      color: var(--eq-text);
+    }
+
+    .diagram-container {
+      position: fixed;
+      right: max(2vw, 16px);
+      top: 50%;
+      transform: translateY(-50%);
+      width: 380px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+      z-index: 10;
+      background: #0d0e16;
+      border-radius: 8px;
+      padding: 12px 12px 6px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      color: #ccc;
+      display: none;
+    }
+
+    [data-theme="light"] .diagram-container {
+      background: #f5f3ef;
+      border-color: #ccc;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.07);
+    }
+
+    /* SVG theme overrides for light mode */
+    [data-theme="light"] .diagram-caption { color: #555; }
+    [data-theme="light"] .svg-axis { stroke: #aaa; }
+    [data-theme="light"] .svg-label { fill: #333; }
+    [data-theme="light"] .svg-cursor { stroke: #555; }
+    [data-theme="light"] .svg-a { fill: #b85a18; }
+    [data-theme="light"] .svg-b { fill: #1a6aaa; }
+    [data-theme="light"] #saLine { stroke: #b85a18; }
+    [data-theme="light"] #sbLine { stroke: #1a6aaa; }
+    [data-theme="light"] #lineA { stroke: #b85a18; }
+    [data-theme="light"] #lineB { stroke: #1a6aaa; }
+    [data-theme="light"] #dotA { fill: #b85a18; stroke: #f5f3ef; }
+    [data-theme="light"] #dotB { fill: #1a6aaa; stroke: #f5f3ef; }
+
+    .diagram-container.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .diagram-container svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .diagram-caption {
+      font-size: 0.85rem;
+      color: #bbb;
+      text-align: center;
+      margin-top: 6px;
+    }
+
+    .corollary-section {
+      padding: 6vh 0 2vh;
+      margin-top: 2vh;
+    }
+
+    .corollary-section p {
+      margin: 0 0 1.4em;
+    }
+
+    .corollary-section .eq {
+      font-size: 1.1em;
+    }
+
+    .tldr {
+      margin-bottom: 3vh;
+      color: var(--text-soft);
+      font-size: 1.02rem;
+      line-height: 1.75;
+      font-style: italic;
+    }
+
+    .tldr p { margin: 0; }
+
+    .caveats-section {
+      padding: 4vh 0 6vh;
+    }
+
+    .caveats-section h2 {
+      font-size: 1.15rem;
+      margin: 0 0 14px;
+      color: var(--text-soft);
+      font-weight: normal;
+      letter-spacing: 0.02em;
+    }
+
+    .caveats { display: grid; gap: 8px; }
+
+    .card {
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .card button {
+      width: 100%;
+      border: 0;
+      background: transparent;
+      color: var(--text);
+      text-align: left;
+      font: inherit;
+      font-size: 0.92rem;
+      padding: 10px 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .card button > span.card-toggle {
+      color: var(--text-soft);
+      transition: transform 0.25s;
+      display: inline-block;
+      font-size: 0.85em;
+    }
+
+    .card.open button > span.card-toggle { transform: rotate(45deg); }
+
+    .card-body {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+      color: var(--text-soft);
+      padding: 0 14px;
+      font-size: 0.9rem;
+      line-height: 1.65;
+    }
+
+    .card-body p { margin: 0 0 12px; }
+
+    .closing {
+      padding: 8vh 0 4vh;
+      color: var(--text-soft);
+      font-style: italic;
+    }
+
+    .closing p { margin: 0; }
+
+    footer {
+      padding: 4vh 0;
+      text-align: center;
+      color: var(--footer-text);
+      font-size: 0.82rem;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    @media (max-width: 1100px) {
+    .diagram-container {
+      position: relative;
+      right: auto;
+      top: auto;
+      transform: none;
+      width: 100%;
+      max-width: 400px;
+      margin: 0 auto 3em;
+      display: none;
+    }
+    }
+
+    @media (max-width: 600px) {
+      html, body { font-size: 17px; }
+      .essay { padding: 0 18px; }
+      .hero { min-height: auto; }
+    }
+  </style>
+</head>
+<body>
+
+  <button class="theme-toggle" id="themeToggle" aria-label="Toggle light/dark mode"></button>
+
+  <main>
+    <div class="hero">
+      <h1 class="reveal">The Desire Model</h1>
+    </div>
+
+    <div class="essay">
+      <div class="diagram-container" id="diagramFloat">
+        <svg id="diagram" viewBox="0 0 620 370">
+          <line class="svg-axis" x1="60" y1="300" x2="480" y2="300" stroke="#888" stroke-width="1"></line>
+          <line class="svg-axis" x1="60" y1="300" x2="60" y2="32" stroke="#888" stroke-width="1"></line>
+          <text class="svg-label" x="460" y="334" fill="#ccc" font-size="24" font-family="Georgia, serif" font-style="italic">a</text>
+          <text class="svg-label" x="18" y="28" fill="#ccc" font-size="24" font-family="Georgia, serif" font-style="italic">Y</text>
+
+          <line id="saLine" x1="60" y1="68.9" x2="480" y2="68.9" stroke="#e8b38c" stroke-width="0.8" stroke-dasharray="3 3" opacity="0.6"></line>
+          <line id="sbLine" x1="60" y1="155.6" x2="480" y2="155.6" stroke="#8cbde8" stroke-width="0.8" stroke-dasharray="3 3" opacity="0.6"></line>
+          <text class="svg-a" x="490" y="78" fill="#e8b38c" font-size="22" font-family="Georgia, serif">S&#8321; = 8</text>
+          <text class="svg-b" x="490" y="164" fill="#8cbde8" font-size="22" font-family="Georgia, serif">S&#8322; = 5</text>
+
+          <path id="lineA" d="" fill="none" stroke="#e8b38c" stroke-width="2.4"></path>
+          <path id="lineB" d="" fill="none" stroke="#8cbde8" stroke-width="2.4"></path>
+
+          <line id="cursor" class="svg-cursor" x1="60" y1="30" x2="60" y2="302" stroke="#ccc" stroke-width="1" stroke-dasharray="3 3" opacity="0.7"></line>
+          <text id="cursorLabel" class="svg-label" x="64" y="44" fill="#ddd" font-size="18" font-family="'SF Mono', 'Consolas', monospace">a = 0.0</text>
+
+          <circle class="svg-b" cx="112.5" cy="155.6" r="5" fill="#8cbde8" opacity="0.9"></circle>
+          <circle class="svg-a" cx="375" cy="68.9" r="5" fill="#e8b38c" opacity="0.9"></circle>
+          <text id="thB" class="svg-b" x="76" y="136" fill="#a8d4f0" font-size="20" font-family="Georgia, serif">a*&#8322; = 1</text>
+          <text id="thA" class="svg-a" x="336" y="50" fill="#f0d4a8" font-size="20" font-family="Georgia, serif">a*&#8321; = 6</text>
+
+          <circle id="dotA" cx="60" cy="242.2" r="5" fill="#e8b38c" stroke="#0d0e16" stroke-width="1.2"></circle>
+          <circle id="dotB" cx="60" cy="184.4" r="5" fill="#8cbde8" stroke="#0d0e16" stroke-width="1.2"></circle>
+        </svg>
+        <p class="diagram-caption" id="regimeLabel">Both capacity-constrained</p>
+      </div>
+
+      <div class="tldr reveal">
+        <p>As AI improves at everything &mdash; execution, design, analysis, judgment &mdash; the constraint on individual value creation shifts from capability to desire. But abundance depresses prices: you must want more just to maintain what you have. The population splits into those whose ambitions expand, those who run the treadmill, and those who stop running. The gap between them grows without limit.</p>
+      </div>
+
+      <div class="body-section reveal" id="essayBody">
+
+
+        <p>Each person $i$ has three parameters: baseline value-creation capacity $B_i$ (what you can produce without AI), AI investment $X_i$, and desired value $S_i$ &mdash; how much you actually want to create. AI efficiency $a(t)$ increases over time, augmenting everything: execution, analysis, design, judgment.</p>
+
+        <div class="eq">$$C_i = aX_i + B_i, \qquad V_i = \bigl(C_i^{\,-\rho} + S_i^{\,-\rho}\bigr)^{-1/\rho}, \quad \rho > 0$$</div>
+
+        <p>$C_i$ is total value-creation capacity. $V_i$ is realized value: a smooth CES aggregator that returns the lesser of capacity and desire. The parameter $\rho$ controls the transition sharpness; as $\rho \to \infty$, $V_i \to \min\{C_i, S_i\}$. As AI improves, it lifts capacity across every dimension of production. The question is what happens when capacity surpasses desire.</p>
+
+        <p>The crossover occurs at a computable threshold:</p>
+
+        <div class="eq">$$a_i^* = \max\!\left\{0,\;\frac{S_i - B_i}{X_i}\right\}$$</div>
+
+        <p>For $a < a_i^*$: capacity constrains, and better AI increases value created. For $a > a_i^*$: desire constrains, and better AI has diminishing effect &mdash; value asymptotically approaches $S_i$. Higher ambition raises the threshold; higher investment lowers it.</p>
+
+        <p>For two people both well past their crossover points:</p>
+
+        <div class="eq">$$C_i \gg S_i,\; C_j \gg S_j \;\implies\; \frac{V_i}{V_j} \;\longrightarrow\; \frac{S_i}{S_j}$$</div>
+
+        <p>The value ratio converges to the desire ratio &mdash; asymptotically, as capacity dominates. The ability parameters $B_i, B_j$ fade from the expression.</p>
+
+        <p>The marginal return to ability:</p>
+
+        <div class="eq">$$\frac{\partial V_i}{\partial B_i} = \left(\frac{V_i}{C_i}\right)^{1+\rho}$$</div>
+
+        <p>Always positive, but it decays toward zero as capacity outstrips desire. Not a cliff &mdash; a fade. When $C_i \gg S_i$, the ratio $V_i / C_i \approx S_i / C_i \to 0$, so the marginal value of ability vanishes. This depends on AI being good enough at everything: execution, analysis, design, and judgment. If AI handles judgment as well as execution, there is no quality channel through which ability persists.</p>
+
+        <p><strong>Abundance Depreciation.</strong> The model so far is individual-level. But when AI makes everyone more productive, aggregate supply rises and the market price of each unit falls. Define aggregate realized value $\bar{V}(t) = \int V_i \, di$ and the market price:</p>
+
+        <div class="eq">$$p(t) = \kappa \cdot \bar{V}(t)^{-\delta}, \qquad \delta \in (0,1)$$</div>
+
+        <p>Income is price times value: $I_i = p(t) \cdot V_i$. The parameter $\delta$ is the depreciation elasticity &mdash; how fast prices fall with abundance. Its severity depends on market structure: software faces near-zero marginal cost (high effective $\delta$), while bespoke services resist commoditization (low $\delta$). Since $p(t)$ is common to all agents, income ratios equal value ratios: $I_i / I_j = V_i / V_j$. Relative inequality depends on the desire model; depreciation affects absolute levels.</p>
+
+        <p>This creates a treadmill. For an agent with fixed desire $S_i$:</p>
+
+        <div class="eq">$$I_i(t) = \kappa \cdot S_i \cdot \bar{V}(t)^{-\delta} \;\longrightarrow\; 0$$</div>
+
+        <p>As aggregate production grows, fixed-desire agents see their income collapse &mdash; not stagnate, collapse. To maintain a target income $\bar{I}$, required desire grows as $S_i^{\text{req}}(t) = (\bar{I}/\kappa) \cdot \bar{V}(t)^{\delta}$. You must want more just to stay in place.</p>
+
+        <p><strong>Capital Dominance in the Transition.</strong> While both agents remain capacity-constrained:</p>
+
+        <div class="eq">$$\frac{V_i}{V_j} = \frac{aX_i + B_i}{aX_j + B_j} \;\xrightarrow{a\to\infty}\; \frac{X_i}{X_j}$$</div>
+
+        <p>As $a$ grows, ability washes out. AI investment &mdash; not innate ability &mdash; determines relative value.</p>
+
+        <p><strong>Aspiration Dynamics.</strong> Desired value $S_i$ need not be fixed. When capacity exceeds desire, ambitions may expand. Model this with aspiration elasticity $\gamma_i \geq 0$:</p>
+
+        <div class="eq">$$\dot{S}_i = \gamma_i \cdot (C_i - S_i)^+$$</div>
+
+        <p>High $\gamma_i$ means you rapidly discover new ambitions when surplus capacity appears. $\gamma_i = 0$ recovers fixed desire. With linear AI improvement ($a(t) = a_0 + rt$), the steady-state solution is:</p>
+
+        <div class="eq">$$S_i^*(t) = C_i(t) - \frac{rX_i}{\gamma_i}$$</div>
+
+        <p>The aspiration gap $\Delta_i = rX_i / \gamma_i$ is the steady-state distance between capacity and desire. For two aspirational agents ($\gamma_i, \gamma_j > 0$):</p>
+
+        <div class="eq">$$\frac{V_i}{V_j} \;\xrightarrow{a\to\infty}\; \frac{X_i}{X_j}$$</div>
+
+        <p>The long-run ratio converges to the capital ratio, not the desire ratio. With endogenous desire, desire is shaped by capacity, so it can&rsquo;t independently drive the ratio.</p>
+
+        <p><strong>Investment Feedback.</strong> So far $X_i$ is exogenous. In practice, agents who want more invest more in AI &mdash; $X_i$ responds to $S_i$. This creates a reinforcing loop: higher desire drives higher AI investment, which raises capacity, which (with $\gamma_i > 0$) raises desire further. The trifurcation amplifies: aspirational agents pour resources into expanding capacity, while satiated agents see no reason to invest. Capital heterogeneity becomes endogenous to desire heterogeneity.</p>
+
+        <p><strong>Population Trifurcation.</strong> Three groups emerge. <em>Aspirational agents</em> ($\gamma_i > 0$): ambitions expand with capacity; value and income grow. <em>Treadmill runners</em> ($\gamma_i = 0$, income-targeting): desire forced up by falling prices; income maintained at the cost of perpetually raising ambition. <em>Truly satiated</em> ($\gamma_i = 0$, fixed $S_i$): value plateaus; income collapses toward zero. The gap between the first and third group grows without bound.</p>
+
+      </div>
+
+      <div class="corollary-section reveal">
+
+        <p>In the desire regime, $\operatorname{Var}(V) \approx \operatorname{Var}(S)$ &mdash; value inequality approximately equals desire inequality. But depreciation amplifies the stakes. The same variance in desire produces divergent income trajectories as the treadmill forces some agents to expand their ambitions and others to fall behind.</p>
+
+        <p>Three phases emerge as AI improves:</p>
+        <p><em>Phase 1 (Ability):</em> capacity $\approx$ baseline ability; value dispersion tracks skill.</p>
+        <p><em>Phase 2 (Capital):</em> AI investment dominates; ability washes out.</p>
+        <p><em>Phase 3 (Desire + Treadmill):</em> desire binds value; falling prices split the population into aspirational, treadmill, and satiated.</p>
+
+        <p>Ability&rsquo;s relevance declines monotonically. There is no recovery through a quality or judgment channel &mdash; AI handles those too. What replaces ability as the value determinant is, first, capital, and then desire. What makes Phase 3 distinctive is not just that desire matters, but that standing still is not an option.</p>
+
+      </div>
+
+      <div class="caveats-section reveal">
+        <h2>Limitations</h2>
+        <div class="caveats" id="caveats">
+          <article class="card">
+            <button type="button"><strong>The CES assumes autonomous output choice</strong><span class="card-toggle">+</span></button>
+            <div class="card-body"><p>The model assumes each person freely produces $V_i = (C_i^{-\rho} + S_i^{-\rho})^{-1/\rho}$. Most knowledge workers face organizational constraints: managers, deadlines, contractual obligations. A more realistic formulation incorporates externally demanded output $D_i$: the effective desire floor becomes $\max(S_i, D_i)$. The desire-constraint result applies primarily to workers with genuine autonomy &mdash; freelancers, founders, researchers &mdash; not the median employee.</p></div>
+          </article>
+          <article class="card">
+            <button type="button"><strong>Aspiration elasticity is hard to measure</strong><span class="card-toggle">+</span></button>
+            <div class="card-body"><p>The model introduces $\gamma_i$ as a psychologically interpretable parameter (openness to expanding goals, growth mindset). No standard instrument measures it. Developing such measures &mdash; and establishing their stability and predictive validity &mdash; is a precondition for empirically testing the aspiration-dynamics predictions.</p></div>
+          </article>
+          <article class="card">
+            <button type="button"><strong>The affordability cliff</strong><span class="card-toggle">+</span></button>
+            <div class="card-body"><p>The results require $X_i > 0$ for all agents. Current AI pricing creates steep accessibility cliffs. If a significant fraction of agents have $X_i = 0$, they remain capacity-constrained regardless of how high $a(t)$ climbs. Solving the access problem is necessary but not sufficient: it changes the driver of inequality from access to desire.</p></div>
+          </article>
+          <article class="card">
+            <button type="button"><strong>Depreciation is a single parameter</strong><span class="card-toggle">+</span></button>
+            <div class="card-body"><p>The model captures falling prices through a single depreciation elasticity $\delta$. Real markets are heterogeneous: software faces near-zero marginal cost (high effective $\delta$), while bespoke services resist commoditization (low $\delta$). Winner-take-all dynamics, network effects, and attention scarcity create nonlinearities the power-law form cannot capture.</p></div>
+          </article>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false});"></script>
+  <script>
+    (() => {
+      // Theme toggle
+      const toggle = document.getElementById("themeToggle");
+      function applyToggleIcon() {
+        const isLight = document.documentElement.getAttribute("data-theme") === "light";
+        toggle.textContent = isLight ? "\u263E" : "\u2600";
+      }
+      applyToggleIcon();
+      toggle.addEventListener("click", () => {
+        const isLight = document.documentElement.getAttribute("data-theme") === "light";
+        const next = isLight ? "dark" : "light";
+        if (next === "dark") document.documentElement.removeAttribute("data-theme");
+        else document.documentElement.setAttribute("data-theme", "light");
+        localStorage.setItem("theme", next);
+        applyToggleIcon();
+      });
+
+      // GSAP
+      gsap.registerPlugin(ScrollTrigger);
+
+      const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+      const diagramFloat = document.getElementById("diagramFloat");
+      const essayBody = document.getElementById("essayBody");
+      const isDesktop = window.matchMedia("(min-width: 1101px)").matches;
+
+      // Reveals
+      gsap.utils.toArray(".reveal").forEach((el) => {
+        gsap.fromTo(el,
+          { autoAlpha: 0, y: 10 },
+          {
+            autoAlpha: 1, y: 0,
+            duration: 0.6,
+            ease: "power2.out",
+            scrollTrigger: { trigger: el, start: "top 90%", toggleActions: "play none none none" }
+          }
+        );
+      });
+
+      // Diagram
+      const lineA = document.getElementById("lineA");
+      const lineB = document.getElementById("lineB");
+      const cursor = document.getElementById("cursor");
+      const cursorLabel = document.getElementById("cursorLabel");
+      const dotA = document.getElementById("dotA");
+      const dotB = document.getElementById("dotB");
+      const thA = document.getElementById("thA");
+      const thB = document.getElementById("thB");
+      const regimeLabel = document.getElementById("regimeLabel");
+
+      const xS = (a) => 60 + (a / 8) * 420;
+      const yS = (y) => 300 - (y / 9) * 260;
+      const yA = (a) => Math.min(a + 2, 8);
+      const yB = (a) => Math.min(a + 4, 5);
+      const path = (pts) => pts.map((p, i) => `${i ? "L" : "M"}${p[0]} ${p[1]}`).join(" ");
+
+      lineA.setAttribute("d", path([[xS(0), yS(2)], [xS(6), yS(8)], [xS(8), yS(8)]]));
+      lineB.setAttribute("d", path([[xS(0), yS(4)], [xS(1), yS(5)], [xS(8), yS(5)]]));
+
+      function updateDiagram(aRaw) {
+        const a = clamp(aRaw, 0, 8);
+        const x = xS(a);
+        cursor.setAttribute("x1", x);
+        cursor.setAttribute("x2", x);
+        cursorLabel.setAttribute("x", Math.min(x + 5, 440));
+        cursorLabel.textContent = `a = ${a.toFixed(1)}`;
+        dotA.setAttribute("cx", x);
+        dotA.setAttribute("cy", yS(yA(a)));
+        dotB.setAttribute("cx", x);
+        dotB.setAttribute("cy", yS(yB(a)));
+        if (a < 1) regimeLabel.textContent = "Both capacity-constrained";
+        else if (a < 6) regimeLabel.textContent = "Person 2 desire-constrained; Person 1 capacity-constrained";
+        else regimeLabel.textContent = "Both desire-constrained \u2014 Y\u2081/Y\u2082 = S\u2081/S\u2082";
+      }
+
+      updateDiagram(0);
+
+      // Desktop: show/hide fixed diagram with essay
+      if (isDesktop) {
+        ScrollTrigger.create({
+          trigger: essayBody,
+          start: "top 85%",
+          end: "bottom 15%",
+          onEnter: () => { diagramFloat.classList.add("visible"); },
+          onLeave: () => { diagramFloat.classList.remove("visible"); },
+          onEnterBack: () => { diagramFloat.classList.add("visible"); },
+          onLeaveBack: () => { diagramFloat.classList.remove("visible"); },
+        });
+      }
+
+      // Animate diagram with essay scroll
+      ScrollTrigger.create({
+        trigger: essayBody,
+        start: "top 70%",
+        end: "bottom 30%",
+        scrub: true,
+        onUpdate: (self) => updateDiagram(self.progress * 8)
+      });
+
+      // Caveats toggle
+      document.querySelectorAll(".card").forEach((card) => {
+        card.querySelector("button").addEventListener("click", () => {
+          const body = card.querySelector(".card-body");
+          const open = card.classList.toggle("open");
+          body.style.maxHeight = open ? `${body.scrollHeight}px` : "0px";
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
