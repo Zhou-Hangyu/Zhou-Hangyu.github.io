@@ -84,23 +84,22 @@
           container.style.overflow = 'hidden';
         }
       }, 2000);
-    });
-  </script>
 
-  <style>
-    /* Enlarge the visitor dots on the map */
-    .jvectormap-marker {
-      r: 24 !important;
-      width: 24px !important;
-      height: 24px !important;
-    }
-    .jvectormap-marker circle,
-    .mapmyvisitors-map circle {
-      r: 24 !important;
-    }
-    .mapmyvisitors-map svg circle[fill] {
-      r: 24 !important;
-    }
+      // Scale up visitor marker dots proportionally (preserve relative sizes)
+      setTimeout(function () {
+        var multiplier = 4;
+        document.querySelectorAll('.jvectormap-marker, .mapmyvisitors-map svg circle[fill]').forEach(function (el) {
+          var r = parseFloat(el.getAttribute('r'));
+          if (r && r > 0) el.setAttribute('r', r * multiplier);
+          var cx = el.getAttribute('cx');
+          if (!cx) {
+            var w = parseFloat(el.getAttribute('width'));
+            var h = parseFloat(el.getAttribute('height'));
+            if (w) el.setAttribute('width', w * multiplier);
+            if (h) el.setAttribute('height', h * multiplier);
+          }
+        });
+      }, 3000);
   </style>
 </body>
 
