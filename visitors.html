@@ -87,7 +87,7 @@
 
       // Scale up visitor marker dots proportionally (preserve relative sizes)
       setTimeout(function () {
-        var multiplier = 4;
+        var multiplier = 10;
         document.querySelectorAll('.jvectormap-marker, .mapmyvisitors-map svg circle[fill]').forEach(function (el) {
           var r = parseFloat(el.getAttribute('r'));
           if (r && r > 0) el.setAttribute('r', r * multiplier);
