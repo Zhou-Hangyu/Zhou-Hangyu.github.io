@@ -85,21 +85,32 @@
         }
       }, 2000);
 
-      // Scale up visitor marker dots proportionally (preserve relative sizes)
-      setTimeout(function () {
-        var multiplier = 4;
+      // Scale up visitor marker dots — use MutationObserver to persist through widget re-renders
+      var MULTIPLIER = 4;
+      var BASELINE = 6;
+      var SCALED_ATTR = 'data-scaled';
+
+      function scaleDots() {
         document.querySelectorAll('.jvectormap-marker, .mapmyvisitors-map svg circle[fill]').forEach(function (el) {
+          if (el.getAttribute(SCALED_ATTR)) return;
           var r = parseFloat(el.getAttribute('r'));
-          if (r && r > 0) el.setAttribute('r', (r + 6) * multiplier);
-          var cx = el.getAttribute('cx');
-          if (!cx) {
-            var w = parseFloat(el.getAttribute('width'));
-            var h = parseFloat(el.getAttribute('height'));
-            if (w) el.setAttribute('width', w * multiplier);
-            if (h) el.setAttribute('height', h * multiplier);
+          if (r && r > 0) {
+            el.setAttribute('r', (r + BASELINE) * MULTIPLIER);
+            el.setAttribute(SCALED_ATTR, '1');
           }
         });
-      }, 3000);
+      }
+
+      // Run on initial load
+      setTimeout(scaleDots, 3000);
+
+      // Re-apply whenever the widget mutates the SVG
+      var mapEl = document.querySelector('.map-scaler');
+      if (mapEl) {
+        new MutationObserver(function () {
+          scaleDots();
+        }).observe(mapEl, { childList: true, subtree: true, attributes: true, attributeFilter: ['r'] });
+      }
   </style>
 </body>
 
