@@ -40,6 +40,25 @@
       width: 100%;
       text-align: center;
     }
+
+    /* Scale down the 1600px widget to fit 800px, giving 2x resolution on retina */
+    .map-scaler {
+      width: 1600px;
+      transform: scale(0.5);
+      transform-origin: top left;
+    }
+
+    @media (max-width: 850px) {
+      .map-container {
+        max-width: 100%;
+        overflow: hidden;
+      }
+
+      .map-scaler {
+        transform: scale(calc(50vw / 800));
+        transform-origin: top left;
+      }
+    }
   </style>
 </head>
 
@@ -47,9 +66,26 @@
   <h1>Visitor Map</h1>
   <div class="back-link"><a href="index.html">&larr; Back to homepage</a></div>
   <div class="map-container">
-    <script type='text/javascript' id='mapmyvisitors'
-      src='https://mapmyvisitors.com/map.js?cl=777777&w=800&t=n&d=NCtmPpXBb5jvZC6scJCH9XjYBcQ2pgp4uDpI4EXO_sA&co=ffffff&cmo=b5b5b5&cmn=afd5ff&ct=000000'></script>
+    <div class="map-scaler">
+      <script type='text/javascript' id='mapmyvisitors'
+        src='https://mapmyvisitors.com/map.js?cl=777777&w=1600&t=n&d=NCtmPpXBb5jvZC6scJCH9XjYBcQ2pgp4uDpI4EXO_sA&co=ffffff&cmo=b5b5b5&cmn=afd5ff&ct=000000'></script>
+    </div>
   </div>
+
+  <script>
+    // Fix the container height after widget loads since transform: scale doesn't shrink layout
+    window.addEventListener('load', function () {
+      setTimeout(function () {
+        var scaler = document.querySelector('.map-scaler');
+        var container = document.querySelector('.map-container');
+        if (scaler && container) {
+          var scale = parseFloat(getComputedStyle(scaler).transform.split(',')[3]) || 0.5;
+          container.style.height = (scaler.offsetHeight * scale) + 'px';
+          container.style.overflow = 'hidden';
+        }
+      }, 2000);
+    });
+  </script>
 </body>
 
 </html>
