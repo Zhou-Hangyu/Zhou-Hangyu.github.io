@@ -36,15 +36,15 @@
     }
 
     .map-container {
-      max-width: 800px;
+      max-width: 1000px;
       width: 100%;
       text-align: center;
     }
 
-    /* Scale down the 1600px widget to fit 800px, giving 2x resolution on retina */
+    /* Scale down the 3200px widget to fit ~1000px, giving 3x+ resolution on retina */
     .map-scaler {
-      width: 1600px;
-      transform: scale(0.5);
+      width: 3200px;
+      transform: scale(0.3125);
       transform-origin: top left;
     }
 
@@ -55,7 +55,7 @@
       }
 
       .map-scaler {
-        transform: scale(calc(50vw / 800));
+        transform: scale(calc(50vw / 1600));
         transform-origin: top left;
       }
     }
@@ -68,7 +68,7 @@
   <div class="map-container">
     <div class="map-scaler">
       <script type='text/javascript' id='mapmyvisitors'
-        src='https://mapmyvisitors.com/map.js?cl=777777&w=1600&t=n&d=NCtmPpXBb5jvZC6scJCH9XjYBcQ2pgp4uDpI4EXO_sA&co=ffffff&cmo=b5b5b5&cmn=afd5ff&ct=000000'></script>
+        src='https://mapmyvisitors.com/map.js?cl=777777&w=3200&t=n&d=NCtmPpXBb5jvZC6scJCH9XjYBcQ2pgp4uDpI4EXO_sA&co=ffffff&cmo=b5b5b5&cmn=afd5ff&ct=000000'></script>
     </div>
   </div>
 
@@ -79,13 +79,29 @@
         var scaler = document.querySelector('.map-scaler');
         var container = document.querySelector('.map-container');
         if (scaler && container) {
-          var scale = parseFloat(getComputedStyle(scaler).transform.split(',')[3]) || 0.5;
+          var scale = parseFloat(getComputedStyle(scaler).transform.split(',')[3]) || 0.3125;
           container.style.height = (scaler.offsetHeight * scale) + 'px';
           container.style.overflow = 'hidden';
         }
       }, 2000);
     });
   </script>
+
+  <style>
+    /* Enlarge the visitor dots on the map */
+    .jvectormap-marker {
+      r: 12 !important;
+      width: 12px !important;
+      height: 12px !important;
+    }
+    .jvectormap-marker circle,
+    .mapmyvisitors-map circle {
+      r: 12 !important;
+    }
+    .mapmyvisitors-map svg circle[fill] {
+      r: 12 !important;
+    }
+  </style>
 </body>
 
 </html>
