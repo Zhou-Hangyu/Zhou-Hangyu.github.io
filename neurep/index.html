@@ -50,24 +50,16 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85em;
 .tag.live{color:#1a7f37;border-color:#9ed3ad}
 .log .take{margin:.5rem 0 0;font-size:.96rem}
 .log .take b{color:var(--ink)}
-/* scope two columns */
-.scope{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem;margin-top:.6rem}
-.scope .col h3{margin-top:0}
-.scope ul{margin:.3rem 0;padding-left:1.15rem}
-.scope li{margin:.3rem 0;font-size:.96rem}
-@media (max-width:640px){.scope{grid-template-columns:1fr}}
-/* method table */
-table{border-collapse:collapse;width:100%;margin:1rem 0;font-size:.92rem}
-th,td{padding:.4rem .6rem;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
-thead th{border-top:2px solid var(--ink);border-bottom:1px solid var(--ink);
-  font-family:-apple-system,"Segoe UI",sans-serif}
+/* theory agenda */
+.agenda{list-style:none;padding:0;margin:.6rem 0}
+.agenda li{position:relative;padding-left:1.6rem;margin:.55rem 0;font-size:.97rem}
+.agenda li::before{content:"\25CB";position:absolute;left:0;top:.05em;color:var(--mut)}
+.agenda li.done::before{content:"\2713";color:#1a7f37;font-weight:700}
+.muted{color:var(--mut)}
 .nav-cards{list-style:none;padding:0;margin:.6rem 0}
 .nav-cards li{border:1px solid var(--line);border-radius:.5em;padding:.7rem 1rem;margin:.6rem 0}
 .nav-cards a{font-family:-apple-system,"Segoe UI",sans-serif;font-weight:600;text-decoration:none}
 .nav-cards p{margin:.3rem 0 0;font:14px/1.5 -apple-system,"Segoe UI",sans-serif;color:var(--mut)}
-.pagefoot{margin-top:2.8rem;padding-top:1rem;border-top:1px solid var(--line);
-  color:var(--mut);font:13px/1.6 -apple-system,"Segoe UI",sans-serif}
-.pagefoot a{color:var(--accent)}
 </style>
 </head>
 <body>
@@ -76,12 +68,6 @@ thead th{border-top:2px solid var(--ink);border-bottom:1px solid var(--ink);
 
   <h1>neurep</h1>
   <p class="subtitle">Per-neuron representation priors for sample-efficient compositional learning</p>
-  <p class="status">
-    <span class="badge">NeurIPS&nbsp;2026 · submitted</span>
-    <span>Current phase: consolidating results, deriving the theory behind the regularizers, designing new ones.</span>
-  </p>
-  <p class="note">Internal research notes — shared with collaborators, not for public distribution.
-    This page is the living overview; it is updated as the work progresses.</p>
 
   <h2>Thesis</h2>
   <p class="lead">A simple <b>per-neuron representation prior</b> helps a dense network discover hidden
@@ -176,55 +162,23 @@ thead th{border-top:2px solid var(--ink);border-bottom:1px solid var(--ink);
         accuracy is lost</b>. Spike initialization turns out to be irreplaceable.</p>
     </li>
 
-    <li>
-      <div class="row">
-        <span class="ttl plain">Exact MLP encoding of computation graphs</span>
-        <span class="tag">notes</span>
-        <span class="date">in progress</span>
-      </div>
-      <p class="take">A theory thread (<code>theory/encoding/</code>) building a bit-exact MLP construction
-        that realizes a given computation graph — the constructive counterpart to the "when is a decomposition
-        even representable" question the regularizers probe empirically.</p>
-    </li>
-
   </ul>
 
-  <h2>What this project is — and is not</h2>
-  <div class="scope">
-    <div class="col">
-      <h3>It is</h3>
-      <ul>
-        <li>a study of whether <em>one</em> simple per-neuron representation prior improves sample efficiency;</li>
-        <li>a study of whether that gain comes from learning the hidden decomposition;</li>
-        <li>a characterization of when this happens and when it fails.</li>
-      </ul>
-    </div>
-    <div class="col">
-      <h3>It is not</h3>
-      <ul>
-        <li>a "unified framework" of regularizers;</li>
-        <li>a sales pitch for interpretability-via-visualization;</li>
-        <li>a claim to beat explicit modular architectures on their own turf;</li>
-        <li>a proof of general PGM structure recovery.</li>
-      </ul>
-    </div>
-  </div>
-
-  <h2>Method families</h2>
-  <p>Every method carries a canonical ID across three namespaces; the NeuRep family is the regularizer
-    $R(W,\Phi)=\lambda\sum d(\phi_i,\phi_j)\,\psi(W_{ij})$ above, instantiated by a
-    <code>repr</code>–<code>dist</code>–<code>pen</code> codename.</p>
-  <table>
-    <thead><tr><th>Namespace</th><th>Scope</th><th>Example ID</th></tr></thead>
-    <tbody>
-      <tr><td><code>nr.*</code></td><td>NeuRep regularizer family — L1/L2, ModBlock, BIMT, WiringPrior, the Simplex / MultiHot / DualChannel mechanisms.</td><td><code>nr.pos-euc-abs__c=1e-3__d=2</code></td></tr>
-      <tr><td><code>baseline.*</code></td><td>Activation-based regularizers (WA, BWBC, DeCov, CovBlock) + non-regularizer baselines (NoReg, ModArch, NeuroPos).</td><td><code>baseline.wa__c=1e-3__alpha=2</code></td></tr>
-      <tr><td><code>novel.*</code></td><td>Incubator methods that don't fit the NR axes.</td><td><code>novel.neurepdag__c=1e-3__K=8</code></td></tr>
-    </tbody>
-  </table>
-  <p class="note">Comparisons are bound by a strict fairness protocol: matched parameter count and training
-    budget, <b>equal hyperparameter-search budget per method</b>, <b>≥5 seeds</b>, paired Wilcoxon + Cohen's
-    d, and a selection-vs-final-test split that is touched once.</p>
+  <h2>Theory</h2>
+  <p>A constructive thread: when is a task decomposition even <em>representable</em> by a dense network,
+    and at what cost? The program encodes a computation graph exactly into standard architectures and
+    tracks how its discrete complexity $(D, N, r)$ — number of discrete values, number of nodes, and max
+    number of parents — transfers to network size.</p>
+  <ul class="agenda">
+    <li class="done">Notation for the computation graph, and an
+      <a href="theory/neurep_mlp_encoding.pdf">exact encoding into an MLP</a> &mdash; complexity $(D, N, r)$
+      transfers to MLP depth and width. <span class="tag live">pdf</span></li>
+    <li>Exact encoding into a Transformer &mdash; how $(D, N, r)$ maps to token-embedding dimension,
+      QK dimension, and number of heads.</li>
+    <li><span class="muted">(stretch)</span> Regularizers that <em>encourage</em> this encoding, with a proof
+      that the computation-graph encoding &mdash; up to equivalent variations &mdash; is the minimizer over
+      dense networks subject to matching the graph's exact input&ndash;output behavior.</li>
+  </ul>
 
   <h2>Read more</h2>
   <ul class="nav-cards">
@@ -234,14 +188,6 @@ thead th{border-top:2px solid var(--ink);border-bottom:1px solid var(--ink);
         result end-to-end.</p>
     </li>
   </ul>
-
-  <div class="pagefoot">
-    <p>Maintained by <a href="https://github.com/Zhou-Hangyu">Hangyu Zhou</a> ·
-      code repository is private (NeurIPS 2026 under preparation) ·
-      last updated 2026-06-18.</p>
-    <p>Shared with collaborators for reading and comment. Please don't redistribute or cite without asking —
-      numbers and framing are still moving.</p>
-  </div>
 
 </main>
 </body>
