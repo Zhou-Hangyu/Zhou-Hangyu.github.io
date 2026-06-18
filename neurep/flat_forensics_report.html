@@ -1,0 +1,724 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>flat_forensics_report — neurep</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false},{left:'$$',right:'$$',display:true}],throwOnError:false});"></script>
+<style>
+:root{--ink:#1b1b1f;--mut:#5b6068;--line:#e3e6ea;--bg:#fff;--accent:#0b66c3;--code:#f4f6f8}
+*{box-sizing:border-box}
+body{margin:0;color:var(--ink);background:var(--bg);
+  font:17px/1.62 Georgia,"Times New Roman",serif;-webkit-font-smoothing:antialiased}
+.topbar{display:flex;gap:1rem;align-items:baseline;flex-wrap:wrap;
+  padding:.7rem 1.2rem;border-bottom:1px solid var(--line);
+  font-family:-apple-system,"Segoe UI",Roboto,sans-serif;font-size:14px}
+.topbar .home{font-weight:700;color:var(--ink);text-decoration:none}
+.crumbs{color:var(--mut)} .crumbs a{color:var(--accent);text-decoration:none}
+main{max-width:46rem;margin:0 auto;padding:1.4rem 1.2rem 4rem}
+a{color:var(--accent)}
+.meta{display:flex;gap:.6rem;align-items:center;font-family:-apple-system,"Segoe UI",sans-serif;margin:.2rem 0 1rem}
+.badge{font:600 11px/1 -apple-system,"Segoe UI",sans-serif;text-transform:uppercase;
+  letter-spacing:.04em;padding:.28em .55em;border-radius:.4em}
+.date{color:var(--mut);font:13px -apple-system,"Segoe UI",sans-serif}
+.hypothesis{background:#f5f8ff;border:1px solid #d6e4fb;border-left:3px solid var(--accent);
+  border-radius:.4em;padding:.7rem .9rem;margin:0 0 1.4rem;
+  font:15px/1.55 -apple-system,"Segoe UI",sans-serif}
+article :first-child{margin-top:0}
+h1,h2,h3{font-family:-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.25}
+h1{font-size:1.7rem} h2{font-size:1.28rem;margin-top:2rem;border-bottom:1px solid var(--line);padding-bottom:.2rem}
+h3{font-size:1.05rem}
+.center,div[style*="text-align:center"]{text-align:center}
+p{margin:.7rem 0}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.86em;
+  background:var(--code);padding:.12em .35em;border-radius:.3em}
+code a{text-decoration:none}
+figure{margin:1.6rem 0;text-align:center}
+img.fig{max-width:100%;height:auto;border:1px solid var(--line);border-radius:.4em;background:#fff}
+figcaption{font:13.5px/1.5 -apple-system,"Segoe UI",sans-serif;color:var(--mut);
+  text-align:left;margin-top:.5rem}
+.fignum{color:var(--ink);font-weight:700}
+.katex-display{overflow-x:auto;overflow-y:hidden;padding:.2rem 0}
+.xref{text-decoration:none;font-weight:600}
+table{border-collapse:collapse;margin:1.2rem auto;font-size:.92rem}
+th,td{padding:.3rem .7rem;text-align:left}
+thead th{border-top:2px solid var(--ink);border-bottom:1px solid var(--ink)}
+tbody tr:last-child td{border-bottom:2px solid var(--ink)}
+caption{caption-side:bottom;color:var(--mut);font:13.5px -apple-system,sans-serif;margin-top:.4rem}
+.related{margin-top:2.4rem;border-top:1px solid var(--line);padding-top:1rem;
+  font-family:-apple-system,"Segoe UI",sans-serif;font-size:14.5px}
+.related h3{margin:.2rem 0 .5rem} .related ul{margin:0;padding-left:1.1rem}
+.related li{margin:.3rem 0}
+.pagefoot{margin-top:2.5rem;padding-top:1rem;border-top:1px solid var(--line);
+  color:var(--mut);font:13px -apple-system,"Segoe UI",sans-serif}
+/* index */
+.subtitle{font-size:1.15rem;color:var(--mut);margin:.2rem 0}
+.note{font:13px -apple-system,sans-serif;color:var(--mut)}
+.cards{list-style:none;padding:0;margin:.5rem 0 2rem}
+.card{border:1px solid var(--line);border-radius:.5em;padding:.8rem 1rem;margin:.6rem 0}
+.card-title{font-family:-apple-system,"Segoe UI",sans-serif;font-weight:600;font-size:1.05rem;text-decoration:none}
+.card-hyp{font:14px/1.5 -apple-system,"Segoe UI",sans-serif;color:var(--mut);margin:.4rem 0 0}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="home" href="index.html">neurep</a>
+  <nav class="crumbs"><a href="index.html">studies</a> / Separator / flat collapse</nav>
+</header>
+<main>
+  <div class="meta">
+    <span class="badge" style="background:#6e7781;color:#fff">draft</span>
+    <span class="date"></span>
+  </div>
+  
+  <article>
+  <div class="center">
+<p><span><strong>The flat winning ticket under the
+microscope</strong></span><br />
+<span>What <code>nr.dchn-euc-sq</code> actually does on
+<code>flat_modular</code>: a forensic study of one winning run, with
+targeted controls</span></p>
+</div>
+<p>This note dissects a single training run — the v10 HP winner on the
+flat cell at its representative seed — and asks what the method is doing
+while it wins; controls one run cannot provide (a width sweep, baseline
+re-analyses, a task-complexity sweep) are added where needed. Companion:
+<code><a class="report-link" href="collapse_review.html">collapse_review.pdf</a></code>; code and an executable version of
+every figure:
+<code>notebooks/collapse_investigation/flat_forensics.ipynb</code>.</p>
+<h1 id="setup">Setup</h1>
+<h4 id="task.">Task.</h4>
+<p><code>flat_modular</code>, v10 cell
+<code>primitive=sinusoidal, w=4, d=1, o=0, nu=16, r=0.7, s=0, standardize_y</code>.
+The axes: <span class="math inline">\(w\)</span> = number of leaf
+modules (4); <span class="math inline">\(d\)</span> = hierarchy depth (1
+= a flat sum, no composition); <span class="math inline">\(o\)</span> =
+overlap (0: factor sets are disjoint); <span
+class="math inline">\(\nu\)</span> = nuisance input dimensions (16);
+<span class="math inline">\(r\)</span> = training input range; <span
+class="math inline">\(s\)</span> = label-noise std (0);
+<code>standardize_y</code> = divide <span
+class="math inline">\(y\)</span> by its empirical std. Input <span
+class="math inline">\(x=(z,\xi)\in\mathbb{R}^{24}\)</span>: signal <span
+class="math inline">\(z\in\mathbb{R}^{8}\)</span> in four disjoint
+factor pairs <span
+class="math inline">\(S_k=\{2k{-}2,\,2k{-}1\}\)</span>, nuisance <span
+class="math inline">\(\xi\in\mathbb{R}^{16}\)</span>. Target: <span
+class="math display">\[y(x)=\frac{1}{\sigma_y}\sum_{k=1}^{4}
+f_k\!\bigl(z_{S_k}\bigr),\qquad
+f_k(u)=\frac{1}{\sqrt{Q}}\sum_{q=1}^{Q}
+a_{k,q}\,\sin\!\bigl(\langle\omega_{k,q},u\rangle+\varphi_{k,q}\bigr),\quad
+Q=3.\]</span> The teacher parameters are drawn <em>once per module at
+task construction</em> from the task seed and frozen: <span
+class="math inline">\(a_{k,q}\sim U[0.7,1]\)</span>, <span
+class="math inline">\(\omega_{k,q}\sim\mathcal{N}(0,\,0.6^2
+I_2)\)</span>, <span class="math inline">\(\varphi_{k,q}\sim
+U[0,2\pi)\)</span>, independently across the four leaves. <span
+class="math inline">\(\sigma_y\)</span> is the empirical std of the raw
+sum over <span class="math inline">\(32{,}768\)</span> train-range
+samples (its own RNG stream, so enabling it does not change the data
+draws). Train set: <span class="math inline">\(z\sim\mathcal{N}(0,\,r^2
+I_8)\)</span> with <span class="math inline">\(r{=}0.7\)</span>, <span
+class="math inline">\(\xi\sim\mathcal{N}(0,I_{16})\)</span> (nuisance is
+<em>not</em> range-compressed), <span
+class="math inline">\(n{=}2048\)</span>. All reported test MSEs use the
+held-out <em>extrapolate</em> split <span
+class="math inline">\(z\sim\mathcal{N}(0,I_8)\)</span> (<span
+class="math inline">\(n_{\text{eval}}{=}1024\)</span>;
+<code>split_use=final</code>, <code>task_seed</code>=4242) — a mild
+range shift. The train seed sets only network init and batch order;
+every seed sees the identical teacher and data.</p>
+<h4 id="model-and-training.">Model and training.</h4>
+<p>MLP <span
+class="math inline">\(24\!\to\!64\!\to\!64\!\to\!1\)</span>, GELU, <span
+class="math inline">\(5{,}825\)</span> parameters; MSE loss; AdamW (lr
+<span class="math inline">\(\eta{=}10^{-3}\)</span>, <span
+class="math inline">\(\beta{=}(0.9,0.999)\)</span>, PyTorch-default
+weight decay <span class="math inline">\(\lambda{=}0.01\)</span>), batch
+200, 20k optimizer steps, deterministic. Seed 1 throughout: its final
+MSE (<span class="math inline">\(0.0151\)</span>) is the closest to the
+5-seed arm mean (<span
+class="math inline">\(0.0152\pm0.0026\)</span>).</p>
+<figure id="fig:schema" data-latex-placement="h">
+<img class="fig" src="assets/fig_fr0_schema.svg" alt="fig_fr0_schema" loading="lazy" />
+<figcaption><span class="fignum">Figure 1.</span> Boundary/channel schema. Top: the MLP’s four neuron sets
+(<em>boundaries</em>) <span class="math inline">\(B_0..B_3\)</span> and
+weight matrices between them. Bottom: Separator’s learnable code tables
+— every boundary owns an in-channel and an out-channel table <span
+class="math inline">\(z\in\mathbb{R}^{N_b\times K}\)</span> (<span
+class="math inline">\(K{=}8\)</span>); codes are <span
+class="math inline">\(\sigma=\mathrm{sigmoid}(z)\in[0,1]^K\)</span> per
+neuron. Each weight matrix <span
+class="math inline">\(W^{(\ell)}\)</span> is priced by comparing its
+<em>receivers’</em> in-codes with its <em>senders’</em> out-codes
+(colored arcs). <span class="math inline">\(z^{(0)}_{\text{in}}\)</span>
+and <span class="math inline">\(z^{(3)}_{\text{out}}\)</span> exist as
+parameters but never enter the penalty (inputs never receive, the output
+never sends).</figcaption>
+</figure>
+<h4 id="method-separator.">Method: Separator.</h4>
+<p><code>nr.dchn-euc-sq__c=3e-2__K=8__tau=2e-2</code> (<span
+class="math inline">\(\tau\)</span> is inert for the dchn family).
+Channels as in Fig. <a href="#fig:schema" data-reference-type="ref"
+data-reference="fig:schema">1</a>; penalty over the <span
+class="math inline">\(L{=}3\)</span> weight matrices: <span
+class="math display">\[\mathcal{R}=\frac{1}{L}\sum_{\ell=0}^{2}\
+\sum_{i,j} \bigl(W^{(\ell)}_{ij}\bigr)^2\,
+\bigl\lVert
+\sigma^{(\ell+1)}_{\text{in}}(i)-\sigma^{(\ell)}_{\text{out}}(j)\bigr\rVert_2^2,
+\qquad \text{loss}=\text{MSE}+c\,\mathcal{R},\quad
+c=3\times10^{-2},\]</span> so weight between code-distant neurons is
+expensive. Predictions never depend on the codes, hence <span
+class="math inline">\(\partial\,\text{MSE}/\partial z\equiv0\)</span>:
+the <em>only</em> forces ever applied to the codes are <span
+class="math inline">\(c\,\nabla_z\mathcal{R}\)</span> and the AdamW
+decay step <span class="math inline">\(\eta\lambda z\)</span> (<span
+class="math inline">\(\approx\!10^{-5}z\)</span> per step).
+Initialization: <span
+class="math inline">\(z\sim\mathcal{N}(-2,\,0.1^2)\)</span> with one
+randomly chosen bit per neuron <em>set</em> to <span
+class="math inline">\(+2.0\)</span> (<span
+class="math inline">\(\sigma\approx0.88\)</span> vs. <span
+class="math inline">\(0.12\)</span>) — verified: exactly <span
+class="math inline">\(281\)</span> of the <span
+class="math inline">\(2248\)</span> used-channel logits (<span
+class="math inline">\(=1/8\)</span>, one per neuron) equal <span
+class="math inline">\(2.0\)</span> at step 0. Baselines: <em>L1</em>
+(<span class="math inline">\(c\sum|W|\)</span>, winner <span
+class="math inline">\(c{=}10^{-5}\)</span>) and <em>NoReg</em>; all HPs
+come from the equal-budget grid on the disjoint selection split
+(<code>task_seed</code>=2026). The run analyzed here is an instrumented
+re-run capturing codes, weights and biases every 50 steps (401
+snapshots); it reproduces the store’s per-seed MSE to <span
+class="math inline">\(\le1.2\times10^{-5}\)</span>.</p>
+<h4 id="terminology.">Terminology.</h4>
+<p><em>Binarized code</em>: <span
+class="math inline">\(b_i=\mathbf{1}[\sigma_i&gt;0.5]\in\{0,1\}^8\)</span>.
+<em>Modal code / consensus share</em>: the most frequent <span
+class="math inline">\(b\)</span> among a channel’s neurons and the
+fraction carrying it. <em>Outliers</em>: the channel’s neurons not
+carrying the modal code. <em><span class="math inline">\(|W|\)</span>
+degree</em> of a hidden neuron: the sum of absolute incoming plus
+outgoing weights. <em>ARI</em> (Adjusted Rand Index) between two
+partitions of <span class="math inline">\(N\)</span> items with
+contingency counts <span class="math inline">\(n_{ij}\)</span>
+(marginals <span class="math inline">\(a_i,b_j\)</span>): <span
+class="math display">\[\mathrm{ARI}=\frac{\sum_{ij}\binom{n_{ij}}{2}-\bigl[\sum_i\binom{a_i}{2}\sum_j\binom{b_j}{2}\bigr]/\binom{N}{2}}
+{\tfrac12\bigl[\sum_i\binom{a_i}{2}+\sum_j\binom{b_j}{2}\bigr]-\bigl[\sum_i\binom{a_i}{2}\sum_j\binom{b_j}{2}\bigr]/\binom{N}{2}},\]</span>
+<span class="math inline">\(1\)</span> = identical partitions, <span
+class="math inline">\(0\)</span> = chance under random labeling with
+fixed marginals, negative possible. Here: items = the 24 input neurons;
+partition 1 = identity classes of their binarized <span
+class="math inline">\(B_0\)</span>-out codes; partition 2 = ground truth
+(factor index for the 8 signal dims, one shared class for the 16
+nuisance dims). A single-cluster partition scores ARI <span
+class="math inline">\(=0\)</span> by construction (“no structure at
+all”), which the consensus share disambiguates from “wrong
+structure”.</p>
+<h1 id="logit-dynamics-the-codes-are-a-transient">Logit dynamics: the
+codes are a transient</h1>
+<figure id="fig:logits" data-latex-placement="h">
+<img class="fig" src="assets/fig_fr1_logits.svg" alt="fig_fr1_logits" loading="lazy" />
+<figcaption><span class="fignum">Figure 2.</span> (a) <span class="math inline">\(B_1\)</span>-out logits over
+training, rows sorted by final binarized code: the init pattern fades
+<em>in place</em>. (b) mean spike (<span
+class="math inline">\(+2\)</span>) and background (<span
+class="math inline">\(-2\)</span>) logit per channel: both dissolve to
+<span class="math inline">\(\approx0\)</span>. (c) direction
+vs. amplitude: <span class="math inline">\(\cos(z_t,z_0)\)</span>
+(solid) stays high while <span class="math inline">\(\lVert
+z_t\rVert/\lVert z_0\rVert\)</span> (dashed) collapses. (d) the only two
+forces on the codes: <span
+class="math inline">\(c\lVert\nabla_z\mathcal{R}\rVert\)</span>
+self-extinguishes and crosses below the AdamW-decay scale at <span
+class="math inline">\({\sim}4\)</span>k. (e) used-channel norm dissolves
+while the unused channels stay exactly at init; consensus share (purple,
+right axis) locks deepest-boundary-first.</figcaption>
+</figure>
+<p>Figure <a href="#fig:logits" data-reference-type="ref"
+data-reference="fig:logits">2</a> tells the whole story in three phases.
+<strong>(1) Adam-ceiling merge, 0–3k.</strong> The merge gradient of
+<span class="math inline">\(\mathcal{R}\)</span> is Adam-normalized into
+per-coordinate steps of <span
+class="math inline">\(\approx\eta\)</span>: the measured median <span
+class="math inline">\(|\Delta z|\)</span> per 50 steps is <span
+class="math inline">\(0.054\approx50\eta\)</span> in the first window.
+Every logit therefore travels at roughly the same speed toward its
+pair’s meeting point, and a uniform-speed contraction preserves the
+pattern while killing the amplitude — Fig. <a href="#fig:logits"
+data-reference-type="ref" data-reference="fig:logits">2</a>a shows the
+heatmap fading in place; Fig. <a href="#fig:logits"
+data-reference-type="ref" data-reference="fig:logits">2</a>c quantifies
+it (<span class="math inline">\(\cos(z_t,z_0)=0.68\)</span>–<span
+class="math inline">\(0.89\)</span> at 5k while the relative norm has
+fallen to <span class="math inline">\(0.24\)</span>–<span
+class="math inline">\(0.31\)</span>). The codes land at <span
+class="math inline">\(z\approx0\)</span> (Fig. <a href="#fig:logits"
+data-reference-type="ref" data-reference="fig:logits">2</a>b: spike and
+background meet near the midpoint), consistent with both available
+forces — equalized speeds from the symmetric <span
+class="math inline">\(\pm2\)</span> starts (also <span
+class="math inline">\(\sigma&#39;(2)=\sigma&#39;(-2)\)</span>, so even
+raw gradients balance at init) and the decay’s bias toward <span
+class="math inline">\(0\)</span>: the maximum-entropy “white code” <span
+class="math inline">\(\sigma=\tfrac12\)</span> per bit. <strong>(2)
+Extinction, 3–13k.</strong> Pruning and merging drive <span
+class="math inline">\(\mathcal{R}\to0\)</span>, and the code gradient
+dies with it: <span
+class="math inline">\(c\lVert\nabla_z\mathcal{R}\rVert\)</span> falls
+<span class="math inline">\(9.9\times10^{-3}\to5.8\times10^{-4}\)</span>
+(3k) <span class="math inline">\(\to3.5\times10^{-6}\)</span> (12k),
+crossing below the weight-decay scale at <span
+class="math inline">\({\sim}4\)</span>k (Fig. <a href="#fig:logits"
+data-reference-type="ref" data-reference="fig:logits">2</a>d); decay
+does the residual shrinking. Consensus locks deepest-boundary-first
+(Fig. <a href="#fig:logits" data-reference-type="ref"
+data-reference="fig:logits">2</a>e, sender-side shares): the <span
+class="math inline">\(\ell{=}2\)</span> pair by <span
+class="math inline">\({\sim}2.8\)</span>k, <span
+class="math inline">\(\ell{=}1\)</span> at <span
+class="math inline">\(4.5\)</span>–<span
+class="math inline">\(6.8\)</span>k, <span
+class="math inline">\(\ell{=}0\)</span> last (<span
+class="math inline">\(8.5\)</span>–<span
+class="math inline">\(11\)</span>k at share <span
+class="math inline">\(0.5\)</span>; <span
+class="math inline">\(B_0\)</span>-out reaches <span
+class="math inline">\(0.9\)</span> at <span
+class="math inline">\(13.5\)</span>k). <strong>(3) Frozen
+residue.</strong> Across the five multi-neuron channels only 14–34% of
+neurons keep their init argmax (chance <span
+class="math inline">\(12.5\%\)</span>). The two unused channels never
+receive a gradient — PyTorch optimizers skip parameters whose
+<code>grad</code> is <code>None</code> — and are <em>bit-for-bit
+identical</em> to their init at step 20k; they carry <span
+class="math inline">\(28.3\)</span> of the final total logit norm <span
+class="math inline">\(29.3\)</span> (93% of the squared mass; the used
+channels retain <span class="math inline">\(7.4\)</span>, Fig. <a
+href="#fig:logits" data-reference-type="ref"
+data-reference="fig:logits">2</a>e). Nothing in the objective ever asks
+the codes to re-organize: the only force is attractive, and it
+extinguishes itself. Corollary: the final binarized “consensus codes”
+are threshold noise around <span
+class="math inline">\(\sigma{=}0.5\)</span>, and paired channels end
+with matching modal codes simply because those are the pairs <span
+class="math inline">\(\mathcal{R}\)</span> merges.</p>
+<h1 id="outliers-amputation-not-small-world-wiring">Outliers:
+amputation, not small-world wiring</h1>
+<figure id="fig:outlier" data-latex-placement="h">
+<img class="fig" src="assets/fig_fr2_outlier.svg" alt="fig_fr2_outlier" loading="lazy" />
+<figcaption><span class="fignum">Figure 3.</span> (a) trained connectivity (edges: <span
+class="math inline">\(|W|\)</span> above the per-layer median): one
+dense shared core; the code outliers (red) are <em>disconnected</em>,
+and no community or small-world re-organization appears. (b) final code
+distance to consensus vs. total <span class="math inline">\(|W|\)</span>
+degree (<span class="math inline">\(\circ\)</span> <span
+class="math inline">\(B_1\)</span>-in / h1, <span
+class="math inline">\(\square\)</span> <span
+class="math inline">\(B_2\)</span>-in / h2): consensus neurons are
+wired, outliers are far-coded and amputated; orange squares are the four
+init-spike-6 neurons that merged and stayed wired. (c) <span
+class="math inline">\(B_2\)</span>-in code-distance trajectories: the
+10-neuron outlier cluster (red) never approaches consensus.</figcaption>
+</figure>
+<p>A natural reading of “the regularizer prunes high-distance edges” is
+that training sculpts structured — modular, perhaps small-world —
+wiring. Figure <a href="#fig:outlier" data-reference-type="ref"
+data-reference="fig:outlier">3</a>a shows the actual anatomy: a single
+dense core with a few units cut off. Anatomical modularity stays at
+baseline: Newman <span class="math inline">\(Q\)</span> (weighted
+modularity of the <span class="math inline">\(|W|\)</span> graph over
+all 153 neurons, adjacent layers only, greedy CNM communities; 5-seed
+means) is <span class="math inline">\(0.22\)</span> for the winner
+vs. L1 <span class="math inline">\(0.28\)</span>, NoReg <span
+class="math inline">\(0.11\)</span>.</p>
+<p>What the outlier codes mark is <em>which units got cut</em> (Fig. <a
+href="#fig:outlier" data-reference-type="ref"
+data-reference="fig:outlier">3</a>b). At <span
+class="math inline">\(B_1\)</span>-in the two outliers <span
+class="math inline">\(\{7,24\}\)</span> have <span
+class="math inline">\(|W|\)</span> degree <span
+class="math inline">\(0.001\)</span> vs. <span
+class="math inline">\(3.67\)</span> for consensus units, activation sd
+<span class="math inline">\(0.000\)</span> vs. <span
+class="math inline">\(0.213\)</span>: dead. Ablating both leaves test
+MSE unchanged (<span class="math inline">\(0.0151\to0.0151\)</span>);
+ablating two <em>random consensus</em> units instead gives <span
+class="math inline">\(0.172\pm0.202\)</span>. At <span
+class="math inline">\(B_2\)</span>-in, the 11 outliers (degree <span
+class="math inline">\(0.70\)</span> vs. <span
+class="math inline">\(3.38\)</span>) ablate to <span
+class="math inline">\(0.032\)</span>, vs. <span
+class="math inline">\(0.301\pm0.229\)</span> for random consensus sets
+of the same size. <strong>Outlier identity is largely an init
+lottery</strong>: ten of the eleven <span
+class="math inline">\(B_2\)</span>-in outliers form one cluster
+(binarized code <code>00000010</code>) and <em>all ten</em> init-spiked
+on bit 6 — out of 14 bit-6 spikers in the channel; the remaining four
+merged and stayed wired (orange in Fig. <a href="#fig:outlier"
+data-reference-type="ref" data-reference="fig:outlier">3</a>b). More
+generally, a neuron whose init spike lies on the channel’s eventual ON
+bits joins consensus with probability <span
+class="math inline">\(0.97\)</span>–<span
+class="math inline">\(1.00\)</span>, vs. <span
+class="math inline">\(0.74\)</span>–<span
+class="math inline">\(0.76\)</span> otherwise. The mechanism closes the
+loop with §2: a cohort whose init code mismatches the emerging consensus
+has its cross edges priced by <span
+class="math inline">\(\mathcal{R}\)</span>; pruning those edges removes
+both the neurons’ function <em>and</em> their merge gradient, so their
+codes freeze permanently distinct while everything else dissolves
+(Fig. <a href="#fig:outlier" data-reference-type="ref"
+data-reference="fig:outlier">3</a>c). The codes’ real act is
+<strong>unit-level pruning of excess capacity</strong>. They do not
+recover the task’s factors: on the input boundary all 24 senders end
+with one shared (white) code — the degenerate single-cluster case — so
+ARI <span class="math inline">\(=0\)</span>.</p>
+<h1
+id="functional-modularity-real-rotated-and-not-method-specific">Functional
+modularity: real, rotated, and not method-specific</h1>
+<p>§2–§3 leave a tension: the codes saw no module structure (ARI <span
+class="math inline">\(=0\)</span>), the anatomy shows none, yet the
+network fits a perfectly modular task well. Either it failed to
+decompose the task, or the decomposition lives where neuron-aligned
+views cannot see it. We test this in three steps — function, location,
+causation — then ask whether any of it is specific to Separator.</p>
+<h4 id="i-the-function-is-additive-sobol-analysis.">(i) The function is
+additive (Sobol analysis).</h4>
+<p>For a function of independent input blocks, the <em>first-order Sobol
+index</em> of block <span class="math inline">\(k\)</span> is <span
+class="math inline">\(S_k=\operatorname{Var}\!\bigl(\mathbb{E}[f\mid
+z_{S_k}]\bigr)/\operatorname{Var}(f)\)</span> — the fraction of output
+variance explained by block <span class="math inline">\(k\)</span>
+alone; an exactly additive <span class="math inline">\(f\)</span> has
+<span class="math inline">\(\sum_k S_k=1\)</span>, with interactions
+taking the remainder. We estimate <span
+class="math inline">\(S_k\)</span> by the Saltelli pick–freeze scheme:
+draw independent <span
+class="math inline">\(A,B\in\mathbb{R}^{N\times24}\)</span> (<span
+class="math inline">\(N{=}8192\)</span>, eval distribution), form <span
+class="math inline">\(A_B^{(k)}\)</span> = <span
+class="math inline">\(A\)</span> with block <span
+class="math inline">\(k\)</span>’s columns copied from <span
+class="math inline">\(B\)</span>, and use <span
+class="math display">\[\widehat
+S_k=\frac{1}{N\,\widehat{\operatorname{Var}}(f)}\sum_{n} f(B)_n\,
+\bigl[f(A_B^{(k)})_n-f(A)_n\bigr],\]</span> which isolates block <span
+class="math inline">\(k\)</span>’s main effect because <span
+class="math inline">\(f(B)\)</span> and <span
+class="math inline">\(f(A_B^{(k)})\)</span> share only that block.
+Result: model <span
+class="math inline">\((0.142,0.277,0.282,0.257)\)</span> vs. teacher
+<span class="math inline">\((0.147,0.268,0.279,0.263)\)</span> per
+factor pair; nuisance <span class="math inline">\(0.000\)</span> for
+both; <span class="math inline">\(\sum_k S_k=0.959\)</span> vs. <span
+class="math inline">\(0.958\)</span>. The learned input–output map is
+additive over the four factor groups to the teacher’s own measured
+precision.</p>
+<h4 id="ii-where-the-modules-live-estimated-subspaces.">(ii) Where the
+modules live: estimated subspaces.</h4>
+<p>Throughout, “rotated” has one precise meaning: module <span
+class="math inline">\(k\)</span>’s activity does not occupy a <em>subset
+of neurons</em> (a coordinate-aligned subspace) but a low-dimensional
+linear subspace whose basis vectors mix many neurons. We do not learn or
+parameterize a rotation (cf. DAS); we <em>estimate</em> each module’s
+subspace from causal input perturbations. With <span
+class="math inline">\(X\)</span> the 1024 eval inputs and <span
+class="math inline">\(X^{(k)}\)</span> the same matrix with only <span
+class="math inline">\(S_k\)</span>’s two columns resampled, the paired
+displacement matrix <span
+class="math inline">\(\Delta_k=h_1(X^{(k)})-h_1(X)\in\mathbb{R}^{1024\times64}\)</span>
+collects how the layer moves when module <span
+class="math inline">\(k\)</span>’s input alone changes. PCA on the
+centered <span class="math inline">\(\Delta_k\)</span> ranks directions
+by displacement variance; <span class="math inline">\(U_k^{(v)}\)</span>
+stacks the leading components reaching a fraction <span
+class="math inline">\(v\)</span> of it, and <span
+class="math inline">\(q^{v}_k=\dim U_k^{(v)}\)</span>. The four probes
+are independent — no clustering, no predefined number of parts; the
+dimensionalities and all relations below are measured outcomes, not
+constraints. At <span class="math inline">\(v{=}0.90\)</span>: <span
+class="math inline">\(q_k=(3,4,3,3)\)</span>. The four subspaces are
+nearly orthogonal — mean squared cosine of principal angles <span
+class="math inline">\(0.01\)</span>–<span
+class="math inline">\(0.06\)</span> off-diagonal (Fig. <a
+href="#fig:mod" data-reference-type="ref"
+data-reference="fig:mod">4</a>a) — yet far from neuron-aligned: the mean
+over basis vectors of <span class="math inline">\(\max_i u_i^2\)</span>
+is <span class="math inline">\(0.32\)</span>–<span
+class="math inline">\(0.67\)</span> (vs. <span
+class="math inline">\(1\)</span> for a single-neuron axis, <span
+class="math inline">\(1/64\approx0.016\)</span> for fully spread). Do
+the modules stay separate <em>across</em> layers? Taking layer-2
+<em>pre</em>-activation subspaces (the map <span
+class="math inline">\(h_1\mapsto W_1h_1+b_1\)</span> is exactly linear),
+the energy <span class="math inline">\(E_{k\ell}=\lVert
+(U^{\mathrm{pre}_2}_{\ell})^{\!\top} W_1 U^{h_1}_k\rVert_F^2\)</span>,
+row-normalized, is diagonal-dominant at <span
+class="math inline">\(0.51\)</span>–<span
+class="math inline">\(0.70\)</span> (Fig. <a href="#fig:mod"
+data-reference-type="ref" data-reference="fig:mod">4</a>b): each
+module’s h1 subspace feeds chiefly its own layer-2 subspace. (Post-GELU
+at h2 the overlaps rise to <span
+class="math inline">\(0.24\)</span>–<span
+class="math inline">\(0.38\)</span> — the four pathways begin to merge
+toward the shared scalar readout.) This panel is linear-algebraic
+evidence; the next step is the fully nonlinear, causal version.</p>
+<h4
+id="iii-the-subspaces-are-causal-carriers-activation-patching.">(iii)
+The subspaces are causal carriers (activation patching).</h4>
+<p>Pair each input <span class="math inline">\(x\)</span> with a donor
+<span class="math inline">\(x&#39;\)</span> (a random permutation of the
+eval set) and patch only module <span class="math inline">\(k\)</span>’s
+subspace at h1, <span class="math inline">\(\tilde h_1 = h_1(x) +
+P_k\,[h_1(x&#39;)-h_1(x)]\)</span> with <span
+class="math inline">\(P_k=U_kU_k^{\!\top}\)</span>, then run the rest of
+the network. If <span class="math inline">\(U_k\)</span> carries module
+<span class="math inline">\(k\)</span>, the output should move by the
+teacher’s own module-<span class="math inline">\(k\)</span> increment
+<span
+class="math inline">\([f_k(z&#39;_{S_k})-f_k(z_{S_k})]/\sigma_y\)</span>.
+Measured <span class="math inline">\(R^2\)</span> between the two across
+the 1024 pairs: <span class="math inline">\(0.80/0.48/0.68/0.83\)</span>
+for <span class="math inline">\(S_1..S_4\)</span>, vs. <span
+class="math inline">\(0.32/0.16/{-0.01}/0.02\)</span> for
+matched-dimension random subspaces (Fig. <a href="#fig:mod"
+data-reference-type="ref" data-reference="fig:mod">4</a>c). (<span
+class="math inline">\(S_2\)</span>’s subspace is undersized at <span
+class="math inline">\(v{=}0.90\)</span> — it has the largest within-pair
+overlap; the random controls are not exactly zero because h1’s
+functional content itself occupies only <span
+class="math inline">\({\approx}6\)</span> dimensions, Fig. <a
+href="#fig:cap" data-reference-type="ref"
+data-reference="fig:cap">5</a>b, which random directions partially
+intersect. The module subspaces dominate their controls everywhere.)</p>
+<figure id="fig:mod" data-latex-placement="h">
+<img class="fig" src="assets/fig_fr3_modularity.svg" alt="fig_fr3_modularity" loading="lazy" />
+<figcaption><span class="fignum">Figure 4.</span> (a) overlap between the four estimated h1 module subspaces
+(mean squared cosine of principal angles): near-orthogonal. (b) energy
+of each h1 module subspace mapped by <span
+class="math inline">\(W_1\)</span> into each layer-2 pre-activation
+module subspace (row-normalized): pathways keep their lane. (c) causal
+patching: <span class="math inline">\(R^2\)</span> of the model’s output
+change against the teacher’s <span class="math inline">\(\Delta
+f_k\)</span>, module subspace (purple) vs. matched-dimension random
+subspace (gray). (d) <span class="math inline">\(Q\)</span>-sweep:
+subspace dimensionality <span
+class="math inline">\(q^{90}\)</span>/<span
+class="math inline">\(q^{95}\)</span> (dots: per group <span
+class="math inline">\(\times\)</span> seed; lines: means) vs. the
+teacher’s per-leaf Fourier complexity <span
+class="math inline">\(Q\)</span>.</figcaption>
+</figure>
+<h4 id="is-this-separators-doing-baselines.">Is this Separator’s doing?
+Baselines.</h4>
+<p>Same pipeline, applied to NoReg at widths 64 and 16 (its own optimal
+width, §5) and to the store’s L1 winner:</p>
+<div class="center">
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">model</th>
+<th style="text-align: center;">test MSE</th>
+<th style="text-align: center;">Sobol <span class="math inline">\(\sum_k
+S_k\)</span></th>
+<th style="text-align: center;"><span
+class="math inline">\(q^{90}\)</span> (<span
+class="math inline">\(S_1..S_4\)</span>)</th>
+<th style="text-align: center;">h1 overlap</th>
+<th style="text-align: center;">lane-keeping</th>
+<th style="text-align: center;">patch <span
+class="math inline">\(R^2\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Separator @64</td>
+<td style="text-align: center;"><span
+class="math inline">\(0.0151\)</span></td>
+<td style="text-align: center;"><span
+class="math inline">\(0.959\)</span></td>
+<td style="text-align: center;"><span
+class="math inline">\(3,4,3,3\)</span></td>
+<td style="text-align: center;"><span
+class="math inline">\(\mathbf{0.026}\)</span></td>
+<td style="text-align: center;"><span
+class="math inline">\(\mathbf{0.65}\)</span></td>
+<td style="text-align: center;"><span
+class="math inline">\(\mathbf{0.70}\)</span></td>
+</tr>
+<tr>
+<td style="text-align: left;">NoReg @64</td>
+<td style="text-align: center;"><span
+class="math inline">\(0.0417\)</span></td>
+<td style="text-align: center;"><span
+class="math inline">\(0.958\)</span></td>
+<td style="text-align: center;"><span
+class="math inline">\(12,9,9,11\)</span></td>
+<td style="text-align: center;"><span
+class="math inline">\(0.284\)</span></td>
+<td style="text-align: center;"><span
+class="math inline">\(0.45\)</span></td>
+<td style="text-align: center;"><span
+class="math inline">\(0.54\)</span></td>
+</tr>
+<tr>
+<td style="text-align: left;">NoReg @16</td>
+<td style="text-align: center;"><span
+class="math inline">\(0.0285\)</span></td>
+<td style="text-align: center;"><span
+class="math inline">\(0.965\)</span></td>
+<td style="text-align: center;"><span
+class="math inline">\(1,2,2,2\)</span></td>
+<td style="text-align: center;"><span
+class="math inline">\(0.043\)</span></td>
+<td style="text-align: center;"><span
+class="math inline">\(0.48\)</span></td>
+<td style="text-align: center;"><span
+class="math inline">\(0.41\)</span></td>
+</tr>
+<tr>
+<td style="text-align: left;">L1 @64</td>
+<td style="text-align: center;"><span
+class="math inline">\(0.0226\)</span></td>
+<td style="text-align: center;"><span
+class="math inline">\(0.961\)</span></td>
+<td style="text-align: center;"><span
+class="math inline">\(3,3,3,2\)</span></td>
+<td style="text-align: center;"><span
+class="math inline">\(0.043\)</span></td>
+<td style="text-align: center;"><span
+class="math inline">\(0.62\)</span></td>
+<td style="text-align: center;"><span
+class="math inline">\(0.64\)</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>(h1 overlap = mean off-diagonal of panel (a)’s matrix; lane-keeping =
+mean diagonal of panel (b)’s; patch <span
+class="math inline">\(R^2\)</span> = mean over <span
+class="math inline">\(S_1..S_4\)</span>.) Two levels separate cleanly.
+<em>Functional</em> additivity is task-forced and universal: every
+well-fit model matches the teacher’s Sobol profile. The
+<em>geometric</em> organization is not: over-parameterized NoReg smears
+each module over 9–12 dimensions with <span
+class="math inline">\(10\times\)</span> the cross-module overlap;
+Separator carves the most compact, most orthogonal, best lane-keeping
+channels; L1 comes close; NoReg at width 16 gets compactness from
+capacity shortage alone. So Separator neither creates the modules (the
+task does) nor finds them (its own codes read ARI <span
+class="math inline">\(=0\)</span> — per-neuron multihot codes cannot
+express a rotated subspace partition); what it does is <em>carve them
+more cleanly</em> in an over-parameterized network. A structure metric
+for this project must therefore be rotation-aware (a learned rotation as
+in DAS, or subspace probes as above) — neuron-partition scores will keep
+reading <span class="math inline">\(\approx0\)</span> on networks whose
+modularity is real but rotated.</p>
+<h4 id="does-q-measure-the-task-the-q-sweep.">Does <span
+class="math inline">\(q\)</span> measure the task? The <span
+class="math inline">\(Q\)</span>-sweep.</h4>
+<p>The canonical leaves sum <span class="math inline">\(Q{=}3\)</span>
+sinusoids. If the <span class="math inline">\(\approx\)</span>3
+dimensions per module reflect the leaf’s functional complexity — rather
+than, say, <span class="math inline">\(K{=}8\)</span> or the probe —
+then retraining on flat variants with different <span
+class="math inline">\(Q\)</span> should move <span
+class="math inline">\(q\)</span>. We re-trained the winner on <span
+class="math inline">\(Q\in\{1,2,3,6\}\)</span> (2 seeds each; everything
+else, including HPs, unchanged) and re-measured <span
+class="math inline">\(q^{90}\)</span> and <span
+class="math inline">\(q^{95}\)</span> — the number of leading principal
+components of <span class="math inline">\(\Delta_k\)</span> capturing
+<span class="math inline">\(90\%\)</span> resp. <span
+class="math inline">\(95\%\)</span> of its variance (<span
+class="math inline">\(q^{95}\!\ge\!q^{90}\)</span> by definition; the
+<span class="math inline">\(95\%\)</span> threshold is more sensitive to
+the spectrum’s tail). Means over groups and seeds (Fig. <a
+href="#fig:mod" data-reference-type="ref"
+data-reference="fig:mod">4</a>d): <span
+class="math inline">\(q^{90}=1.9,\,2.5,\,3.3,\,3.0\)</span> and <span
+class="math inline">\(q^{95}=2.6,\,3.6,\,4.9,\,5.4\)</span>. The leading
+dimensionality rises monotonically with <span
+class="math inline">\(Q\)</span> up to the canonical <span
+class="math inline">\(Q{=}3\)</span> (<span
+class="math inline">\(\approx0.7\)</span> dims per added sinusoid) and
+then flattens, while <span class="math inline">\(q^{95}\)</span> keeps
+growing — the extra complexity of higher-<span
+class="math inline">\(Q\)</span> leaves accumulates in the spectrum’s
+tail. At <span class="math inline">\(Q{=}6\)</span> the network also
+under-fits (test MSE <span class="math inline">\(0.033\)</span>–<span
+class="math inline">\(0.049\)</span> vs. <span
+class="math inline">\(0.010\)</span>–<span
+class="math inline">\(0.012\)</span> at <span
+class="math inline">\(Q{=}1\)</span>), so the measured subspace there
+reflects the model’s smoothed leaf rather than the full teacher. Either
+way: the per-module dimensionality tracks the teacher’s complexity, not
+the method’s knobs.</p>
+<h1 id="over-parameterization">Over-parameterization</h1>
+<figure id="fig:cap" data-latex-placement="h">
+<img class="fig" src="assets/fig_fr4_capacity.svg" alt="fig_fr4_capacity" loading="lazy" />
+<figcaption><span class="fignum">Figure 5.</span> (a) width sweep at fixed HPs (tuned at width 64; seed 1,
+single seed): NoReg is U-shaped with optimum at width 16; the winner
+improves monotonically into the over-parameterized regime. (b)
+participation ratio of hidden activations over training: the
+representation compresses <span class="math inline">\(22\to6\)</span>
+(h1) within the first <span class="math inline">\({\sim}5\)</span>k
+steps. (c) cumulative ablation of h1 units by ascending <span
+class="math inline">\(|W|\)</span> degree: <span
+class="math inline">\({\sim}16\)</span> of 64 are free.</figcaption>
+</figure>
+<p>Is <span class="math inline">\(64\times64\)</span> over-parameterized
+for this task? Three independent measurements say yes. <em>Width</em>
+(Fig. <a href="#fig:cap" data-reference-type="ref"
+data-reference="fig:cap">5</a>a): NoReg’s best width is 16 (<span
+class="math inline">\(0.0285\)</span>) and it degrades with width (<span
+class="math inline">\(0.0417\)</span> at 64, <span
+class="math inline">\(0.0609\)</span> at 128). <em>Dimensionality</em>
+(Fig. <a href="#fig:cap" data-reference-type="ref"
+data-reference="fig:cap">5</a>b): the participation ratio <span
+class="math inline">\(\mathrm{PR}=(\sum_i\lambda_i)^2/\sum_i\lambda_i^2\)</span>
+of the activation covariance spectrum — an effective dimension count —
+ends at <span class="math inline">\(6.4\)</span> of 64 (h1) and <span
+class="math inline">\(3.9\)</span> (h2), compressing within the first
+<span class="math inline">\({\sim}5\)</span>k steps, well before the
+input-side codes finish dissolving. <em>Ablation</em> (Fig. <a
+href="#fig:cap" data-reference-type="ref"
+data-reference="fig:cap">5</a>c): pruning the 16 lowest-degree h1 units
+leaves MSE unchanged; 3 units are outright dead.</p>
+<p>The winner’s value is concentrated exactly in that surplus regime:
+within noise of NoReg at widths 8–32 on this single seed (<span
+class="math inline">\(0.026\)</span> vs. <span
+class="math inline">\(0.029\)</span> at 16), destructive at width 4
+(<span class="math inline">\(0.62\)</span> vs. <span
+class="math inline">\(0.19\)</span>), and winning large at 64/128 (<span
+class="math inline">\(0.0151/0.0171\)</span>) — better than NoReg at
+<em>any</em> width. Combined with §3–§4, the winning ticket is <strong>a
+capacity governor for over-parameterized networks</strong>: its codes
+prune redundant units during their transient lifetime (and mildly
+suppress the 16 nuisance inputs — the signal/nuisance input-mass ratio
+climbs <span class="math inline">\(1.1\to6.3\)</span> by <span
+class="math inline">\({\sim}10\)</span>k while the codes are alive, then
+regresses to <span class="math inline">\(3.9\)</span> after they
+dissolve; NoReg <span class="math inline">\({\approx}2.5\)</span>, L1
+<span class="math inline">\({\approx}27\)</span>), and the surviving
+network carves the task’s four modules into cleaner, more orthogonal
+subspace channels than unregularized training leaves behind. Caveats:
+the width and <span class="math inline">\(Q\)</span> sweeps are single-
+or two-seed with HPs tuned at width 64 / <span
+class="math inline">\(Q{=}3\)</span>; all subspace probes use the known
+factor grouping — presence tests, not blind discovery.</p>
+
+  </article>
+  
+  <footer class="pagefoot">
+    Generated from <code>collapse_review/flat_forensics_report.tex</code>.
+    <!-- comment widget mounts here in Phase 2 (Hypothes.is / self-hosted) -->
+  </footer>
+</main>
+</body>
+</html>

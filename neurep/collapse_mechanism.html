@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>collapse_mechanism — neurep</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false},{left:'$$',right:'$$',display:true}],throwOnError:false});"></script>
+<style>
+:root{--ink:#1b1b1f;--mut:#5b6068;--line:#e3e6ea;--bg:#fff;--accent:#0b66c3;--code:#f4f6f8}
+*{box-sizing:border-box}
+body{margin:0;color:var(--ink);background:var(--bg);
+  font:17px/1.62 Georgia,"Times New Roman",serif;-webkit-font-smoothing:antialiased}
+.topbar{display:flex;gap:1rem;align-items:baseline;flex-wrap:wrap;
+  padding:.7rem 1.2rem;border-bottom:1px solid var(--line);
+  font-family:-apple-system,"Segoe UI",Roboto,sans-serif;font-size:14px}
+.topbar .home{font-weight:700;color:var(--ink);text-decoration:none}
+.crumbs{color:var(--mut)} .crumbs a{color:var(--accent);text-decoration:none}
+main{max-width:46rem;margin:0 auto;padding:1.4rem 1.2rem 4rem}
+a{color:var(--accent)}
+.meta{display:flex;gap:.6rem;align-items:center;font-family:-apple-system,"Segoe UI",sans-serif;margin:.2rem 0 1rem}
+.badge{font:600 11px/1 -apple-system,"Segoe UI",sans-serif;text-transform:uppercase;
+  letter-spacing:.04em;padding:.28em .55em;border-radius:.4em}
+.date{color:var(--mut);font:13px -apple-system,"Segoe UI",sans-serif}
+.hypothesis{background:#f5f8ff;border:1px solid #d6e4fb;border-left:3px solid var(--accent);
+  border-radius:.4em;padding:.7rem .9rem;margin:0 0 1.4rem;
+  font:15px/1.55 -apple-system,"Segoe UI",sans-serif}
+article :first-child{margin-top:0}
+h1,h2,h3{font-family:-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.25}
+h1{font-size:1.7rem} h2{font-size:1.28rem;margin-top:2rem;border-bottom:1px solid var(--line);padding-bottom:.2rem}
+h3{font-size:1.05rem}
+.center,div[style*="text-align:center"]{text-align:center}
+p{margin:.7rem 0}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.86em;
+  background:var(--code);padding:.12em .35em;border-radius:.3em}
+code a{text-decoration:none}
+figure{margin:1.6rem 0;text-align:center}
+img.fig{max-width:100%;height:auto;border:1px solid var(--line);border-radius:.4em;background:#fff}
+figcaption{font:13.5px/1.5 -apple-system,"Segoe UI",sans-serif;color:var(--mut);
+  text-align:left;margin-top:.5rem}
+.fignum{color:var(--ink);font-weight:700}
+.katex-display{overflow-x:auto;overflow-y:hidden;padding:.2rem 0}
+.xref{text-decoration:none;font-weight:600}
+table{border-collapse:collapse;margin:1.2rem auto;font-size:.92rem}
+th,td{padding:.3rem .7rem;text-align:left}
+thead th{border-top:2px solid var(--ink);border-bottom:1px solid var(--ink)}
+tbody tr:last-child td{border-bottom:2px solid var(--ink)}
+caption{caption-side:bottom;color:var(--mut);font:13.5px -apple-system,sans-serif;margin-top:.4rem}
+.related{margin-top:2.4rem;border-top:1px solid var(--line);padding-top:1rem;
+  font-family:-apple-system,"Segoe UI",sans-serif;font-size:14.5px}
+.related h3{margin:.2rem 0 .5rem} .related ul{margin:0;padding-left:1.1rem}
+.related li{margin:.3rem 0}
+.pagefoot{margin-top:2.5rem;padding-top:1rem;border-top:1px solid var(--line);
+  color:var(--mut);font:13px -apple-system,"Segoe UI",sans-serif}
+/* index */
+.subtitle{font-size:1.15rem;color:var(--mut);margin:.2rem 0}
+.note{font:13px -apple-system,sans-serif;color:var(--mut)}
+.cards{list-style:none;padding:0;margin:.5rem 0 2rem}
+.card{border:1px solid var(--line);border-radius:.5em;padding:.8rem 1rem;margin:.6rem 0}
+.card-title{font-family:-apple-system,"Segoe UI",sans-serif;font-weight:600;font-size:1.05rem;text-decoration:none}
+.card-hyp{font:14px/1.5 -apple-system,"Segoe UI",sans-serif;color:var(--mut);margin:.4rem 0 0}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="home" href="index.html">neurep</a>
+  <nav class="crumbs"><a href="index.html">studies</a> / Separator / flat collapse</nav>
+</header>
+<main>
+  <div class="meta">
+    <span class="badge" style="background:#6e7781;color:#fff">draft</span>
+    <span class="date"></span>
+  </div>
+  
+  <article>
+  <div class="center">
+<p><span><strong>The mechanism behind Separator’s
+collapse</strong></span><br />
+<span>A pruning–collapse race: timing, not collapse itself, decides the
+damage</span></p>
+</div>
+<h1 id="setup-instrumented-bit-exact-re-runs">Setup: instrumented,
+bit-exact re-runs</h1>
+<p>Every run captures the dual-channel logits <span
+class="math inline">\(\phi\)</span> and all weight matrices every 250
+optimizer steps (<code>NEUREP_PI_SNAPSHOT_EVERY</code>; new opt-in in
+<code>train.py</code>), plus the converged state. The 31 arms cover: the
+exact <code>flat</code>/<code>hier</code> winners (5 seeds, reproducing
+the store’s per-seed MSE to <span
+class="math inline">\(\le1.2\times10^{-5}\)</span> — so collapse metrics
+pair with the published numbers seed-by-seed); a <span
+class="math inline">\(2\times2\times2\)</span> cross of task <span
+class="math inline">\(\times\)</span> dist <span
+class="math inline">\(\times\)</span> <span
+class="math inline">\(c\)</span> at <span
+class="math inline">\(K{=}8\)</span>; the four other <code>hier</code>
+dchn variants; both headline variants on
+<code>weak</code>/<code>dense</code>; a <span
+class="math inline">\(\lambda_u\)</span> grid for the new uniformity
+term; and a <code>pi_init=uniform</code> ablation.
+<code>Separator.pi_summary</code> now logs pair-distance stats
+(<code>pi.dchn_mean_d</code>, <code>frac_d0</code>,
+<code>mean_eucd</code>) to <code>events.jsonl</code>, so every
+<em>future</em> dchn run is collapse-classifiable without checkpoints.
+<span class="math inline">\(\mathrm{frac}_{d0}\)</span> below = fraction
+of cross-boundary pairs with <span
+class="math inline">\(d&lt;10^{-3}\)</span> in the regularizer’s own
+metric.</p>
+<h1 id="anatomy-of-the-working-flat-solution-vs.-hier">Anatomy of the
+“working” <code>flat</code> solution (vs. <code>hier</code>)</h1>
+<p><strong>Consensus + outliers, not factor recovery.</strong> At
+convergence every used channel on <code>flat</code> concentrates on one
+shared code (consensus share <span
+class="math inline">\(0.94\pm0.02\)</span> pooled; e.g. all 24 input
+senders share one code, 52/64 hidden receivers share one), with a small
+outlier set carrying the only real distances (Fig. <a href="#fig:geom"
+data-reference-type="ref" data-reference="fig:geom">1</a>a,c). The
+binarized input-boundary codes give ARI <span
+class="math inline">\(\approx0.0\)</span> against the task’s true factor
+sets — <strong>the codes never align with the generative
+modules</strong>, even where Separator is best. What outliers are: at
+<code>B1_in</code> the outlier neurons’ total <span
+class="math inline">\(|W|\)</span> degree is <span
+class="math inline">\(0.75\)</span> vs. <span
+class="math inline">\(4.66\)</span> for consensus neurons (seed 0;
+seed 1: <span class="math inline">\(5\times10^{-4}\)</span> vs. <span
+class="math inline">\(3.7\)</span>) — <strong>the regularizer assigns
+deviant codes to whole neurons and then disconnects them</strong>.
+Mechanistically Separator on <code>flat</code> is a learned
+<em>unit-level</em> pruner with mild nuisance suppression
+(signal/nuisance input-mass ratio <span
+class="math inline">\(4.1\)</span> vs. NoReg <span
+class="math inline">\(2.5\)</span>; plain L1 reaches <span
+class="math inline">\(26.6\)</span> yet has <em>worse</em> MSE, <span
+class="math inline">\(0.019\)</span> vs. <span
+class="math inline">\(0.015\)</span> — neuron-granular beats
+edge-granular here), and its anatomical modularity at the HP-chosen
+<span class="math inline">\(c\)</span> is barely above L1’s (<span
+class="math inline">\(Q\)</span>: <span
+class="math inline">\(0.22\)</span> vs. <span
+class="math inline">\(0.28\)</span>).</p>
+<p><strong><code>hier</code> collapses in <em>order</em>, not to a
+point.</strong> The converged <code>hier</code> codes stay spread in
+<span class="math inline">\(\sigma\)</span>-space (<span
+class="math inline">\(\|\sigma_i-\sigma_j\|_2\)</span> up to <span
+class="math inline">\(0.8\)</span>) while containment <span
+class="math inline">\(d=0\)</span> for 100% of pairs (Fig. <a
+href="#fig:geom" data-reference-type="ref"
+data-reference="fig:geom">1</a>b,d): the codes arrange into
+elementwise-comparable chains — <code>cont</code>’s zero set is a fat
+cone, vastly larger than <code>euc</code>’s (exact equality), which is
+the geometric reason <code>cont</code> collapses where <code>euc</code>
+does not (<code>flat</code>, <span
+class="math inline">\(c{=}0.03\)</span>: <code>cont</code> collapses at
+13–14k, <code>euc</code> never).</p>
+<figure id="fig:geom" data-latex-placement="h">
+<img class="fig" src="assets/fig_mech_geometry.svg" alt="fig_mech_geometry" loading="lazy" />
+<figcaption><span class="fignum">Figure 1.</span> Converged geometry. (a) <code>flat</code>: one consensus
+code (uniform body) + outlier rows. (b) <code>hier</code>: visible
+per-neuron texture — but binarized codes are near-identical (59/64 share
+one code); the texture is sub-threshold. (c) consensus share per
+channel. (d) the smoking gun: <code>hier</code> pairs sit at <span
+class="math inline">\(d\approx0\)</span> (own metric) across point
+distances up to <span class="math inline">\(0.8\)</span> —
+<em>order</em> collapse; <code>flat</code>’s metric behaves
+sanely.</figcaption>
+</figure>
+<h1 id="mathcalrto0-is-a-race-c-and-the-task-set-the-odds"><span
+class="math inline">\(\mathcal{R}\!\to\!0\)</span> is a race; <span
+class="math inline">\(c\)</span> and the task set the odds</h1>
+<p><span class="math inline">\(\mathcal{R}=\sum|W_{ij}|\,d_{ij}\)</span>
+has two descent channels: shrink <span
+class="math inline">\(|W|\)</span> on misaligned edges (pruning —
+preserves code structure <em>and deletes the very gradient that pulls
+codes together</em>), or shrink <span class="math inline">\(d\)</span>
+(collapse). Fig. <a href="#fig:dyn" data-reference-type="ref"
+data-reference="fig:dyn">2</a> shows the race on the headline pair: on
+<code>flat</code>, <span class="math inline">\(W\)</span>–<span
+class="math inline">\(d\)</span> alignment forms by step 2k (Spearman
+<span class="math inline">\(-0.8\)</span>) and high-<span
+class="math inline">\(d\)</span> edges stay pruned <span
+class="math inline">\(4\times\)</span> below low-<span
+class="math inline">\(d\)</span> edges while the collapse front stalls
+at <span class="math inline">\(\mathrm{frac}_{d0}\approx0.8\)</span>; on
+<code>hier</code> no alignment survives and the front completes by 6–7k.
+The cross design (Fig. <a href="#fig:cross" data-reference-type="ref"
+data-reference="fig:cross">3</a>a) attributes causality:
+<strong>(i) coupling</strong> — at fixed task and distance, raising
+<span class="math inline">\(c\,{:}\,0.03\!\to\!1\)</span>
+<em>delays</em> collapse (<code>hier</code>/euc: <span
+class="math inline">\(1.4\)</span>k<span
+class="math inline">\(\to\)</span>16k; <code>hier</code>/cont: 2k<span
+class="math inline">\(\to\)</span>6.6k; <code>flat</code>/cont:
+13.7k<span class="math inline">\(\to\)</span>16k), the opposite of the
+“stronger coupling = stronger collapse pressure” reading — strong
+coupling prunes faster, and pruned edges no longer drag codes;
+<strong>(ii) task</strong> — at every matched config <code>hier</code>
+collapses earlier than <code>flat</code> (euc, <span
+class="math inline">\(c{=}1\)</span>: 16k vs. never);
+<strong>(iii) geometry</strong> — <code>cont</code> collapses where
+<code>euc</code> does not (zero-set size).
+<code>weak</code>/<code>dense</code> follow the <code>flat</code>
+pattern (euc engaged; cont collapsing late and harmlessly at
+17–19k/8k).</p>
+<figure id="fig:dyn" data-latex-placement="h">
+<img class="fig" src="assets/fig_mech_dynamics.svg" alt="fig_mech_dynamics" loading="lazy" />
+<figcaption><span class="fignum">Figure 2.</span> The race, 5 seeds (band = min–max). (a) collapse front <span
+class="math inline">\(\mathrm{frac}_{d0}(t)\)</span>. (b) mean <span
+class="math inline">\(|W|\)</span> on final-top-decile-<span
+class="math inline">\(d\)</span> (solid) vs. bottom-decile (dashed)
+edges: <code>flat</code> separates (pruning wins), <code>hier</code>
+does not (for <code>hier</code> the final-<span
+class="math inline">\(d\)</span> deciles are degenerate — all <span
+class="math inline">\(d=0\)</span>). (c) <span
+class="math inline">\(W\)</span>–<span class="math inline">\(d\)</span>
+alignment. (d) same variant (<code>hier</code> euc-sq), <span
+class="math inline">\(c\)</span> moves the collapse onset (dotted
+vertical) and <strong>test loss stops improving at the
+collapse</strong>: <span class="math inline">\(c{=}0.03\)</span>
+collapses at 1.4k and freezes at <span
+class="math inline">\(\approx\)</span>NoReg (gray); <span
+class="math inline">\(c{=}1\)</span> collapses at 16k and reaches <span
+class="math inline">\(0.132\)</span>.</figcaption>
+</figure>
+<h1
+id="collapse-timing-leftrightarrow-performance-seed-variance">Collapse
+timing <span class="math inline">\(\leftrightarrow\)</span> performance;
+seed variance</h1>
+<p>On <code>hier</code> the damage is a function of <em>when</em> the
+codes go (Fig. <a href="#fig:dyn" data-reference-type="ref"
+data-reference="fig:dyn">2</a>d, <a href="#fig:cross"
+data-reference-type="ref" data-reference="fig:cross">3</a>b,c): onset
+<span class="math inline">\(\le\)</span>2k <span
+class="math inline">\(\Rightarrow\)</span> <span
+class="math inline">\(0.28\)</span>–<span
+class="math inline">\(0.32\)</span> (<span
+class="math inline">\(\approx\)</span>NoReg <span
+class="math inline">\(0.346\)</span>); 6–7k <span
+class="math inline">\(\Rightarrow\)</span> <span
+class="math inline">\(0.154\)</span>; 15–17k <span
+class="math inline">\(\Rightarrow\)</span> <span
+class="math inline">\(0.11\)</span>–<span
+class="math inline">\(0.13\)</span> — and the engaged-forever states are
+<em>worse than late collapse</em>: <code>pen=sq</code> variants that
+never collapse sit at <span class="math inline">\(0.16\)</span>–<span
+class="math inline">\(0.18\)</span>, <code>pen=abs</code> variants with
+engaged-but-wrong codes at <span
+class="math inline">\(0.37\)</span>–<span
+class="math inline">\(0.38\)</span> (an <span
+class="math inline">\(|W|\)</span>-penalty aimed at the wrong edges;
+plain L1, which aims at <em>all</em> edges equally, gets <span
+class="math inline">\(0.111\)</span>). So collapse is neither a pure
+failure mode nor a benign annealing — <strong>late collapse is an
+annealed curriculum; early collapse is death at birth; no collapse with
+a wrong <code>abs</code> prior is active harm</strong>. The
+validation-MSE HP search implicitly optimized this timing: it picked
+<span class="math inline">\(c{=}1\)</span> on <code>hier</code>
+(delaying collapse as long as the grid allowed) and a collapse-prone
+<code>cont</code> variant whose graceful degradation beat staying
+engaged. <strong>Seed variance</strong>: between configs, timing
+explains the spread; within a config the 5-seed scatter
+(e.g. <code>hier</code> winner <span
+class="math inline">\(0.105\)</span>–<span
+class="math inline">\(0.224\)</span>) is <em>not</em> explained by
+timing (onsets nearly constant, <span
+class="math inline">\(6.5\)</span>–<span
+class="math inline">\(6.75\)</span>k; <span
+class="math inline">\(\rho=+0.58\)</span>, n.s., <span
+class="math inline">\(n{=}5\)</span>) — what differs across seeds is
+presumably <em>which</em> codes form before the collapse, not when it
+happens.</p>
+<figure id="fig:cross" data-latex-placement="h">
+<img class="fig" src="assets/fig_mech_cross.svg" alt="fig_mech_cross" loading="lazy" />
+<figcaption><span class="fignum">Figure 3.</span> (a) collapse onset, task <span
+class="math inline">\(\times\)</span> dist <span
+class="math inline">\(\times\)</span> <span
+class="math inline">\(c\)</span> (<span
+class="math inline">\(K{=}8\)</span>; dots = seeds; gray dotted = run
+end, bars above it = never collapsed). Both effects visible:
+<code>hier</code> (red) always earlier than <code>flat</code> (purple)
+at matched config; higher <span class="math inline">\(c\)</span> always
+later. (b) final MSE (log) per arm; lines: NoReg (dotted), L1 (dashed).
+(c) all <code>hier</code> runs: early-collapsed (blue, left) cluster at
+NoReg; late-collapsed cheap; engaged <code>abs</code> (orange squares)
+worst of the non-forced states; <span
+class="math inline">\(\lambda_u\)</span>-forced spread (green, far right
+top) catastrophic.</figcaption>
+</figure>
+<h1
+id="an-anti-collapse-term-from-first-principles-and-what-it-cant-do">An
+anti-collapse term from first principles — and what it can(’t) do</h1>
+<p><span class="math inline">\(\mathcal{R}\)</span> is a pure
+<em>alignment</em> objective (Wang &amp; Isola 2020): its minimum
+contains <span class="math inline">\(d\equiv0\)</span>. We added the
+uniformity counterpart over the same pair grids, <span
+class="math inline">\(W\)</span>-independent: <span
+class="math inline">\(\mathcal{R}\mathrel{+}=
+\lambda_u\,\tfrac{1}{L}\sum_\ell \log \mathrm{mean}_{ij}
+\exp(-t\,d^{(\ell)}_{ij})\)</span>, <span
+class="math inline">\(t{=}5\)</span> (<code>unif</code> in the method
+ID; log-mean-exp is maximal exactly on the collapse set, focuses
+gradient on the closest pairs, and floors near <span
+class="math inline">\(-\log K\)</span> for a balanced partition so
+legitimate same-module pairs survive). Results (Fig. <a href="#fig:unif"
+data-reference-type="ref" data-reference="fig:unif">4</a>, <span
+class="math inline">\(n{=}3\)</span> pilot): on <code>hier</code>, <span
+class="math inline">\(\lambda_u{=}10^{-1}\)</span> delays the winner’s
+collapse <span class="math inline">\(6.6\)</span>k<span
+class="math inline">\(\to\)</span>15k and yields <strong>0.109</strong>
+— the best Separator result on <code>hier</code> to date (canonical
+<span class="math inline">\(0.154\)</span>, L1 <span
+class="math inline">\(0.111\)</span>, Flat-Simplex <span
+class="math inline">\(0.099\)</span>); euc-sq at <span
+class="math inline">\(\lambda_u{=}10^{-2}\)</span> similarly <span
+class="math inline">\(0.132\to0.107\)</span>. On <code>flat</code>,
+<span class="math inline">\(\lambda_u{=}10^{-1}\)</span> improves <span
+class="math inline">\(0.0152\to0.0123\)</span> and sharpens nuisance
+pruning <span class="math inline">\(4\to82\)</span> (diverse codes give
+the pruner more high-<span class="math inline">\(d\)</span> pairs to act
+on). But the dial has two hard limits. <strong>Too strong =
+catastrophe</strong>: at <span
+class="math inline">\(\lambda_u{=}1\)</span> collapse is fully prevented
+(<span class="math inline">\(\mathrm{frac}_{d0}\le0.06\)</span>) and MSE
+explodes (<span class="math inline">\(0.62\)</span> <code>hier</code>,
+worse than NoReg; <span class="math inline">\(0.27\)</span>
+<code>flat</code>) — permanently engaged codes under an active wiring
+penalty are the worst state of all; this arm also has the
+<em>highest</em> anatomical modularity (<span
+class="math inline">\(Q{=}0.64\)</span>), a clean demonstration that
+<strong><span class="math inline">\(Q\)</span> and function are
+decoupled</strong>. <strong>It cannot replace the init</strong>: with
+<code>pi_init=uniform</code> all codes start <span
+class="math inline">\(\approx\)</span>identical, the log-mean-exp
+gradient is the <em>same for every neuron</em> (repulsion amplifies
+asymmetry; it cannot create it), and runs are born collapsed (<span
+class="math inline">\(\mathrm{frac}_{d0}{=}1\)</span> at the first
+snapshot) and stay <span class="math inline">\(\approx\)</span>NoReg
+with or without <span class="math inline">\(\lambda_u\)</span> (<span
+class="math inline">\(0.36\)</span> <code>hier</code>, <span
+class="math inline">\(0.044/0.054\)</span> <code>flat</code>). The
+symmetry-breaking spike init is load-bearing.</p>
+<figure id="fig:unif" data-latex-placement="h">
+<img class="fig" src="assets/fig_mech_unif.svg" alt="fig_mech_unif" loading="lazy" />
+<figcaption><span class="fignum">Figure 4.</span> Uniformity term (<span class="math inline">\(n{=}3\)</span>;
+point labels = final <span
+class="math inline">\(\mathrm{frac}_{d0}\)</span>; gray lines: NoReg
+dotted, L1 dashed). (a) <code>hier</code>: sweet spot at <span
+class="math inline">\(\lambda_u\in[10^{-2},10^{-1}]\)</span> dips below
+L1; <span class="math inline">\(\lambda_u{=}1\)</span> explodes.
+(b) <code>flat</code>: same shape. (c) uniform init is born-collapsed
+and <span class="math inline">\(\approx\)</span>NoReg; <span
+class="math inline">\(\lambda_u\)</span> does not rescue
+it.</figcaption>
+</figure>
+<h1 id="what-this-changes">What this changes</h1>
+<p><strong>(i)</strong> Describe Separator per task as a <em>phenotype
+with a clock</em>: report <span
+class="math inline">\(\mathrm{frac}_{d0}\)</span> and collapse onset
+(now free in <code>events.jsonl</code> via <code>pi.dchn_*</code>)
+alongside MSE. <strong>(ii)</strong> <span
+class="math inline">\(c\)</span> selection is implicitly collapse-timing
+selection; the new <span class="math inline">\(\lambda_u\)</span> dial
+controls the same axis directly and its sweet spot beat every canonical
+<code>hier</code> Separator — worth a rulebook-grade confirmation (equal
+HP budget including <span class="math inline">\(\lambda_u\)</span>,
+<span class="math inline">\(\ge\)</span>5 seeds, paired tests) before
+any paper claim; the <span class="math inline">\(n{=}3\)</span> pilot is
+not that. <strong>(iii)</strong> Keep the spike init; repulsion provably
+cannot substitute for it. <strong>(iv)</strong> Don’t sell anatomical
+<span class="math inline">\(Q\)</span> alone — the most modular
+<code>hier</code> run here is the worst-performing one.
+<strong>(v)</strong> The “M1/M3 needs meaningful learned codes” ablation
+story survives, but “meaningful” now has a mechanism: codes are useful
+exactly while they mark prunable units and harmful when a wrong code
+pattern keeps an <code>abs</code> penalty engaged.</p>
+<p><span><em>Reproducibility:</em> runs under
+<code>notebooks/_cache/mechanism/</code> (31 arms <span
+class="math inline">\(\times\)</span> 3–5 seeds;
+<code>materialize_mechanism.py</code>); analysis
+<code>analyze_mechanism.py</code> <span
+class="math inline">\(\to\)</span> <code>_mechanism_data.json</code>;
+figures <code>make_mechanism_figs.py</code>; all in
+<code>notebooks/collapse_investigation/</code>. Store winners reproduce
+seed-by-seed to <span class="math inline">\(\le1.2\times10^{-5}\)</span>
+MSE. Anchors (NoReg/L1) from surviving <code>best.pt</code> of the v10
+final runs. Companion doc: <code><a class="report-link" href="collapse_review.html">collapse_review.pdf</a></code> (the <span
+class="math inline">\(\mathcal{R}\)</span>-decomposition this study
+explains).</span></p>
+
+  </article>
+  
+  <footer class="pagefoot">
+    Generated from <code>collapse_review/collapse_mechanism.tex</code>.
+    <!-- comment widget mounts here in Phase 2 (Hypothes.is / self-hosted) -->
+  </footer>
+</main>
+</body>
+</html>

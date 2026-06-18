@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>An Exact MLP Encoding of Computation Graphs — neurep</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false},{left:'$$',right:'$$',display:true}],throwOnError:false});"></script>
+<style>
+:root{--ink:#1b1b1f;--mut:#5b6068;--line:#e3e6ea;--bg:#fff;--accent:#0b66c3;--code:#f4f6f8}
+*{box-sizing:border-box}
+body{margin:0;color:var(--ink);background:var(--bg);
+  font:17px/1.62 Georgia,"Times New Roman",serif;-webkit-font-smoothing:antialiased}
+.topbar{display:flex;gap:1rem;align-items:baseline;flex-wrap:wrap;
+  padding:.7rem 1.2rem;border-bottom:1px solid var(--line);
+  font-family:-apple-system,"Segoe UI",Roboto,sans-serif;font-size:14px}
+.topbar .home{font-weight:700;color:var(--ink);text-decoration:none}
+.crumbs{color:var(--mut)} .crumbs a{color:var(--accent);text-decoration:none}
+main{max-width:46rem;margin:0 auto;padding:1.4rem 1.2rem 4rem}
+a{color:var(--accent)}
+.meta{display:flex;gap:.6rem;align-items:center;font-family:-apple-system,"Segoe UI",sans-serif;margin:.2rem 0 1rem}
+.badge{font:600 11px/1 -apple-system,"Segoe UI",sans-serif;text-transform:uppercase;
+  letter-spacing:.04em;padding:.28em .55em;border-radius:.4em}
+.date{color:var(--mut);font:13px -apple-system,"Segoe UI",sans-serif}
+.hypothesis{background:#f5f8ff;border:1px solid #d6e4fb;border-left:3px solid var(--accent);
+  border-radius:.4em;padding:.7rem .9rem;margin:0 0 1.4rem;
+  font:15px/1.55 -apple-system,"Segoe UI",sans-serif}
+article :first-child{margin-top:0}
+h1,h2,h3{font-family:-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.25}
+h1{font-size:1.7rem} h2{font-size:1.28rem;margin-top:2rem;border-bottom:1px solid var(--line);padding-bottom:.2rem}
+h3{font-size:1.05rem}
+.center,div[style*="text-align:center"]{text-align:center}
+p{margin:.7rem 0}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.86em;
+  background:var(--code);padding:.12em .35em;border-radius:.3em}
+code a{text-decoration:none}
+figure{margin:1.6rem 0;text-align:center}
+img.fig{max-width:100%;height:auto;border:1px solid var(--line);border-radius:.4em;background:#fff}
+figcaption{font:13.5px/1.5 -apple-system,"Segoe UI",sans-serif;color:var(--mut);
+  text-align:left;margin-top:.5rem}
+.fignum{color:var(--ink);font-weight:700}
+.katex-display{overflow-x:auto;overflow-y:hidden;padding:.2rem 0}
+.xref{text-decoration:none;font-weight:600}
+table{border-collapse:collapse;margin:1.2rem auto;font-size:.92rem}
+th,td{padding:.3rem .7rem;text-align:left}
+thead th{border-top:2px solid var(--ink);border-bottom:1px solid var(--ink)}
+tbody tr:last-child td{border-bottom:2px solid var(--ink)}
+caption{caption-side:bottom;color:var(--mut);font:13.5px -apple-system,sans-serif;margin-top:.4rem}
+.related{margin-top:2.4rem;border-top:1px solid var(--line);padding-top:1rem;
+  font-family:-apple-system,"Segoe UI",sans-serif;font-size:14.5px}
+.related h3{margin:.2rem 0 .5rem} .related ul{margin:0;padding-left:1.1rem}
+.related li{margin:.3rem 0}
+.pagefoot{margin-top:2.5rem;padding-top:1rem;border-top:1px solid var(--line);
+  color:var(--mut);font:13px -apple-system,"Segoe UI",sans-serif}
+/* index */
+.subtitle{font-size:1.15rem;color:var(--mut);margin:.2rem 0}
+.note{font:13px -apple-system,sans-serif;color:var(--mut)}
+.cards{list-style:none;padding:0;margin:.5rem 0 2rem}
+.card{border:1px solid var(--line);border-radius:.5em;padding:.8rem 1rem;margin:.6rem 0}
+.card-title{font-family:-apple-system,"Segoe UI",sans-serif;font-weight:600;font-size:1.05rem;text-decoration:none}
+.card-hyp{font:14px/1.5 -apple-system,"Segoe UI",sans-serif;color:var(--mut);margin:.4rem 0 0}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="home" href="index.html">neurep</a>
+  <nav class="crumbs"><a href="index.html">studies</a> / MLP encoding</nav>
+</header>
+<main>
+  <div class="meta">
+    <span class="badge" style="background:#6e7781;color:#fff">draft</span>
+    <span class="date"></span>
+  </div>
+  
+  <article>
+  <p>This note constructs an <em>exact</em> realization of any computation
+graph as a ReLU MLP whose neuron groups are the graph’s nodes, and
+transfers the discrete complexity <span
+class="math inline">\((D,N,r)\)</span> to network depth and width.</p>
+<p><span>-1.8ex plus -0.4ex minus -0.2ex</span><span>1.0ex plus
+0.2ex</span><span><strong></strong></span><span>Computation graphs and
+their complexity</span> <span id="sec:setup"
+data-label="sec:setup"></span></p>
+<div class="definition">
+<p><strong>Definition 1</strong> (Computation graph). A <em>computation
+graph</em> is a DAG <span class="math inline">\(G=(V,E)\)</span> in
+which each node <span class="math inline">\(v\)</span> carries a finite
+<em>alphabet</em> <span class="math inline">\(\Sigma_v\)</span> (values
+<span class="math inline">\(z_v\in\Sigma_v\)</span>) and a <em>parent
+set</em> <span class="math inline">\(\mathrm{pa}(v)=\{u:(u,v)\in
+E\}\)</span>, and each non-input node carries a <em>lookup table</em>
+<span
+class="math inline">\(g_v:\prod_{u\in\mathrm{pa}(v)}\Sigma_u\to\Sigma_v\)</span>,
+<span
+class="math inline">\(z_v=g_v\big((z_u)_{u\in\mathrm{pa}(v)}\big)\)</span>.
+Vertices partition as <span
+class="math inline">\(V=V_{\mathrm{in}}\sqcup V_{\mathrm{hid}}\sqcup
+V_{\mathrm{out}}\)</span>; inputs have <span
+class="math inline">\(\mathrm{pa}(v)=\varnothing\)</span> and are
+clamped, <span class="math inline">\(z_v=x_v\)</span> for <span
+class="math inline">\(x\in\mathcal{X}:=\prod_{v\in
+V_{\mathrm{in}}}\Sigma_v\)</span>. Evaluating <span
+class="math inline">\(G\)</span> computes <span
+class="math inline">\(z_v\)</span> in topological order; the
+<em>function computed by <span class="math inline">\(G\)</span></em> is
+<span class="math inline">\(f_G(x)=h\big((z_v)_{v\in
+V_{\mathrm{out}}}\big)\)</span>, with <span
+class="math inline">\(h\)</span> the identity when <span
+class="math inline">\(|V_{\mathrm{out}}|=1\)</span>.</p>
+</div>
+<p>We track four parameters, the last of which, <span
+class="math inline">\(\Delta\)</span>, governs network depth: the number
+of values <span class="math inline">\(D:=\max_v|\Sigma_v|\)</span>, the
+node count <span class="math inline">\(N:=|V|\)</span> (with <span
+class="math inline">\(N_{\mathrm{hid}}:=|V_{\mathrm{hid}}|\)</span>),
+the max fan-in <span
+class="math inline">\(r:=\max_v|\mathrm{pa}(v)|\)</span>, and the depth
+<span class="math inline">\(\Delta:=\max_v\mathrm{dep}(v)\le N\)</span>,
+where <span class="math inline">\(\mathrm{dep}(v)=0\)</span> on <span
+class="math inline">\(V_{\mathrm{in}}\)</span> and <span
+class="math inline">\(\mathrm{dep}(v)=1+\max_{u\in\mathrm{pa}(v)}\mathrm{dep}(u)\)</span>
+otherwise. The quantity that transfers to the network is the total table
+content: node <span class="math inline">\(v\)</span> has <span
+class="math inline">\(\prod_{u\in\mathrm{pa}(v)}|\Sigma_u|\le
+D^{\,r}\)</span> rows, each storing one symbol of <span
+class="math inline">\(\Sigma_v\)</span> (<span
+class="math inline">\(\log_2|\Sigma_v|\le\log_2 D\)</span> bits), so the
+description length is <span class="math display">\[\begin{equation}
+\label{eq:desc}
+|G|\ :=\ \sum_{v\notin
+V_{\mathrm{in}}}\Big(\textstyle\prod_{u\in\mathrm{pa}(v)}|\Sigma_u|\Big)\log_2|\Sigma_v|
+\ \le\ N\,D^{\,r}\log_2 D .
+\end{equation}\]</span> We use a common alphabet size <span
+class="math inline">\(|\Sigma_v|=D\)</span> for readability; the
+per-node form replaces <span class="math inline">\(D^{\,r}\)</span> by
+<span
+class="math inline">\(\prod_{u\in\mathrm{pa}(v)}|\Sigma_u|\)</span>
+throughout, and no structural argument uses equality of the
+alphabets.</p>
+<h4 id="running-example-g_0.">Running example <span
+class="math inline">\(G_0\)</span>.</h4>
+<p>Figure <a href="#fig:both" data-reference-type="ref"
+data-reference="fig:both">1</a>(a) shows <span
+class="math inline">\(\mathrm{pa}(A)=\{x_1,x_3\}\)</span>, <span
+class="math inline">\(\mathrm{pa}(B)=\{x_1,x_2\}\)</span>, <span
+class="math inline">\(\mathrm{pa}(C)=\{B,x_3\}\)</span>, <span
+class="math inline">\(\mathrm{pa}(Y)=\{A,C\}\)</span>, <span
+class="math inline">\(V_{\mathrm{out}}=\{Y\}\)</span>, <span
+class="math inline">\(x_4\)</span> isolated: fan-in <span
+class="math inline">\(r=2\)</span>, depths <span
+class="math inline">\(1,1,2,3\)</span> so <span
+class="math inline">\(\Delta=3\)</span>, <span
+class="math inline">\(N=8\)</span>, and four <span
+class="math inline">\(D^2\)</span>-entry tables (<span
+class="math inline">\(4D^2\)</span> total). Nodes <span
+class="math inline">\(x_1\)</span> and <span
+class="math inline">\(x_3\)</span> are shared — <span
+class="math inline">\(x_1\)</span> feeds <span
+class="math inline">\(A,B\)</span> and <span
+class="math inline">\(x_3\)</span> feeds <span
+class="math inline">\(A,C\)</span> — exercising re-use rather than a
+disjoint partition.</p>
+<figure id="fig:both" data-latex-placement="H">
+<figure>
+<img class="fig" src="assets/fig_graph.svg" alt="fig_graph" loading="lazy" />
+<figcaption><span class="fignum">Figure 1.</span> Graph <span class="math inline">\(G_0\)</span>.</figcaption>
+</figure>
+<figure>
+<img class="fig" src="assets/fig_encoding.svg" alt="fig_encoding" loading="lazy" />
+<figcaption><span class="fignum">Figure 2.</span> Encoding <span
+class="math inline">\(\mathcal{E}_{\mathrm{MLP}}(G_0)\)</span>, by
+depth.</figcaption>
+</figure>
+<figcaption><span class="fignum">Figure 3.</span> (a) The running example as a DAG. (b) Its exact MLP encoding
+by depth: computed nodes are conjunction–readout gadgets,
+deeper-consumed values are carried forward (dashed; the computed <span
+class="math inline">\(A\)</span> via its one-time readout <span
+class="math inline">\(\xi_A=U^Ah^A\)</span>), <span
+class="math inline">\(x_4\)</span> is unused. Both panels produced by
+the figure script.</figcaption>
+</figure>
+<p><span>-1.8ex plus -0.4ex minus -0.2ex</span><span>1.0ex plus
+0.2ex</span><span><strong></strong></span><span>An exact MLP
+encoding</span> <span id="sec:enc" data-label="sec:enc"></span></p>
+<p>We encode each node value as a one-hot indicator. Write <span
+class="math inline">\(\xi_v:=e_{z_v}\in\{0,1\}^{|\Sigma_v|}\)</span> for
+the indicator of node <span class="math inline">\(v\)</span>; for
+inputs, <span class="math inline">\(\xi_v=e_{x_v}\)</span>.</p>
+<h4 id="per-node-gadget.">Per-node gadget.</h4>
+<p>Fix a non-input <span class="math inline">\(v\)</span> with parents
+<span class="math inline">\(p_1,\dots,p_k\)</span>, <span
+class="math inline">\(k\le r\)</span>. A <em>conjunction layer</em>
+carries one unit per joint pattern <span
+class="math inline">\(a\in\prod_i\Sigma_{p_i}\)</span>, <span
+class="math display">\[\begin{equation}
+\label{eq:conj}
+h^v_a\ =\
+\mathrm{ReLU}\!\Big(\textstyle\sum_{i=1}^{k}\xi_{p_i}[a_i]-(k-1)\Big)
+\ =\ \mathbf{1}\big[z_{p_i}=a_i\ \forall i\big],
+\end{equation}\]</span> the argument being an integer equal to <span
+class="math inline">\(k\)</span> iff every parent matches and <span
+class="math inline">\(\le k-1\)</span> otherwise; so the vector <span
+class="math inline">\(h^v\)</span>, with one component <span
+class="math inline">\(h^v_a\)</span> per joint pattern <span
+class="math inline">\(a\)</span>, is the one-hot indicator of the joint
+parent value. A <em>readout</em> <span
+class="math inline">\(U^v\in\{0,1\}^{|\Sigma_v|\times\prod_i|\Sigma_{p_i}|}\)</span>,
+<span class="math inline">\(U^v_{c,a}=\mathbf{1}[g_v(a)=c]\)</span>,
+gives <span class="math display">\[\begin{equation}
+\label{eq:readout}
+\xi_v\ =\ U^v h^v\ =\ e_{g_v(z_{p_1},\dots,z_{p_k})}.
+\end{equation}\]</span> The matrix <span
+class="math inline">\(U^v\)</span> <em>is</em> the table; carrying no
+nonlinearity, it folds into the next stage’s affine, so each graph depth
+costs one ReLU stage. Folding has a price: when a consumer with fan-in
+<span class="math inline">\(k\)</span> reads a computed parent <span
+class="math inline">\(p\)</span> (own fan-in <span
+class="math inline">\(r_p\)</span>) from the preceding stage, the
+composed block carries exactly <span
+class="math inline">\(D^{\,r_p+k-1}\)</span> nonzeros — for
+<em>every</em> table, since the block has at most <span
+class="math inline">\(D\)</span> distinct rows whose supports <span
+class="math inline">\(g_p^{-1}(c)\)</span> partition the <span
+class="math inline">\(D^{\,r_p}\)</span> columns (<span
+class="math inline">\(\sum_c|g_p^{-1}(c)|=D^{\,r_p}\)</span>), each
+repeated over the <span class="math inline">\(D^{\,k-1}\)</span>
+completions of the pattern. A node consumed more than one depth ahead is
+<em>carried</em> by the identity (ReLU fixes nonnegative one-hot
+entries); a <em>computed</em> one is first materialized once (<span
+class="math inline">\(U^v\)</span> inside a later stage’s affine, <span
+class="math inline">\(D^{\,r_v}\)</span> nonzeros), then carried at cost
+<span class="math inline">\(D\)</span> per stage. The prediction is
+<span class="math inline">\(\hat y=\omega^\top\xi_Y\)</span> (identity
+if the target is symbolic).</p>
+<div id="prop:exact" class="proposition">
+<p><strong>Proposition 1</strong> (Exact realization and size). <em>Let
+<span class="math inline">\(G\)</span> be a computation graph as above,
+with <span
+class="math inline">\(W_{\max}:=\max_d|\{v:\mathrm{dep}(v)=d\}|\)</span>
+the maximum number of nodes at one depth. The ReLU network <span
+class="math inline">\(\mathcal{E}_{\mathrm{MLP}}(G)\)</span> satisfies
+<span
+class="math inline">\(\mathcal{E}_{\mathrm{MLP}}(G)(x)=f_G(x)\)</span>
+for every <span class="math inline">\(x\in\mathcal{X}\)</span>, using
+depth <span class="math inline">\(\Delta\)</span> (hidden ReLU stages),
+maximum width <span class="math inline">\(m=O\!\big(W_{\max} D^{\,r}+N
+D\big)\)</span>, and <span class="math inline">\(\sum_{v\notin
+V_{\mathrm{in}}}\prod_{u\in\mathrm{pa}(v)}|\Sigma_u|\le N
+D^{\,r}\)</span> conjunction units (plus <span class="math inline">\(O(N
+D\,\Delta)\)</span> carry units), with <span class="math inline">\(O(N r
+D^{\,2r-1}+N D\,\Delta)\)</span> nonzero weights in all (each folded
+parent slot costs exactly <span
+class="math inline">\(D^{\,r_p+k-1}\)</span>).</em></p>
+</div>
+<div class="proof">
+<p><em>Proof.</em> Induction on depth. At depth <span
+class="math inline">\(0\)</span> the input groups hold <span
+class="math inline">\(\xi_v=e_{x_v}\)</span> by construction. Assume
+that at the input to stage <span class="math inline">\(d\)</span> every
+node <span class="math inline">\(u\)</span> with <span
+class="math inline">\(\mathrm{dep}(u)&lt;d\)</span> that is still needed
+has its indicator <span class="math inline">\(\xi_u\)</span> available
+(by direct computation or carry). For each <span
+class="math inline">\(v\)</span> with <span
+class="math inline">\(\mathrm{dep}(v)=d\)</span> the parents have depth
+<span class="math inline">\(&lt;d\)</span>, so their indicators are
+present; <a href="#eq:conj" data-reference-type="eqref"
+data-reference="eq:conj">[eq:conj]</a> produces the joint indicator
+<span class="math inline">\(h^v\)</span> and <a href="#eq:readout"
+data-reference-type="eqref" data-reference="eq:readout">[eq:readout]</a>
+produces <span class="math inline">\(\xi_v\)</span>. Carries forward the
+remaining needed indicators by <span
+class="math inline">\(\mathrm{ReLU}\circ\mathrm{Id}\)</span>. Thus the
+hypothesis holds at stage <span class="math inline">\(d+1\)</span>. At
+<span class="math inline">\(d=\Delta\)</span> the output indicator <span
+class="math inline">\(\xi_Y\)</span> is available and <span
+class="math inline">\(\omega^\top\xi_Y\)</span> returns the readout. The
+size statement counts the units in <a href="#eq:conj"
+data-reference-type="eqref" data-reference="eq:conj">[eq:conj]</a>–<a
+href="#eq:readout" data-reference-type="eqref"
+data-reference="eq:readout">[eq:readout]</a> per node and the carries;
+for the weights, each folded <span class="math inline">\(U^p\)</span>
+contributes <span class="math inline">\(D^{\,r_p+k-1}\)</span> per
+consumer slot (<span class="math inline">\(\le rD^{\,2r-1}\)</span> per
+node), one-time materializations <span
+class="math inline">\(D^{\,r_v}\)</span> (absorbed), and carries <span
+class="math inline">\(D\)</span> per stage. ◻</p>
+</div>
+<div class="remark">
+<p><em>Remark 1</em>. For worst-case tables the gadget storage <span
+class="math inline">\(\Theta(N D^{\,r})\)</span> (weights) is
+order-optimal up to <span class="math inline">\(\log\)</span> factors,
+since an arbitrary table costs <span
+class="math inline">\(\Theta(D^{\,r}\log D)\)</span> bits per node by <a
+href="#eq:desc" data-reference-type="eqref"
+data-reference="eq:desc">[eq:desc]</a>; structured <span
+class="math inline">\(g_v\)</span> (linear, low-rank, monotone) compress
+below it. Across consecutive stages the forwarded activation has width
+<span class="math inline">\(O(W_{\max} D^{\,r}+N D)\)</span>.</p>
+</div>
+<h4 id="complexity-and-the-dense-comparison.">Complexity, and the dense
+comparison.</h4>
+<p>Each conjunction unit is wired only to its <span
+class="math inline">\(\le r\)</span> parents, and each readout — one
+nonzero per column of <span class="math inline">\(U^v\)</span> standing
+alone — costs <span class="math inline">\(D^{\,r_v+k-1}\)</span> per
+fan-in-<span class="math inline">\(k\)</span> consumer slot once folded,
+so the gadgets carry <span class="math inline">\(O(N r
+D^{\,2r-1})\)</span> nonzero weights — the table content <span
+class="math inline">\(|G|\)</span> of <a href="#eq:desc"
+data-reference-type="eqref" data-reference="eq:desc">[eq:desc]</a> up to
+<span class="math inline">\(rD^{\,r-1}\)</span> and <span
+class="math inline">\(\log D\)</span> factors — and the identity carries
+add <span class="math inline">\(O(N D\Delta)\)</span> (negligible once
+<span class="math inline">\(\Delta=O(rD^{\,r-1})\)</span>), at depth
+<span class="math inline">\(\Delta\)</span> and width <span
+class="math inline">\(m=O(W_{\max}D^{\,r}{+}ND)\)</span>. A
+<em>dense</em> ReLU MLP of the same depth and width is fully connected,
+with <span class="math inline">\(\Theta(\Delta\,m^2)\)</span> weights;
+the exact encoding is the sparse subnetwork whose wiring is <span
+class="math inline">\(G\)</span>, using only an <span
+class="math inline">\(O(N r D^{\,2r-1}{+}ND\Delta)/\Theta(\Delta
+m^2)\)</span> fraction of them.</p>
+<div class="center">
+<table>
+<thead>
+<tr>
+<th style="text-align: left;"></th>
+<th style="text-align: center;">depth</th>
+<th style="text-align: center;">width</th>
+<th style="text-align: center;">nonzero weights</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><span
+class="math inline">\(\mathcal{E}_{\mathrm{MLP}}(G)\)</span> (exact
+encoding)</td>
+<td style="text-align: center;"><span
+class="math inline">\(\Delta\)</span></td>
+<td style="text-align: center;"><span
+class="math inline">\(O(W_{\max}D^{\,r}{+}ND)\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(O(N r
+D^{\,2r-1}{+}ND\Delta)\)</span></td>
+</tr>
+<tr>
+<td style="text-align: left;">dense MLP, same depth &amp; width</td>
+<td style="text-align: center;"><span
+class="math inline">\(\Delta\)</span></td>
+<td style="text-align: center;"><span
+class="math inline">\(O(W_{\max}D^{\,r}{+}ND)\)</span></td>
+<td style="text-align: center;"><span
+class="math inline">\(\Theta\!\big(\Delta\,(W_{\max}D^{\,r}{+}ND)^2\big)\)</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+<h4 id="size-and-validation.">Size and validation.</h4>
+<p>For <span class="math inline">\(G_0\)</span> at <span
+class="math inline">\(D=4\)</span>: the four gadgets use <span
+class="math inline">\(4D^2=64\)</span> conjunction units and <span
+class="math inline">\(2D^3{+}8D^2{+}D=260\)</span> nonzero weights at
+depth <span class="math inline">\(\Delta=3\)</span>, the folded <span
+class="math inline">\(B{\to}C\)</span> and <span
+class="math inline">\(C{\to}Y\)</span> slots costing <span
+class="math inline">\(D^3\)</span> apiece (widest stage — <span
+class="math inline">\(A,B\)</span> plus the <span
+class="math inline">\(x_3\)</span> carry — <span
+class="math inline">\(2D^2{+}D=36\)</span> units). A dense depth-<span
+class="math inline">\(3\)</span> MLP at the width bound <span
+class="math inline">\(W_{\max}D^{\,r}{+}ND=64\)</span> holds <span
+class="math inline">\(3\cdot64^2\approx1.2\times10^4\)</span> weights —
+about <span class="math inline">\(47\times\)</span> more. An
+accompanying script reproduces the construction bit-exactly (Figure <a
+href="#fig:val" data-reference-type="ref"
+data-reference="fig:val">2</a>): enumerating all <span
+class="math inline">\(D^{|V_{\mathrm{in}}|}\)</span> inputs for <span
+class="math inline">\(D\in\{2,3,4\}\)</span> across <span
+class="math inline">\(100\)</span> random table draws each (<span
+class="math inline">\(35{,}300\)</span> checks) gives <span
+class="math inline">\(0\)</span> mismatches, <span
+class="math inline">\(4D^2\)</span> conjunction units (<span
+class="math inline">\(16/36/64\)</span>), <span
+class="math inline">\(\Delta=3\)</span> ReLU stages, and per-layer
+nonzero weights <span
+class="math inline">\(\big(4D^2{+}D,\;D^3{+}2D^2,\;D^3{+}D^2\big)\)</span>
+plus a <span class="math inline">\(D^2\)</span> head — matching the
+formula on <em>every</em> draw — and a stacked ReLU MLP assembled from
+the per-depth weights attains exactly zero loss.</p>
+<figure id="fig:val" data-latex-placement="t">
+<img class="fig" src="assets/fig_validation.svg" alt="fig_validation" loading="lazy" />
+<figcaption><span class="fignum">Figure 4.</span> Empirical validation of <span
+class="math inline">\(\mathcal{E}_{\mathrm{MLP}}(G_0)\)</span>.
+<em>Left:</em> the realized conjunction-unit count equals the predicted
+<span class="math inline">\(4D^2\)</span>, at constant depth <span
+class="math inline">\(\Delta=3\)</span>. <em>Right:</em> enumerating
+every input for <span class="math inline">\(D\in\{2,3,4\}\)</span> over
+<span class="math inline">\(100\)</span> random table draws each (<span
+class="math inline">\(35{,}300\)</span> checks) gives <em>zero</em>
+mismatches, and a stacked ReLU MLP built from the per-depth weights
+attains exactly zero loss, its per-layer nonzero counts matching the
+predicted formulas on every draw. Produced by the validation
+script.</figcaption>
+</figure>
+
+  </article>
+  
+  <footer class="pagefoot">
+    Generated from <code>encoding/neurep_mlp_encoding.tex</code>.
+    <!-- comment widget mounts here in Phase 2 (Hypothes.is / self-hosted) -->
+  </footer>
+</main>
+</body>
+</html>

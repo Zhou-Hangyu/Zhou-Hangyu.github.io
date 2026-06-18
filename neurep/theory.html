@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>theory — neurep</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false},{left:'$$',right:'$$',display:true}],throwOnError:false});"></script>
+<style>
+:root{--ink:#1b1b1f;--mut:#5b6068;--line:#e3e6ea;--bg:#fff;--accent:#0b66c3;--code:#f4f6f8}
+*{box-sizing:border-box}
+body{margin:0;color:var(--ink);background:var(--bg);
+  font:17px/1.62 Georgia,"Times New Roman",serif;-webkit-font-smoothing:antialiased}
+.topbar{display:flex;gap:1rem;align-items:baseline;flex-wrap:wrap;
+  padding:.7rem 1.2rem;border-bottom:1px solid var(--line);
+  font-family:-apple-system,"Segoe UI",Roboto,sans-serif;font-size:14px}
+.topbar .home{font-weight:700;color:var(--ink);text-decoration:none}
+.crumbs{color:var(--mut)} .crumbs a{color:var(--accent);text-decoration:none}
+main{max-width:46rem;margin:0 auto;padding:1.4rem 1.2rem 4rem}
+a{color:var(--accent)}
+.meta{display:flex;gap:.6rem;align-items:center;font-family:-apple-system,"Segoe UI",sans-serif;margin:.2rem 0 1rem}
+.badge{font:600 11px/1 -apple-system,"Segoe UI",sans-serif;text-transform:uppercase;
+  letter-spacing:.04em;padding:.28em .55em;border-radius:.4em}
+.date{color:var(--mut);font:13px -apple-system,"Segoe UI",sans-serif}
+.hypothesis{background:#f5f8ff;border:1px solid #d6e4fb;border-left:3px solid var(--accent);
+  border-radius:.4em;padding:.7rem .9rem;margin:0 0 1.4rem;
+  font:15px/1.55 -apple-system,"Segoe UI",sans-serif}
+article :first-child{margin-top:0}
+h1,h2,h3{font-family:-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.25}
+h1{font-size:1.7rem} h2{font-size:1.28rem;margin-top:2rem;border-bottom:1px solid var(--line);padding-bottom:.2rem}
+h3{font-size:1.05rem}
+.center,div[style*="text-align:center"]{text-align:center}
+p{margin:.7rem 0}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.86em;
+  background:var(--code);padding:.12em .35em;border-radius:.3em}
+code a{text-decoration:none}
+figure{margin:1.6rem 0;text-align:center}
+img.fig{max-width:100%;height:auto;border:1px solid var(--line);border-radius:.4em;background:#fff}
+figcaption{font:13.5px/1.5 -apple-system,"Segoe UI",sans-serif;color:var(--mut);
+  text-align:left;margin-top:.5rem}
+.fignum{color:var(--ink);font-weight:700}
+.katex-display{overflow-x:auto;overflow-y:hidden;padding:.2rem 0}
+.xref{text-decoration:none;font-weight:600}
+table{border-collapse:collapse;margin:1.2rem auto;font-size:.92rem}
+th,td{padding:.3rem .7rem;text-align:left}
+thead th{border-top:2px solid var(--ink);border-bottom:1px solid var(--ink)}
+tbody tr:last-child td{border-bottom:2px solid var(--ink)}
+caption{caption-side:bottom;color:var(--mut);font:13.5px -apple-system,sans-serif;margin-top:.4rem}
+.related{margin-top:2.4rem;border-top:1px solid var(--line);padding-top:1rem;
+  font-family:-apple-system,"Segoe UI",sans-serif;font-size:14.5px}
+.related h3{margin:.2rem 0 .5rem} .related ul{margin:0;padding-left:1.1rem}
+.related li{margin:.3rem 0}
+.pagefoot{margin-top:2.5rem;padding-top:1rem;border-top:1px solid var(--line);
+  color:var(--mut);font:13px -apple-system,"Segoe UI",sans-serif}
+/* index */
+.subtitle{font-size:1.15rem;color:var(--mut);margin:.2rem 0}
+.note{font:13px -apple-system,sans-serif;color:var(--mut)}
+.cards{list-style:none;padding:0;margin:.5rem 0 2rem}
+.card{border:1px solid var(--line);border-radius:.5em;padding:.8rem 1rem;margin:.6rem 0}
+.card-title{font-family:-apple-system,"Segoe UI",sans-serif;font-weight:600;font-size:1.05rem;text-decoration:none}
+.card-hyp{font:14px/1.5 -apple-system,"Segoe UI",sans-serif;color:var(--mut);margin:.4rem 0 0}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="home" href="index.html">neurep</a>
+  <nav class="crumbs"><a href="index.html">studies</a> / Representation-induced modularity</nav>
+</header>
+<main>
+  <div class="meta">
+    <span class="badge" style="background:#6e7781;color:#fff">draft</span>
+    <span class="date"></span>
+  </div>
+  
+  <article>
+  <div class="center">
+<p><span><strong>When does a neuron representation make a network
+modular?</strong></span><br />
+<span>A gradient-path, degeneracy, and localizability account — and why
+our learned codes don’t</span></p>
+</div>
+<h1 id="the-representation-coupled-objective">The representation-coupled
+objective</h1>
+<p>A neuron-representation method augments a network of weights <span
+class="math inline">\(W\)</span> with a per-neuron representation <span
+class="math inline">\(\pi=\{\pi_i\}\)</span> (positions in <span
+class="math inline">\(\mathbb R^d\)</span>, membership codes in <span
+class="math inline">\([0,1]^K\)</span>, grid slots) and a <em>wiring
+penalty</em> that makes weight between “far” neurons expensive: <span
+class="math display">\[\begin{equation}
+\label{eq:obj}
+\min_{W,\pi}\
+\mathcal{L}_{\mathrm{task}}(W)\;+\;\lambda\sum_{\ell}\sum_{i,j}\,c(\pi_i,\pi_j)\,\rho\!\big(W^{(\ell)}_{ij}\big),
+\qquad
+\mathcal{R}(W,\pi):=\sum_{\ell,i,j}c(\pi_i,\pi_j)\,\rho(W^{(\ell)}_{ij}).
+\end{equation}\]</span> This is the common form of BIMT (<span
+class="math inline">\(c=\)</span> grid <span
+class="math inline">\(\ell_1\)</span> distance), seRNN (<span
+class="math inline">\(c=\)</span> Euclidean<span
+class="math inline">\(\times\)</span>communicability), Jacobs–Jordan
+(<span class="math inline">\(c=\|r_i-r_j\|^{10}\)</span>), WiringPrior
+and Separator. The hope is that minimizing <span
+class="math inline">\(\mathcal{R}\)</span> drags functionally-related
+neurons together into modules whose weight blocks match the task’s
+functional decomposition <span class="math inline">\(f=\sum_k
+f_k(z_{S_k})\)</span> (or its DAG). We ask when this can succeed.</p>
+<h4 id="one-distinction-organizes-everything.">One distinction organizes
+everything.</h4>
+<p>Call <span class="math inline">\(\pi\)</span>
+<em>forward-coupled</em> if the network’s output depends on it, so <span
+class="math inline">\(\partial\mathcal{L}_{\mathrm{task}}/\partial\pi\not\equiv0\)</span>
+(NeuroPos: <span class="math inline">\(w_{ij}=1/\|p_i-p_j\|\)</span>
+<em>is</em> the weight; Space-as-Time: <span
+class="math inline">\(p\)</span> sets a synaptic delay), and
+<em>penalty-only</em> if <span class="math inline">\(\pi\)</span> enters
+<em>only</em> through <span class="math inline">\(\mathcal{R}\)</span>
+(seRNN, BIMT, WiringPrior, Separator: predictions never read <span
+class="math inline">\(\pi\)</span>). The two behave completely
+differently.</p>
+<h1
+id="p1-decoupling-a-penalty-only-representation-never-sees-the-task">P1
+— Decoupling: a penalty-only representation never sees the task</h1>
+<div id="prop:decouple" class="proposition">
+<p><strong>Proposition 1</strong> (Decoupling). <em>If <span
+class="math inline">\(\pi\)</span> is penalty-only then <span
+class="math inline">\(\partial\mathcal{L}_{\mathrm{task}}/\partial\pi\equiv0\)</span>,
+so under gradient descent the <em>only</em> forces on <span
+class="math inline">\(\pi\)</span> are <span
+class="math inline">\(\lambda\,\nabla_{\pi}\mathcal{R}(W(t),\pi)\)</span>
+and weight decay. Hence the stationary geometry of <span
+class="math inline">\(\pi\)</span> is a fixed point of the regularizer
+and the optimizer evaluated at the current weights <span
+class="math inline">\(W(t)\)</span>; the task influences <span
+class="math inline">\(\pi\)</span> <em>only</em> through the slow shadow
+it casts on <span class="math inline">\(W(t)\)</span>.</em></p>
+</div>
+<p>The proof is one line of the chain rule, but the consequence is
+strong and we have verified it directly: replaying the recorded weight
+trajectory <span class="math inline">\(W(t)\)</span> through the
+regularizer’s own code, from the run’s initial <span
+class="math inline">\(\pi\)</span>, reproduces the live geometry to
+three digits (peak packing step <span class="math inline">\(900\)</span>
+vs <span class="math inline">\(900\)</span>, silhouette <span
+class="math inline">\(0.806\)</span> vs <span
+class="math inline">\(0.807\)</span>) — <em>nothing the task does
+reaches the geometry except through <span
+class="math inline">\(W\)</span></em>. The same point is made from the
+outside by Csordás et al.: in a standard network “routing can only occur
+through the weights … [which] would change the data representation
+alongside the routing unless the weights have a special structure that
+we empirically find is hard to learn.” Mészáros et al. make it sharpest,
+deliberately <em>withholding</em> the penalty gradient from their
+positions “so that only the topology … and not the geometry” is shaped,
+and predicting that penalty-only positions “would converge toward the
+centre, [and] the benefits of modularity … would vanish.” This is the
+regime our methods live in.</p>
+<p>What can <span class="math inline">\(\pi\)</span> read from the <span
+class="math inline">\(W\)</span>-shadow? Only what a <em>per-neuron</em>
+statistic of <span class="math inline">\(W\)</span> exposes — and we
+show in P3 that for the modular tasks of interest this shadow is
+rotated, so it carries no axis-aligned signal a per-neuron code could
+lock onto. The result is that <span class="math inline">\(\pi\)</span>
+relaxes to a geometry set by the optimizer: Adam drives the unbounded
+position field to the <span class="math inline">\(2^d\)</span>
+sign-orthant corners of <span class="math inline">\(\mathbb R^d\)</span>
+and the bounded code field to the <span
+class="math inline">\(2^K\)</span> corners of <span
+class="math inline">\([0,1]^K\)</span>, in both cases an artifact of the
+update rule, not the task.</p>
+<h1 id="p2-degeneracy-a-free-representation-collapses">P2 — Degeneracy:
+a free representation collapses</h1>
+<div id="prop:collapse" class="proposition">
+<p><strong>Proposition 2</strong> (Collapse). <em>If <span
+class="math inline">\(c\)</span> is a symmetric pseudometric with <span
+class="math inline">\(c(\pi,\pi)=0\)</span> and the <span
+class="math inline">\(\pi_i\)</span> are free parameters, then <span
+class="math inline">\(\pi_i\!\equiv\!\mathrm{const}\)</span> gives <span
+class="math inline">\(\mathcal{R}(W,\pi)=0\)</span> for <em>every</em>
+<span class="math inline">\(W\)</span>, so it is a global minimizer of
+the penalty. Penalty-only <span class="math inline">\(+\)</span> free
+<span class="math inline">\(\Rightarrow\)</span> a collapse
+attractor.</em></p>
+</div>
+<p>Empirically our codes do collapse: on the hierarchical cell <span
+class="math inline">\(100\%\)</span> of cross-boundary code pairs reach
+distance <span class="math inline">\(&lt;10^{-3}\)</span>, and under a
+symmetry-broken init the collapse is merely <em>delayed</em> (an
+annealed curriculum) while a uniform init is “born collapsed” and never
+recovers. The escapes are exactly the design choices of the working
+methods: <strong>(a) fix</strong> <span
+class="math inline">\(\pi\)</span> (seRNN, Jacobs–Jordan, TDANN, ITN
+place neurons on an immovable grid — “space … imposes a single fixed
+configuration”); <strong>(b) anchor</strong> a subset of codes to known
+identities (our MLP-encoding note’s refined code; companion Report B);
+<strong>(c)</strong> add a <em>description-length</em> or uniformity
+term that makes collapse the unique <em>maximum</em> of a
+counter-penalty; or <strong>(d)</strong> give distance a forward
+<em>benefit</em> so spreading lowers <span
+class="math inline">\(\mathcal{L}_{\mathrm{task}}\)</span>
+(Space-as-Time, NeuroPos). Anti-collapse alone is necessary but not
+sufficient: forcing codes apart with a uniformity term prevents collapse
+yet leaves anatomical modularity <span class="math inline">\(Q\)</span>
+<em>decoupled</em> from function — the most modular run we produced this
+way was the worst performing.</p>
+<h1
+id="p3-localizability-a-per-neuron-code-can-only-name-axis-aligned-modules">P3
+— Localizability: a per-neuron code can only name axis-aligned
+modules</h1>
+<p>A per-neuron representation assigns each neuron a single point/code;
+the structure it can <em>express</em> is therefore a (soft) partition of
+neurons — an <em>axis-aligned</em> module assignment, defined only up to
+the permutation symmetry of a fully-connected layer (“because
+neurons … have permutation symmetries, there is no incentive for them to
+develop anatomical modularity” — Liu et al.). It cannot represent a
+module that occupies a <em>rotated</em> subspace, i.e. a linear
+combination of many neurons. Whether the network’s modules are
+axis-aligned or rotated is therefore decisive, and it is not a free
+choice:</p>
+<div id="prop:rot" class="proposition">
+<p><strong>Proposition 3</strong> (Localizability ceiling, after
+Whittington et al. 2023). <em>Under non-negativity and energy
+(activity/weight-norm) minimization, the optimal representation of
+independent factors is axis-aligned (each neuron selective for one
+factor) <em>if and only if the factor-to-representation map is
+linear</em>. When the map is nonlinear, mixed selectivity persists and
+de-mixes only as layers approach the output; genuinely entangled tasks
+are provably unalignable.</em></p>
+</div>
+<p>So the rotation is intrinsic to the computation. Our synthetic leaves
+<span class="math inline">\(f_k\)</span> are <em>nonlinear</em>
+(sinusoids), which by Proposition <a href="#prop:rot"
+data-reference-type="ref" data-reference="prop:rot">3</a> forces the
+hidden modules into rotated subspaces — and indeed a forensic probe
+finds each module spread across many neurons (mean leading-direction
+concentration <span class="math inline">\(0.3\)</span>–<span
+class="math inline">\(0.7\)</span>, not <span
+class="math inline">\(1\)</span>) with near-zero neuron-partition
+agreement (ARI <span class="math inline">\(\approx0\)</span>) <em>even
+where the regularizer performs best</em>. No per-neuron code, with or
+without a task gradient, can name such a module; unsupervised
+identifiability is impossible without an inductive bias because any
+rotation of the latent is an equally good model (Locatello et al.). P3
+is thus a ceiling that sits <em>above</em> P1–P2: even a
+forward-coupled, non-collapsing code is blind to a rotated
+decomposition.</p>
+<h1
+id="the-taxonomy-three-escapes-and-the-one-quadrant-that-has-none">The
+taxonomy: three escapes, and the one quadrant that has none</h1>
+<p>Place every method on two axes — <em>is <span
+class="math inline">\(\pi\)</span> in the gradient path?</em> and <em>is
+<span class="math inline">\(\pi\)</span> free to collapse?</em>
+(Table <a href="#tab:tax" data-reference-type="ref"
+data-reference="tab:tax">1</a>). Every method that demonstrably induces
+<em>task-aligned</em> modularity escapes via one of P1–P2: a
+<strong>fixed</strong> informative geometry (seRNN’s goal/choice spatial
+split; Jacobs–Jordan’s what/where), <strong>forward-coupling</strong>
+(NeuroPos, Space-as-Time, whose authors report monotonically rising
+modularity <span class="math inline">\(Q\)</span>), or a
+<strong>discrete swap</strong> that reassigns neurons to fixed slots
+(BIMT, Growing Brains — where plain <span
+class="math inline">\(\ell_1\)</span> produces functional clusters that
+sit <em>inside</em> a shuffle null, and only the swap pushes them out to
+anatomical modularity). The free-learned-penalty-only quadrant — the one
+our Separator, WiringPrior, and axon–dendrite methods occupy — escapes
+none, and is the only quadrant for which no published method
+demonstrates task-alignment. It can <em>price</em> weights (and so post
+a test-loss gain, as a capacity governor) but cannot <em>discover</em>
+structure.</p>
+<table id="tab:tax">
+<caption>Where methods sit, and which escape they use. “Task-aligned?” =
+shown to recover the <em>task’s</em> functional decomposition (not
+merely a higher structural score).</caption>
+<thead>
+<tr>
+<th style="text-align: left;">Method</th>
+<th style="text-align: center;">geometry</th>
+<th style="text-align: center;">in grad. path?</th>
+<th style="text-align: center;">collapses?</th>
+<th style="text-align: left;">task-aligned modules?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Jacobs–Jordan ’92 / seRNN ’23</td>
+<td style="text-align: center;">fixed grid</td>
+<td style="text-align: center;">no (penalty)</td>
+<td style="text-align: center;">no (fixed)</td>
+<td style="text-align: left;">yes (when geometry matches task)</td>
+</tr>
+<tr>
+<td style="text-align: left;">TDANN ’23 / Growing Brains / BIMT ’23</td>
+<td style="text-align: center;">fixed grid<span
+class="math inline">\(+\)</span>swap</td>
+<td style="text-align: center;">no</td>
+<td style="text-align: center;">no</td>
+<td style="text-align: left;">yes (swap is load-bearing)</td>
+</tr>
+<tr>
+<td style="text-align: left;">NeuroPos ’25 / Space-as-Time ’26</td>
+<td style="text-align: center;">learned</td>
+<td style="text-align: center;"><strong>yes</strong></td>
+<td style="text-align: center;">avoided</td>
+<td style="text-align: left;">yes (positions set the weight/delay)</td>
+</tr>
+<tr>
+<td style="text-align: left;">Fiedler ’20</td>
+<td style="text-align: center;">derived from <span
+class="math inline">\(W\)</span></td>
+<td style="text-align: center;">yes</td>
+<td style="text-align: center;">disconnection</td>
+<td style="text-align: left;"><em>not shown</em> (sparsity only)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Separator / WiringPrior / axdn
+(ours)</strong></td>
+<td style="text-align: center;"><strong>learned, free</strong></td>
+<td style="text-align: center;"><strong>no</strong></td>
+<td style="text-align: center;"><strong>yes</strong></td>
+<td style="text-align: left;"><strong>no (ARI<span
+class="math inline">\(\approx\)</span>0)</strong></td>
+</tr>
+</tbody>
+</table>
+<h4 id="predictions-tested-in-the-companion-reports.">Predictions
+(tested in the companion reports).</h4>
+<p><strong>(1)</strong> Free penalty-only codes collapse and yield
+<em>less</em> task-aligned input-block weight modularity than a plain
+<span class="math inline">\(\ell_1\)</span> magnitude penalty, at any
+coupling strength (Report 2). <strong>(2)</strong> A <em>fixed</em>
+informative prior recovers block structure though it too is penalty-only
+— fixity, not gradient, is what matters — provided the coupling is
+strong enough. <strong>(3)</strong> The achievable alignment is capped
+by localizability: on a neuron-localizable (discrete) task even modest
+methods align, while on the nonlinear/rotated task <em>no</em> method,
+including a fixed oracle, reaches it — the rotation barrier of
+Proposition <a href="#prop:rot" data-reference-type="ref"
+data-reference="prop:rot">3</a> (Report 3). <strong>(4)</strong> Putting
+the same per-neuron geometry in the forward pass (NeuroPos) keeps it
+engaged where its penalty-only twin (WiringPrior) collapses. Together
+these say precisely under what conditions a neuron representation can
+make a network modular — and why ours, as built, cannot.</p>
+<p><span><em>Sources.</em> 18 papers in
+<code>docs/writeups/neurep_review/</code>; synthesis and exact quotes in
+<code>SYNTHESIS.md</code>. Decoupling replay and collapse statistics
+from our own forensic studies (<code>axdn_forensics</code>,
+<code>collapse_review</code>, <code>flat_forensics</code>). P3 after
+Whittington, Dorrell, Ganguli &amp; Behrens (ICLR 2023) and Locatello et
+al. (ICML 2019).</span></p>
+
+  </article>
+  
+  <footer class="pagefoot">
+    Generated from <code>neurep_review/theory.tex</code>.
+    <!-- comment widget mounts here in Phase 2 (Hypothes.is / self-hosted) -->
+  </footer>
+</main>
+</body>
+</html>

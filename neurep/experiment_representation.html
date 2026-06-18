@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>experiment_representation — neurep</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false},{left:'$$',right:'$$',display:true}],throwOnError:false});"></script>
+<style>
+:root{--ink:#1b1b1f;--mut:#5b6068;--line:#e3e6ea;--bg:#fff;--accent:#0b66c3;--code:#f4f6f8}
+*{box-sizing:border-box}
+body{margin:0;color:var(--ink);background:var(--bg);
+  font:17px/1.62 Georgia,"Times New Roman",serif;-webkit-font-smoothing:antialiased}
+.topbar{display:flex;gap:1rem;align-items:baseline;flex-wrap:wrap;
+  padding:.7rem 1.2rem;border-bottom:1px solid var(--line);
+  font-family:-apple-system,"Segoe UI",Roboto,sans-serif;font-size:14px}
+.topbar .home{font-weight:700;color:var(--ink);text-decoration:none}
+.crumbs{color:var(--mut)} .crumbs a{color:var(--accent);text-decoration:none}
+main{max-width:46rem;margin:0 auto;padding:1.4rem 1.2rem 4rem}
+a{color:var(--accent)}
+.meta{display:flex;gap:.6rem;align-items:center;font-family:-apple-system,"Segoe UI",sans-serif;margin:.2rem 0 1rem}
+.badge{font:600 11px/1 -apple-system,"Segoe UI",sans-serif;text-transform:uppercase;
+  letter-spacing:.04em;padding:.28em .55em;border-radius:.4em}
+.date{color:var(--mut);font:13px -apple-system,"Segoe UI",sans-serif}
+.hypothesis{background:#f5f8ff;border:1px solid #d6e4fb;border-left:3px solid var(--accent);
+  border-radius:.4em;padding:.7rem .9rem;margin:0 0 1.4rem;
+  font:15px/1.55 -apple-system,"Segoe UI",sans-serif}
+article :first-child{margin-top:0}
+h1,h2,h3{font-family:-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.25}
+h1{font-size:1.7rem} h2{font-size:1.28rem;margin-top:2rem;border-bottom:1px solid var(--line);padding-bottom:.2rem}
+h3{font-size:1.05rem}
+.center,div[style*="text-align:center"]{text-align:center}
+p{margin:.7rem 0}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.86em;
+  background:var(--code);padding:.12em .35em;border-radius:.3em}
+code a{text-decoration:none}
+figure{margin:1.6rem 0;text-align:center}
+img.fig{max-width:100%;height:auto;border:1px solid var(--line);border-radius:.4em;background:#fff}
+figcaption{font:13.5px/1.5 -apple-system,"Segoe UI",sans-serif;color:var(--mut);
+  text-align:left;margin-top:.5rem}
+.fignum{color:var(--ink);font-weight:700}
+.katex-display{overflow-x:auto;overflow-y:hidden;padding:.2rem 0}
+.xref{text-decoration:none;font-weight:600}
+table{border-collapse:collapse;margin:1.2rem auto;font-size:.92rem}
+th,td{padding:.3rem .7rem;text-align:left}
+thead th{border-top:2px solid var(--ink);border-bottom:1px solid var(--ink)}
+tbody tr:last-child td{border-bottom:2px solid var(--ink)}
+caption{caption-side:bottom;color:var(--mut);font:13.5px -apple-system,sans-serif;margin-top:.4rem}
+.related{margin-top:2.4rem;border-top:1px solid var(--line);padding-top:1rem;
+  font-family:-apple-system,"Segoe UI",sans-serif;font-size:14.5px}
+.related h3{margin:.2rem 0 .5rem} .related ul{margin:0;padding-left:1.1rem}
+.related li{margin:.3rem 0}
+.pagefoot{margin-top:2.5rem;padding-top:1rem;border-top:1px solid var(--line);
+  color:var(--mut);font:13px -apple-system,"Segoe UI",sans-serif}
+/* index */
+.subtitle{font-size:1.15rem;color:var(--mut);margin:.2rem 0}
+.note{font:13px -apple-system,sans-serif;color:var(--mut)}
+.cards{list-style:none;padding:0;margin:.5rem 0 2rem}
+.card{border:1px solid var(--line);border-radius:.5em;padding:.8rem 1rem;margin:.6rem 0}
+.card-title{font-family:-apple-system,"Segoe UI",sans-serif;font-weight:600;font-size:1.05rem;text-decoration:none}
+.card-hyp{font:14px/1.5 -apple-system,"Segoe UI",sans-serif;color:var(--mut);margin:.4rem 0 0}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="home" href="index.html">neurep</a>
+  <nav class="crumbs"><a href="index.html">studies</a> / Representation-induced modularity</nav>
+</header>
+<main>
+  <div class="meta">
+    <span class="badge" style="background:#6e7781;color:#fff">draft</span>
+    <span class="date"></span>
+  </div>
+  
+  <article>
+  <div class="center">
+<p><span><strong>A learned neuron representation does not make weights
+modular</strong></span><br />
+<span>On the additive bench a plain <span
+class="math inline">\(\ell_1\)</span> penalty aligns weights to the
+task’s factors better than any of our representation regularizers —
+which collapse</span></p>
+</div>
+<figure id="fig:iba" data-latex-placement="h">
+<img class="fig" src="assets/fig_iba_methods.svg" alt="fig_iba_methods" loading="lazy" />
+<figcaption><span class="fignum">Figure 1.</span> Input-block alignment by method, on the clean (<span
+class="math inline">\(\nu{=}0\)</span>) and canonical (<span
+class="math inline">\(\nu{=}16\)</span>) additive cells (mean<span
+class="math inline">\(\pm\)</span>std, <span
+class="math inline">\(\ge5\)</span> seeds; dotted <span
+class="math inline">\(=\)</span> chance <span
+class="math inline">\(0.25\)</span>). The free penalty-only codes
+(Separator, WiringPrior, red/pink) sit far below plain <span
+class="math inline">\(\ell_1\)</span>; WiringPrior’s positions are fully
+collapsed. A <em>fixed</em> oracle prior and a forward-coupled net are
+shown for contrast (Report 3).</figcaption>
+</figure>
+<h1 id="setup">Setup</h1>
+<h4 id="bench.">Bench.</h4>
+<p>The v10 additive cell <span
+class="math inline">\(y=\sum_{k=1}^{4}f_k(z_{S_k})\)</span> with
+disjoint factor pairs <span class="math inline">\(S_k\)</span> and
+<em>nonlinear</em> sinusoidal leaves <span
+class="math inline">\(f_k\)</span>; MLP <span
+class="math inline">\(d{\to}64{\to}64{\to}1\)</span>, GELU, AdamW (<span
+class="math inline">\(10^{-3}\)</span>), <span
+class="math inline">\(20\)</span>k steps, the production recipe. Two
+cells: <span class="math inline">\(\nu{=}0\)</span> (8 signal inputs
+<span class="math inline">\(=\)</span> the 4 factor pairs, so the
+ground-truth modules are input-coordinate-aligned and the metric is
+crisp) and <span class="math inline">\(\nu{=}16\)</span> (canonical,
+<span class="math inline">\(+16\)</span> nuisance dims). <span
+class="math inline">\(5\)</span> seeds (extended to <span
+class="math inline">\(10\)</span> for the headline tests).</p>
+<h4 id="metric.">Metric.</h4>
+<p><em>Input-block alignment</em> (IBA): for each active hidden neuron,
+the fraction of its signal-input weight mass that lands on its single
+dominant factor set; averaged over neurons. A distributed/rotated
+solution scores at chance <span class="math inline">\(1/K=0.25\)</span>;
+a clean block solution scores <span class="math inline">\(1\)</span>.
+For rotated cells we first map <span
+class="math inline">\(W_0\)</span>’s signal block to latent-factor
+coordinates (Report 3). To control for the fact that any sparse net
+trivially looks block-pure, we also report the
+<em>degree-normalized</em> bipartite modularity <span
+class="math inline">\(Q_{\mathrm{block}}\)</span> (Barber 2007) of the
+<span class="math inline">\(|W_0|\)</span> input<span
+class="math inline">\(\to\)</span>hidden graph, which a random graph
+scores at <span class="math inline">\(0\)</span>. Both are read directly
+from the converged weights; neither uses the representation, so all
+methods are compared on the same footing.</p>
+<h1
+id="result-the-representation-methods-underperform-ell_1-and-collapse">Result:
+the representation methods underperform <span
+class="math inline">\(\ell_1\)</span> and collapse</h1>
+<p>Table <a href="#tab:main" data-reference-type="ref"
+data-reference="tab:main">1</a> and Fig. <a href="#fig:iba"
+data-reference-type="ref" data-reference="fig:iba">1</a> give the
+picture. Ordering the methods by IBA on the canonical cell: <span
+class="math inline">\(\ell_1\)</span> (<span
+class="math inline">\(0.89\)</span>) <span
+class="math inline">\(&gt;\)</span> Oracle-strong (<span
+class="math inline">\(0.81\)</span>, Report 3) <span
+class="math inline">\(&gt;\)</span> BIMT (<span
+class="math inline">\(0.73\)</span><span
+class="math inline">\(/\)</span><span
+class="math inline">\(0.76\)</span>) <span
+class="math inline">\(&gt;\)</span> Separator (<span
+class="math inline">\(0.53\)</span>) <span
+class="math inline">\(&gt;\)</span> WiringPrior (<span
+class="math inline">\(0.48\)</span>) <span
+class="math inline">\(\approx\)</span> NoReg (<span
+class="math inline">\(0.46\)</span>). <strong>The two representation
+regularizers — the whole point of the project — land at the bottom,
+beneath a one-line <span class="math inline">\(\ell_1\)</span>
+penalty</strong>, and WiringPrior is statistically indistinguishable
+from no regularization at all on the input side. <span
+class="math inline">\(Q_{\mathrm{block}}\)</span> confirms this is real
+block structure, not a sparsity artifact: <span
+class="math inline">\(\ell_1\)</span> reaches <span
+class="math inline">\(Q_{\mathrm{block}}=0.62\)</span>–<span
+class="math inline">\(0.64\)</span> versus Separator <span
+class="math inline">\(0.33\)</span>–<span
+class="math inline">\(0.38\)</span> and WiringPrior <span
+class="math inline">\(0.23\)</span>–<span
+class="math inline">\(0.27\)</span> (NoReg <span
+class="math inline">\(0.20\)</span>–<span
+class="math inline">\(0.22\)</span>).</p>
+<table id="tab:main">
+<caption>Means over <span class="math inline">\(\ge5\)</span> seeds on
+the additive cells. IBA / <span
+class="math inline">\(Q_{\mathrm{block}}\)</span> higher <span
+class="math inline">\(=\)</span> more task-aligned input modularity;
+“collapse” <span class="math inline">\(=\)</span> fraction of the
+method’s learned-<span class="math inline">\(\pi\)</span> tensors with
+mean pairwise distance <span class="math inline">\(&lt;10^{-2}\)</span>.
+NeuroPos cannot fit this regression task (MSE <span
+class="math inline">\(\gg\)</span> others), so its alignment is not
+meaningful and it is analyzed in Report 3.</caption>
+<thead>
+<tr>
+<th style="text-align: left;"></th>
+<th colspan="2" style="text-align: center;">IBA</th>
+<th colspan="2" style="text-align: center;"><span
+class="math inline">\(Q_{\mathrm{block}}\)</span></th>
+<th style="text-align: center;">collapse</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><span>2-3</span>(lr)<span>4-5</span>
+method</td>
+<td style="text-align: center;"><span
+class="math inline">\(\nu{=}0\)</span></td>
+<td style="text-align: center;"><span
+class="math inline">\(\nu{=}16\)</span></td>
+<td style="text-align: center;"><span
+class="math inline">\(\nu{=}0\)</span></td>
+<td style="text-align: center;"><span
+class="math inline">\(\nu{=}16\)</span></td>
+<td style="text-align: center;">(<span
+class="math inline">\(\nu{=}0\)</span>)</td>
+</tr>
+<tr>
+<td style="text-align: left;">NoReg</td>
+<td style="text-align: center;">0.478</td>
+<td style="text-align: center;">0.460</td>
+<td style="text-align: center;">0.216</td>
+<td style="text-align: center;">0.202</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong><span
+class="math inline">\(\ell_1\)</span></strong></td>
+<td style="text-align: center;"><strong>0.875</strong></td>
+<td style="text-align: center;"><strong>0.893</strong></td>
+<td style="text-align: center;"><strong>0.620</strong></td>
+<td style="text-align: center;"><strong>0.639</strong></td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td style="text-align: left;">Separator (free code)</td>
+<td style="text-align: center;">0.593</td>
+<td style="text-align: center;">0.526</td>
+<td style="text-align: center;">0.377</td>
+<td style="text-align: center;">0.327</td>
+<td style="text-align: center;">0.33</td>
+</tr>
+<tr>
+<td style="text-align: left;">WiringPrior (free position)</td>
+<td style="text-align: center;">0.527</td>
+<td style="text-align: center;">0.484</td>
+<td style="text-align: center;">0.271</td>
+<td style="text-align: center;">0.226</td>
+<td style="text-align: center;"><strong>1.00</strong></td>
+</tr>
+<tr>
+<td style="text-align: left;">Oracle (fixed, strong <span
+class="math inline">\(c\)</span>)</td>
+<td style="text-align: center;">0.993</td>
+<td style="text-align: center;">0.808</td>
+<td style="text-align: center;">0.726</td>
+<td style="text-align: center;">0.518</td>
+<td style="text-align: center;">—</td>
+</tr>
+</tbody>
+</table>
+<h4 id="paired-effect-sizes-n10-seeds.">Paired effect sizes (<span
+class="math inline">\(n{=}10\)</span> seeds).</h4>
+<p>On <span class="math inline">\(\nu{=}0\)</span>, <span
+class="math inline">\(\ell_1\)</span> beats Separator on IBA by Cohen’s
+<span class="math inline">\(d{=}7.8\)</span> and WiringPrior by <span
+class="math inline">\(d{=}9.0\)</span>; on <span
+class="math inline">\(\nu{=}16\)</span> it beats Separator by <span
+class="math inline">\(d{=}11.5\)</span> — all at <span
+class="math inline">\(p{=}0.002\)</span> (paired Wilcoxon, the two-sided
+minimum at <span class="math inline">\(n{=}10\)</span>). WiringPrior’s
+collapse index is <span class="math inline">\(1.00\)</span> on every
+seed versus Separator’s <span class="math inline">\(0.33\)</span>.</p>
+<h1 id="why-decoupling-and-collapse">Why: decoupling and collapse</h1>
+<p>The cause is structural, not a tuning failure. In all of these
+methods the prediction is <span class="math inline">\(f_W(x)\)</span> —
+the representation <span class="math inline">\(\pi\)</span> (Separator’s
+codes, WiringPrior’s positions) <em>never enters the forward pass</em>,
+so <span
+class="math inline">\(\partial\mathrm{MSE}/\partial\pi\equiv0\)</span>
+and the only forces on <span class="math inline">\(\pi\)</span> are the
+regularizer’s own gradient and weight decay (theory report, P1). With a
+symmetric distance and free <span class="math inline">\(\pi\)</span>,
+the penalty’s global minimum includes the degenerate “all codes
+coincident” configuration (P2), and that is where the optimizer goes:
+WiringPrior’s positions contract to a point (<span
+class="math inline">\(100\%\)</span> collapse), Separator’s codes merge
+channel-by-channel. A collapsed <span class="math inline">\(\pi\)</span>
+prices every edge equally, so the wiring penalty degenerates into an
+undifferentiated shrinkage — strictly weaker than <span
+class="math inline">\(\ell_1\)</span>, which at least prices by
+magnitude. The representation cannot do better than <span
+class="math inline">\(\ell_1\)</span> because, once collapsed, it
+<em>is</em> a worse <span class="math inline">\(\ell_1\)</span>.</p>
+<h4 id="the-codes-never-recover-the-factors.">The codes never recover
+the factors.</h4>
+<p>Independently of weights, the converged codes carry no factor
+information: binarized input-boundary codes give adjusted Rand index
+<span class="math inline">\(\approx0\)</span> against the true factor
+sets (established in the forensic reports), and the geometry is set by
+optimizer artifacts (Adam drives positions to the <span
+class="math inline">\(2^d\)</span> sign-orthant corners, codes to the
+<span class="math inline">\(2^K\)</span> hypercube corners) rather than
+by the task. The MSE gains these methods do post (Separator and
+WiringPrior fit as well as <span class="math inline">\(\ell_1\)</span>
+here, MSE <span class="math inline">\(\approx0.014\)</span>) come from
+<em>capacity governing</em> — pruning redundant units during the codes’
+transient life — not from discovering the decomposition.</p>
+<h1 id="caveats">Caveats</h1>
+<p>IBA is an input-side, neuron-aligned metric; the <em>functional</em>
+modules of these networks are real but live in rotated subspaces
+(causal-patching <span class="math inline">\(R^2\approx0.8\)</span> for
+Separator), which a per-neuron view cannot see — that ceiling is the
+subject of Report 3. The comparison uses each method’s canonical-cell
+winning hyperparameters (equal-budget searched in the production sweep);
+the Oracle coupling was deliberately swept (Report 3) because its
+searched “winner” under-couples. NeuroPos is excluded from the alignment
+ranking because it does not fit this task. The conclusion is narrow and
+firm: <strong>on this bench, learning a per-neuron representation to
+price weights yields <em>less</em> task-aligned weight modularity than
+not learning one at all and using <span
+class="math inline">\(\ell_1\)</span>.</strong></p>
+<p><span><em>Reproducibility.</em> Methods/metrics in
+<code>notebooks/neurep_review/lib.py</code>; sweep
+<code>gen_sweep.py</code> (200<span class="math inline">\(+\)</span>200
+runs, <code>results</code> folded by <code>aggregate.py</code>); figure
+<code>make_figs.py</code>. Theory and 18-paper synthesis:
+<code><a class="report-link" href="theory.html">theory.pdf</a></code>, <code>SYNTHESIS.md</code>.</span></p>
+
+  </article>
+  
+  <footer class="pagefoot">
+    Generated from <code>neurep_review/experiment_representation.tex</code>.
+    <!-- comment widget mounts here in Phase 2 (Hypothes.is / self-hosted) -->
+  </footer>
+</main>
+</body>
+</html>

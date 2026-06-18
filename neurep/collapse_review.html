@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>collapse_review — neurep</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false},{left:'$$',right:'$$',display:true}],throwOnError:false});"></script>
+<style>
+:root{--ink:#1b1b1f;--mut:#5b6068;--line:#e3e6ea;--bg:#fff;--accent:#0b66c3;--code:#f4f6f8}
+*{box-sizing:border-box}
+body{margin:0;color:var(--ink);background:var(--bg);
+  font:17px/1.62 Georgia,"Times New Roman",serif;-webkit-font-smoothing:antialiased}
+.topbar{display:flex;gap:1rem;align-items:baseline;flex-wrap:wrap;
+  padding:.7rem 1.2rem;border-bottom:1px solid var(--line);
+  font-family:-apple-system,"Segoe UI",Roboto,sans-serif;font-size:14px}
+.topbar .home{font-weight:700;color:var(--ink);text-decoration:none}
+.crumbs{color:var(--mut)} .crumbs a{color:var(--accent);text-decoration:none}
+main{max-width:46rem;margin:0 auto;padding:1.4rem 1.2rem 4rem}
+a{color:var(--accent)}
+.meta{display:flex;gap:.6rem;align-items:center;font-family:-apple-system,"Segoe UI",sans-serif;margin:.2rem 0 1rem}
+.badge{font:600 11px/1 -apple-system,"Segoe UI",sans-serif;text-transform:uppercase;
+  letter-spacing:.04em;padding:.28em .55em;border-radius:.4em}
+.date{color:var(--mut);font:13px -apple-system,"Segoe UI",sans-serif}
+.hypothesis{background:#f5f8ff;border:1px solid #d6e4fb;border-left:3px solid var(--accent);
+  border-radius:.4em;padding:.7rem .9rem;margin:0 0 1.4rem;
+  font:15px/1.55 -apple-system,"Segoe UI",sans-serif}
+article :first-child{margin-top:0}
+h1,h2,h3{font-family:-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.25}
+h1{font-size:1.7rem} h2{font-size:1.28rem;margin-top:2rem;border-bottom:1px solid var(--line);padding-bottom:.2rem}
+h3{font-size:1.05rem}
+.center,div[style*="text-align:center"]{text-align:center}
+p{margin:.7rem 0}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.86em;
+  background:var(--code);padding:.12em .35em;border-radius:.3em}
+code a{text-decoration:none}
+figure{margin:1.6rem 0;text-align:center}
+img.fig{max-width:100%;height:auto;border:1px solid var(--line);border-radius:.4em;background:#fff}
+figcaption{font:13.5px/1.5 -apple-system,"Segoe UI",sans-serif;color:var(--mut);
+  text-align:left;margin-top:.5rem}
+.fignum{color:var(--ink);font-weight:700}
+.katex-display{overflow-x:auto;overflow-y:hidden;padding:.2rem 0}
+.xref{text-decoration:none;font-weight:600}
+table{border-collapse:collapse;margin:1.2rem auto;font-size:.92rem}
+th,td{padding:.3rem .7rem;text-align:left}
+thead th{border-top:2px solid var(--ink);border-bottom:1px solid var(--ink)}
+tbody tr:last-child td{border-bottom:2px solid var(--ink)}
+caption{caption-side:bottom;color:var(--mut);font:13.5px -apple-system,sans-serif;margin-top:.4rem}
+.related{margin-top:2.4rem;border-top:1px solid var(--line);padding-top:1rem;
+  font-family:-apple-system,"Segoe UI",sans-serif;font-size:14.5px}
+.related h3{margin:.2rem 0 .5rem} .related ul{margin:0;padding-left:1.1rem}
+.related li{margin:.3rem 0}
+.pagefoot{margin-top:2.5rem;padding-top:1rem;border-top:1px solid var(--line);
+  color:var(--mut);font:13px -apple-system,"Segoe UI",sans-serif}
+/* index */
+.subtitle{font-size:1.15rem;color:var(--mut);margin:.2rem 0}
+.note{font:13px -apple-system,sans-serif;color:var(--mut)}
+.cards{list-style:none;padding:0;margin:.5rem 0 2rem}
+.card{border:1px solid var(--line);border-radius:.5em;padding:.8rem 1rem;margin:.6rem 0}
+.card-title{font-family:-apple-system,"Segoe UI",sans-serif;font-weight:600;font-size:1.05rem;text-decoration:none}
+.card-hyp{font:14px/1.5 -apple-system,"Segoe UI",sans-serif;color:var(--mut);margin:.4rem 0 0}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="home" href="index.html">neurep</a>
+  <nav class="crumbs"><a href="index.html">studies</a> / Separator / flat collapse</nav>
+</header>
+<main>
+  <div class="meta">
+    <span class="badge" style="background:#6e7781;color:#fff">draft</span>
+    <span class="date"></span>
+  </div>
+  
+  <article>
+  <div class="center">
+<p><span><strong>What is the Separator regularizer actually
+doing?</strong></span><br />
+<span>When its penalty vanishes — pruning, or collapse?</span></p>
+</div>
+<figure id="fig:traj" data-latex-placement="h">
+<img class="fig" src="assets/fig1_trajectory.svg" alt="fig1_trajectory" loading="lazy" />
+<figcaption><span class="fignum">Figure 1.</span> Test loss (solid, left log axis) for Separator / L1 / NoReg,
+and Separator’s <span
+class="math inline">\(c\!\cdot\!\mathcal{R}\)</span> (dashed, right
+symlog). Shaded band = <span
+class="math inline">\(c\!\cdot\!\mathcal{R}\)</span> non-negligible;
+dotted line = <span
+class="math inline">\(c\!\cdot\!\mathcal{R}&lt;10^{-4}\)</span>.
+Separator’s lead over NoReg is established <em>while <span
+class="math inline">\(\mathcal{R}\)</span> is falling</em> and survives
+after. Winners: <code>flat</code>=<code>dchn-euc-sq</code>,
+<code>hier</code>=<code>dchn-cont-abs</code>.</figcaption>
+</figure>
+<h1 id="setup-and-the-question">Setup and the question</h1>
+<p>Each neuron <span class="math inline">\(i\)</span> carries a
+representation <span class="math inline">\(\phi_i\)</span> —
+dual-channel codes <span
+class="math inline">\((\sigma^{(i)}_{\text{out}},\sigma^{(i)}_{\text{in}})=\sigma(\phi_i)\)</span>
+— and Separator penalizes wiring by <span
+class="math inline">\(\mathcal{R}=c\sum_{ij}|W_{ij}|\,d(\sigma^{(i)}_{\text{out}},\sigma^{(j)}_{\text{in}})\)</span>,
+so weight between “far” (incompatible) neurons is expensive. By step
+<span class="math inline">\(\sim\)</span>8–10k, <span
+class="math inline">\(\mathcal{R}\)</span> decays from <span
+class="math inline">\(\sim\)</span><span
+class="math inline">\(10^{-1}\)</span> to <span
+class="math inline">\(\le10^{-6}\)</span> and the Separator<span
+class="math inline">\(-\)</span>NoReg test-loss gap opens during that
+window (Fig. <a href="#fig:traj" data-reference-type="ref"
+data-reference="fig:traj">1</a>). (<span><span
+class="math inline">\(\phi\)</span> is the field called <code>pi</code>
+in code; we use the paper’s symbol.</span>)</p>
+<p>The penalty going to zero is consistent with <em>two</em> opposite
+stories, and the trajectory alone cannot tell them apart: <strong>(a)
+the codes collapsed</strong> — <span
+class="math inline">\(d\!\to\!0\)</span> for all pairs, so <span
+class="math inline">\(|W_{ij}|d_{ij}\)</span> is trivially <span
+class="math inline">\(\approx0\)</span> and the codes carry no
+information; or <strong>(b) the regularizer succeeded</strong> — it
+drove <span class="math inline">\(|W_{ij}|\!\to\!0\)</span> wherever
+<span class="math inline">\(d_{ij}\)</span> is large, while the codes
+stay informative. So we decompose it.</p>
+<h1 id="what-mathcalrto0-actually-means-it-differs-by-task">What <span
+class="math inline">\(\mathcal{R}\!\to\!0\)</span> actually means (it
+differs by task)</h1>
+<p>We read <span class="math inline">\(\phi\)</span> and <span
+class="math inline">\(W\)</span> from the same converged checkpoint,
+measure every pairwise distance <span
+class="math inline">\(d_{ij}\)</span> <em>directly</em> (independent of
+<span class="math inline">\(W\)</span>), and the weight each edge
+carries (Fig. <a href="#fig:decomp" data-reference-type="ref"
+data-reference="fig:decomp">2</a>). The decisive test: permute <span
+class="math inline">\(|W|\)</span> within each layer to destroy any
+<span class="math inline">\(W\)</span>–<span
+class="math inline">\(d\)</span> alignment; if the low <span
+class="math inline">\(\mathcal{R}\)</span> were just collapse, shuffling
+<span class="math inline">\(|W|\)</span> would not change it.</p>
+<h4 id="flat-the-regularizer-is-working."><code>flat</code>: the
+regularizer is working.</h4>
+<p>Only 82% of pairs reach <span
+class="math inline">\(d&lt;10^{-3}\)</span>; the rest keep real distance
+(up to <span class="math inline">\(0.49\)</span>). <span
+class="math inline">\(|W|\)</span> is strongly anti-correlated with
+<span class="math inline">\(d\)</span> (Spearman <span
+class="math inline">\(-0.60\)</span>): high-<span
+class="math inline">\(d\)</span> edges carry mean <span
+class="math inline">\(|W|\!=\!1.6\!\times\!10^{-4}\)</span> vs <span
+class="math inline">\(5.7\!\times\!10^{-2}\)</span> on low-<span
+class="math inline">\(d\)</span> edges — pruned by <span
+class="math inline">\(&gt;\)</span>2 orders of magnitude. Shuffling
+<span class="math inline">\(|W|\)</span> would raise <span
+class="math inline">\(\mathcal{R}\)</span> from <span
+class="math inline">\(4\!\times\!10^{-6}\)</span> to <span
+class="math inline">\(1.6\!\times\!10^{-3}\)</span> (<span
+class="math inline">\(\sim\)</span><span
+class="math inline">\(400\times\)</span>). So <span
+class="math inline">\(\mathcal{R}\!\to\!0\)</span> here is the
+regularizer doing its job — pruning weight between incompatible neurons
+— and <strong>the codes remain informative</strong>.</p>
+<h4 id="hier-genuine-collapse."><code>hier</code>: genuine
+collapse.</h4>
+<p><span class="math inline">\(d\!=\!0\)</span> for 100% of pairs (max
+<span class="math inline">\(d\!=\!0\)</span>); <span
+class="math inline">\(\mathcal{R}\!=\!0\)</span> regardless of <span
+class="math inline">\(W\)</span> (shuffling does nothing). The codes are
+uninformative and the regularizer is inert.</p>
+<h4 id="ablations-agree-the-codes-must-be-meaningful.">Ablations agree
+the codes must be meaningful.</h4>
+<p>Freezing <span class="math inline">\(\phi\)</span> at its random init
+(penalty stays large) is <em>worse</em> than NoReg (<code>flat</code>
+<span class="math inline">\(0.049\)</span> vs <span
+class="math inline">\(0.042\)</span>; <code>hier</code> <span
+class="math inline">\(0.698\)</span> vs <span
+class="math inline">\(0.354\)</span>); <span
+class="math inline">\(c\!=\!0\)</span> recovers NoReg; learned-<span
+class="math inline">\(\phi\)</span> is best (<span
+class="math inline">\(0.016/0.124\)</span>). Random codes prune the
+wrong edges — the regularizer only helps with <em>learned</em> codes,
+consistent with the <code>flat</code> picture above.</p>
+<figure id="fig:decomp" data-latex-placement="h">
+<img class="fig" src="assets/fig_decomp.svg" alt="fig_decomp" loading="lazy" />
+<figcaption><span class="fignum">Figure 2.</span> At convergence: (a) <code>flat</code> — most pairs sit at
+<span class="math inline">\(d\!\approx\!0\)</span> but the high-<span
+class="math inline">\(d\)</span> edges carry <span
+class="math inline">\(\approx\)</span> no weight (anti-correlation <span
+class="math inline">\(-0.60\)</span>): the codes keep structure and the
+regularizer prunes. (b) <code>hier</code> — every distance is <span
+class="math inline">\(0\)</span> (collapse). (c) actual <span
+class="math inline">\(\mathcal{R}\)</span> vs. <span
+class="math inline">\(\mathcal{R}\)</span> with <span
+class="math inline">\(|W|\)</span> shuffled within each layer: on
+<code>flat</code> shuffling raises <span
+class="math inline">\(\mathcal{R}\)</span> <span
+class="math inline">\(\sim\)</span><span
+class="math inline">\(400\times\)</span> (low <span
+class="math inline">\(\mathcal{R}\)</span> needed the <span
+class="math inline">\(W\)</span>–<span class="math inline">\(d\)</span>
+alignment <span class="math inline">\(=\)</span> pruning), on
+<code>hier</code> both are <span class="math inline">\(0\)</span>
+(collapse).</figcaption>
+</figure>
+<h1 id="coverage">Coverage</h1>
+<p>Across all five v10 cells (Table <a href="#tab:cov"
+data-reference-type="ref" data-reference="tab:cov">1</a>), <strong>no
+single regularizer dominates</strong> — Separator wins
+<code>flat</code>/<code>dense</code> but <em>loses</em> on
+<code>hier</code> (<span class="math inline">\(0.154\)</span>) to
+Flat-Simplex (<span class="math inline">\(0.099\)</span>), L1 (<span
+class="math inline">\(0.111\)</span>), and BIMT (<span
+class="math inline">\(0.120\)</span>). The decomposition lines up with
+this: where Separator is best (<code>flat</code>) the regularizer is
+working; where it is worst (<code>hier</code>) the codes collapsed. Only
+Separator’s learned-<span class="math inline">\(\phi\)</span> ever goes
+inert (8–14k); constant-magnitude regularizers (L1, BIMT) never do.</p>
+<table id="tab:cov">
+<caption><strong>Final test MSE</strong> (mean over 5 seeds; best
+variant per family). Lower is better; <strong>bold</strong> <span
+class="math inline">\(=\)</span> best per column.</caption>
+<thead>
+<tr>
+<th style="text-align: left;">Regularizer</th>
+<th style="text-align: center;"><code>flat</code></th>
+<th style="text-align: center;"><code>flat_rot</code></th>
+<th style="text-align: center;"><code>weak</code></th>
+<th style="text-align: center;"><code>dense</code></th>
+<th style="text-align: center;"><code>hier</code></th>
+<th style="text-align: center;"><span
+class="math inline">\(\mathcal{R}\!\to\!0\)</span>?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Separator (<code>dchn</code>)</td>
+<td style="text-align: center;"><strong>0.015</strong></td>
+<td style="text-align: center;"><strong>0.015</strong></td>
+<td style="text-align: center;">0.018</td>
+<td style="text-align: center;"><strong>0.031</strong></td>
+<td style="text-align: center;">0.154</td>
+<td style="text-align: center;"><strong>yes</strong> (8–14k)</td>
+</tr>
+<tr>
+<td style="text-align: left;">Flat-Simplex (<code>sim</code>)</td>
+<td style="text-align: center;">0.021</td>
+<td style="text-align: center;">0.022</td>
+<td style="text-align: center;">0.021</td>
+<td style="text-align: center;">0.045</td>
+<td style="text-align: center;"><strong>0.099</strong></td>
+<td style="text-align: center;">no</td>
+</tr>
+<tr>
+<td style="text-align: left;">WiringPrior (<code>pos</code>)</td>
+<td style="text-align: center;">0.041</td>
+<td style="text-align: center;">0.041</td>
+<td style="text-align: center;">0.048</td>
+<td style="text-align: center;">0.081</td>
+<td style="text-align: center;">0.352</td>
+<td style="text-align: center;"><span
+class="math inline">\(\mathcal{R}\!\approx\!0\)</span> throughout</td>
+</tr>
+<tr>
+<td style="text-align: left;">BIMT (<code>grid</code>)</td>
+<td style="text-align: center;"><strong>0.015</strong></td>
+<td style="text-align: center;">0.019</td>
+<td style="text-align: center;"><strong>0.016</strong></td>
+<td style="text-align: center;">0.039</td>
+<td style="text-align: center;">0.120</td>
+<td style="text-align: center;">no</td>
+</tr>
+<tr>
+<td style="text-align: left;">L1 (<code>empty</code>)</td>
+<td style="text-align: center;">0.018</td>
+<td style="text-align: center;">0.020</td>
+<td style="text-align: center;">0.020</td>
+<td style="text-align: center;">0.040</td>
+<td style="text-align: center;">0.111</td>
+<td style="text-align: center;">no</td>
+</tr>
+<tr>
+<td style="text-align: left;">NoReg</td>
+<td style="text-align: center;">0.042</td>
+<td style="text-align: center;">0.043</td>
+<td style="text-align: center;">0.048</td>
+<td style="text-align: center;">0.084</td>
+<td style="text-align: center;">0.346</td>
+<td style="text-align: center;">—</td>
+</tr>
+</tbody>
+</table>
+<h1 id="a-lever-the-hp-search-missed">A lever the HP search missed</h1>
+<p>The coupling <span class="math inline">\(c\)</span> was selected to
+minimize <em>validation</em> MSE — an objective blind to modularity.
+Re-running the Separator winners at <span
+class="math inline">\(10\times\)</span> <span
+class="math inline">\(c\)</span> (5 seeds, real IIA; Fig. <a
+href="#fig:scale" data-reference-type="ref"
+data-reference="fig:scale">3</a>) shows, on <code>flat</code>: Newman
+<span class="math inline">\(Q\)</span> <span
+class="math inline">\(0.22\!\to\!0.63\)</span>, IIA selectivity <span
+class="math inline">\(0.77\!\to\!0.91\)</span> (better on 4/5 seeds,
+<span class="math inline">\(d\!=\!1.3\)</span>, <span
+class="math inline">\(p\!=\!0.13\)</span> at <span
+class="math inline">\(n\!=\!5\)</span>), test MSE essentially unchanged
+(<span class="math inline">\(0.015\!\to\!0.016\)</span>, <span
+class="math inline">\(p\!=\!0.62\)</span>). The <span
+class="math inline">\(c\)</span>-sweep (Fig. <a href="#fig:scale"
+data-reference-type="ref" data-reference="fig:scale">3</a>d) shows <span
+class="math inline">\(Q\)</span> climbing with <span
+class="math inline">\(c\)</span> while test MSE stays flat. The effect
+is task-specific: on <code>hier</code> the stronger coupling buys little
+(<span class="math inline">\(d\!=\!0.4\)</span>, <span
+class="math inline">\(p\!=\!1.0\)</span>). At least on
+<code>flat</code>, modularity and generalization are not in tension — we
+simply hadn’t pushed <span class="math inline">\(c\)</span>.</p>
+<figure id="fig:scale" data-latex-placement="h">
+<img class="fig" src="assets/fig3_scaling_c.svg" alt="fig3_scaling_c" loading="lazy" />
+<figcaption><span class="fignum">Figure 3.</span> Separator at canonical <span
+class="math inline">\(c\)</span> (purple) vs. <span
+class="math inline">\(10\times\)</span> <span
+class="math inline">\(c\)</span> (red), 5 seeds. (a) Newman <span
+class="math inline">\(Q\)</span>; (b) IIA selectivity, paired by seed —
+clear on <code>flat</code>, negligible on <code>hier</code>; (c) test
+MSE (no significant change); (d) <code>flat</code> <span
+class="math inline">\(c\)</span>-sweep: <span
+class="math inline">\(Q\)</span> rises with <span
+class="math inline">\(c\)</span>, test MSE flat. Dotted <span
+class="math inline">\(=\)</span> HP-picked <span
+class="math inline">\(c\)</span>.</figcaption>
+</figure>
+<h1 id="open-question-is-the-collapse-a-bug">Open question: is the
+collapse a bug?</h1>
+<p>The decomposition sharpens the question. On <code>flat</code> the
+regularizer works (informative codes <span
+class="math inline">\(+\)</span> pruning); on <code>hier</code> it
+collapses to the degenerate <span class="math inline">\(d\!=\!0\)</span>
+minimum — and that collapse coincides with Separator’s <em>worst</em>
+performance. So the collapse looks less like a benign “annealed
+curriculum” and more like a <strong>failure mode on hard tasks</strong>.
+The open question: can we prevent it and recover <code>flat</code>-like
+behavior where it currently collapses? Our targeted anti-collapse
+attempts (direct <span class="math inline">\(d\!\to\!0\)</span> penalty;
+high-temperature binary codes <span class="math inline">\(+\)</span>
+diversity) didn’t beat the simple <span
+class="math inline">\(10\times\)</span>-<span
+class="math inline">\(c\)</span> point, but the <span
+class="math inline">\(d\!=\!0\)</span> manifold is large, so that is
+weak evidence. Next:</p>
+<ol>
+<li><p><strong>Keep <span class="math inline">\(\phi\)</span> engaged on
+<code>hier</code></strong> and test whether an informative,
+non-collapsed <span class="math inline">\(\phi\)</span> beats canonical
+Separator on <span class="math inline">\(Q\)</span>, IIA, and test loss.
+A win <span class="math inline">\(\Rightarrow\)</span> the collapse was
+a bug worth fixing.</p></li>
+<li><p><strong>Settle the <span class="math inline">\(c\)</span>
+lever:</strong> extend the <code>flat</code> <span
+class="math inline">\(c\)</span>-sweep to all 5 cells <span
+class="math inline">\(\times\)</span> <span
+class="math inline">\(\ge\)</span>5 seeds with real IIA — push the
+<code>flat</code> IIA gain to significance and map where “modularity for
+free” holds.</p></li>
+<li><p>Describe <span class="math inline">\(\mathcal{R}\!\to\!0\)</span>
+<em>per task</em> (pruning vs. collapse), not as a blanket statement
+that the codes are inert.</p></li>
+</ol>
+<h1 class="unnumbered" id="appendix-qa">Appendix — Q&amp;A</h1>
+<p><strong>Q. How is Newman modularity <span
+class="math inline">\(Q\)</span> computed?</strong> Nodes <span
+class="math inline">\(=\)</span> all neurons (input <span
+class="math inline">\(24\)</span> <span class="math inline">\(+\)</span>
+two hidden <span class="math inline">\(64\)</span> <span
+class="math inline">\(+\)</span> output <span
+class="math inline">\(1\)</span> <span
+class="math inline">\(=153\)</span> for the v10 MLP). Edges <span
+class="math inline">\(=|W_{ij}|\)</span> between <em>adjacent</em>
+layers only — one weighted undirected edge per nonzero weight (<span
+class="math inline">\(5696\)</span> edges); no within-layer or
+skip-layer edges. Communities are found by greedy modularity
+maximization (Clauset–Newman–Moore, networkx
+<code>greedy_modularity_communities</code>); <span
+class="math inline">\(Q\)</span> is the weighted Newman modularity of
+that partition.</p>
+<p><strong>Q. Were hyperparameters picked on validation or test
+MSE?</strong> Validation. HP winners are chosen on a dedicated selection
+split (<code>split_use=selection</code>, <code>task_seed=2026</code>);
+the reported final/test numbers use a disjoint split
+(<code>split_use=final</code>, <code>task_seed=4242</code>). Earlier
+“test MSE” phrasing for HP selection was imprecise and is corrected
+here.</p>
+<p><strong>Q. Does <span
+class="math inline">\(\mathcal{R}\!\to\!0\)</span> prove the codes
+collapsed?</strong> No — that was the gap this revision fixes. <span
+class="math inline">\(\mathcal{R}=c\sum|W_{ij}|d_{ij}\!\to\!0\)</span>
+if <em>either</em> <span class="math inline">\(d_{ij}\!\to\!0\)</span>
+(collapse) <em>or</em> <span
+class="math inline">\(|W_{ij}|\!\to\!0\)</span> on high-<span
+class="math inline">\(d\)</span> edges (the regularizer working). The
+<span class="math inline">\(|W|\)</span>-permutation test (§2, Fig. <a
+href="#fig:decomp" data-reference-type="ref"
+data-reference="fig:decomp">2</a>c) separates them: <code>flat</code> is
+pruning, <code>hier</code> is collapse.</p>
+<p><span><em>Reproducibility:</em> all numbers regenerated from per-run
+<code>results.json</code>/<code>events.jsonl</code>, converged
+<code>state.pt</code> (<span class="math inline">\(\phi\)</span> and
+<span class="math inline">\(W\)</span>), and intervention chunks by the
+scripts in the <code>collapse_investigation</code> folder
+(<code>decompose_collapse.py</code> for §2). IIA <span
+class="math inline">\(=\)</span> interchange-intervention mediation
+strength; ablations are exact-HP reruns.</span></p>
+
+  </article>
+  
+  <footer class="pagefoot">
+    Generated from <code>collapse_review/collapse_review.tex</code>.
+    <!-- comment widget mounts here in Phase 2 (Hypothes.is / self-hosted) -->
+  </footer>
+</main>
+</body>
+</html>

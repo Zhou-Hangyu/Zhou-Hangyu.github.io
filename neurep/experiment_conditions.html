@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>experiment_conditions — neurep</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false},{left:'$$',right:'$$',display:true}],throwOnError:false});"></script>
+<style>
+:root{--ink:#1b1b1f;--mut:#5b6068;--line:#e3e6ea;--bg:#fff;--accent:#0b66c3;--code:#f4f6f8}
+*{box-sizing:border-box}
+body{margin:0;color:var(--ink);background:var(--bg);
+  font:17px/1.62 Georgia,"Times New Roman",serif;-webkit-font-smoothing:antialiased}
+.topbar{display:flex;gap:1rem;align-items:baseline;flex-wrap:wrap;
+  padding:.7rem 1.2rem;border-bottom:1px solid var(--line);
+  font-family:-apple-system,"Segoe UI",Roboto,sans-serif;font-size:14px}
+.topbar .home{font-weight:700;color:var(--ink);text-decoration:none}
+.crumbs{color:var(--mut)} .crumbs a{color:var(--accent);text-decoration:none}
+main{max-width:46rem;margin:0 auto;padding:1.4rem 1.2rem 4rem}
+a{color:var(--accent)}
+.meta{display:flex;gap:.6rem;align-items:center;font-family:-apple-system,"Segoe UI",sans-serif;margin:.2rem 0 1rem}
+.badge{font:600 11px/1 -apple-system,"Segoe UI",sans-serif;text-transform:uppercase;
+  letter-spacing:.04em;padding:.28em .55em;border-radius:.4em}
+.date{color:var(--mut);font:13px -apple-system,"Segoe UI",sans-serif}
+.hypothesis{background:#f5f8ff;border:1px solid #d6e4fb;border-left:3px solid var(--accent);
+  border-radius:.4em;padding:.7rem .9rem;margin:0 0 1.4rem;
+  font:15px/1.55 -apple-system,"Segoe UI",sans-serif}
+article :first-child{margin-top:0}
+h1,h2,h3{font-family:-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.25}
+h1{font-size:1.7rem} h2{font-size:1.28rem;margin-top:2rem;border-bottom:1px solid var(--line);padding-bottom:.2rem}
+h3{font-size:1.05rem}
+.center,div[style*="text-align:center"]{text-align:center}
+p{margin:.7rem 0}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.86em;
+  background:var(--code);padding:.12em .35em;border-radius:.3em}
+code a{text-decoration:none}
+figure{margin:1.6rem 0;text-align:center}
+img.fig{max-width:100%;height:auto;border:1px solid var(--line);border-radius:.4em;background:#fff}
+figcaption{font:13.5px/1.5 -apple-system,"Segoe UI",sans-serif;color:var(--mut);
+  text-align:left;margin-top:.5rem}
+.fignum{color:var(--ink);font-weight:700}
+.katex-display{overflow-x:auto;overflow-y:hidden;padding:.2rem 0}
+.xref{text-decoration:none;font-weight:600}
+table{border-collapse:collapse;margin:1.2rem auto;font-size:.92rem}
+th,td{padding:.3rem .7rem;text-align:left}
+thead th{border-top:2px solid var(--ink);border-bottom:1px solid var(--ink)}
+tbody tr:last-child td{border-bottom:2px solid var(--ink)}
+caption{caption-side:bottom;color:var(--mut);font:13.5px -apple-system,sans-serif;margin-top:.4rem}
+.related{margin-top:2.4rem;border-top:1px solid var(--line);padding-top:1rem;
+  font-family:-apple-system,"Segoe UI",sans-serif;font-size:14.5px}
+.related h3{margin:.2rem 0 .5rem} .related ul{margin:0;padding-left:1.1rem}
+.related li{margin:.3rem 0}
+.pagefoot{margin-top:2.5rem;padding-top:1rem;border-top:1px solid var(--line);
+  color:var(--mut);font:13px -apple-system,"Segoe UI",sans-serif}
+/* index */
+.subtitle{font-size:1.15rem;color:var(--mut);margin:.2rem 0}
+.note{font:13px -apple-system,sans-serif;color:var(--mut)}
+.cards{list-style:none;padding:0;margin:.5rem 0 2rem}
+.card{border:1px solid var(--line);border-radius:.5em;padding:.8rem 1rem;margin:.6rem 0}
+.card-title{font-family:-apple-system,"Segoe UI",sans-serif;font-weight:600;font-size:1.05rem;text-decoration:none}
+.card-hyp{font:14px/1.5 -apple-system,"Segoe UI",sans-serif;color:var(--mut);margin:.4rem 0 0}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="home" href="index.html">neurep</a>
+  <nav class="crumbs"><a href="index.html">studies</a> / Representation-induced modularity</nav>
+</header>
+<main>
+  <div class="meta">
+    <span class="badge" style="background:#6e7781;color:#fff">draft</span>
+    <span class="date"></span>
+  </div>
+  
+  <article>
+  <div class="center">
+<p><span><strong>When <em>can</em> a representation make weights
+modular?</strong></span><br />
+<span>Coupling strength, axis orientation, and the rotation barrier —
+mapping the boundary of recoverable task-aligned modularity</span></p>
+</div>
+<figure id="fig:rot" data-latex-placement="h">
+<img class="fig" src="assets/fig_rotation.svg" alt="fig_rotation" loading="lazy" />
+<figcaption><span class="fignum">Figure 1.</span> <em>Left:</em> a fixed Oracle prior’s input-block alignment
+rises with coupling strength <span class="math inline">\(c\)</span>
+(<span class="math inline">\(0.63\!\to\!0.97\!\to\!0.99\)</span>),
+crossing <span class="math inline">\(\ell_1\)</span> (blue dashed) and
+far exceeding the free Separator (red dashed); the production
+hyperparameter search picked the leftmost, under-coupled point.
+<em>Right:</em> rotating the factors (<code>flat_rot</code>, <span
+class="math inline">\(x=zQ^\top\)</span>) collapses every method’s
+alignment toward chance — the same Oracle that reaches <span
+class="math inline">\(0.99\)</span> axis-aligned reads <span
+class="math inline">\(0.45\)</span> rotated. <span
+class="math inline">\(\ge5\)</span> seeds, mean<span
+class="math inline">\(\pm\)</span>std.</figcaption>
+</figure>
+<h1
+id="fixity-works-if-the-coupling-is-strong-and-the-orientation-is-right">Fixity
+works — if the coupling is strong and the orientation is right</h1>
+<p>The Oracle (<code>nr.blk-bin-abs</code>) is penalty-only like
+Separator, but its codes are <em>fixed</em> to the task’s true factor
+blocks — the in-codebase analogue of seRNN’s immovable grid or
+Jacobs–Jordan’s pre-placed positions. Unlike the free codes it cannot
+collapse, and Fig. <a href="#fig:rot" data-reference-type="ref"
+data-reference="fig:rot">1</a>(left) shows it pays off: as the coupling
+<span class="math inline">\(c\)</span> grows <span
+class="math inline">\(6\!\times\!10^{-3}\to
+6\!\times\!10^{-2}\to3\!\times\!10^{-1}\)</span>, input-block alignment
+climbs <span class="math inline">\(0.63\to0.97\to0.99\)</span> and <span
+class="math inline">\(Q_{\mathrm{block}}\)</span> <span
+class="math inline">\(0.38\to0.70\to0.73\)</span>, with cross-block
+weight mass driven to <span class="math inline">\(0.3\%\)</span> — a
+clean factorization, at a small accuracy cost (MSE <span
+class="math inline">\(0.016\to0.022\)</span>). The lesson is two-fold:
+<strong>(i)</strong> <em>fixity</em>, not a task gradient, is what lets
+a penalty-only prior align weights (it removes the collapse that sinks
+the learned codes); <strong>(ii)</strong> the production hyperparameter
+search, tuned on validation MSE, picked the <em>weakest</em> coupling,
+where alignment has barely started — modularity was never on the
+objective. But this success is bought with prior knowledge of the
+factors: the Oracle is <em>told</em> the decomposition. The open
+question for a <em>learned</em> method is whether anything can supply
+that orientation without being told — and the next two sections bound
+what is possible.</p>
+<h1 id="the-rotation-barrier">The rotation barrier</h1>
+<p>We rotate the signal factors into a generic basis
+(<code>flat_rot</code>: stored inputs <span
+class="math inline">\(x=zQ^\top\)</span> for a random orthogonal <span
+class="math inline">\(Q\)</span>, so no factor occupies a coordinate
+subset) and re-measure, de-rotating <span
+class="math inline">\(W_0\)</span> back to latent-factor coordinates so
+the metric still targets the true factors. Fig. <a href="#fig:rot"
+data-reference-type="ref" data-reference="fig:rot">1</a>(right):
+<strong>every method’s alignment collapses toward chance</strong>. The
+Oracle that reached <span class="math inline">\(0.99\)</span>
+axis-aligned now reads <span class="math inline">\(0.45\)</span> — its
+fixed <em>contiguous</em> block prior assumes the factors live on
+coordinate blocks, and once they do not, the “informative” prior is
+simply wrong. <span class="math inline">\(\ell_1\)</span> falls <span
+class="math inline">\(0.88\to0.70\)</span> (it sparsifies in the rotated
+input basis, not the latent one), Separator stays at its already-low
+<span class="math inline">\(0.57\)</span>. This is the
+<em>localizability</em> prediction of the theory report (P3) made
+concrete: a per-neuron representation can express only axis-aligned
+module structure, so it aligns weights only when the task’s factors are
+themselves axis-aligned. Rotate the task and the entire family — learned
+or fixed — loses its grip, because there is no longer any per-neuron
+partition to find. (The functional modules still exist in rotated
+subspaces; they are simply invisible to a per-neuron prior, exactly as a
+learned rotation like DAS, not a neuron score, is needed to read
+them.)</p>
+<h1 id="the-discrete-swap-is-not-a-substitute">The discrete swap is not
+a substitute</h1>
+<p>BIMT breaks the permutation symmetry with a discrete neuron
+<em>swap</em> toward fixed grid slots — in the literature (Growing
+Brains) this is what converts a functional clustering into anatomical
+modularity on cognitive tasks. On our additive bench it does nothing:
+BIMT-with-swap and BIMT-without-swap are statistically identical on
+input-block alignment (flat: <span class="math inline">\(0.782\)</span>
+vs <span class="math inline">\(0.786\)</span>, Cohen’s <span
+class="math inline">\(d=-0.10\)</span>, <span
+class="math inline">\(p=1.0\)</span>, <span
+class="math inline">\(n{=}10\)</span>; <code>modarith</code>: <span
+class="math inline">\(0.463\)</span> vs <span
+class="math inline">\(0.464\)</span>, <span
+class="math inline">\(d\approx0\)</span>). The reason is the same
+ceiling: the swap can only relocate a neuron that <em>has</em> a clean
+functional identity to a matching slot, and on a nonlinear additive task
+the hidden units carry mixed, rotated roles, so there is no partition
+for the swap to exploit. Where the literature’s swap succeeds (discrete
+modular addition, <span class="math inline">\(20\)</span>/<span
+class="math inline">\(84\)</span> cognitive tasks), the optimal solution
+<em>is</em> neuron-localized; where ours lives (nonlinear regression),
+it is not. The swap is a symmetry-<em>breaker</em>, not a
+symmetry-<em>creator</em>.</p>
+<h1
+id="forward-coupling-and-the-localizability-ceiling">Forward-coupling,
+and the localizability ceiling</h1>
+<p>Putting the geometry in the gradient path (NeuroPos: <span
+class="math inline">\(w_{ij}=1/\|p_i-p_j\|\)</span>) keeps it engaged —
+its positions never collapse, since the weights <em>are</em> the
+positions — but on this continuous regression task the <span
+class="math inline">\(1/\mathrm{dist}\)</span> parameterization cannot
+fit (<span class="math inline">\(\mathrm{MSE}\approx0.7\)</span> vs
+<span class="math inline">\(0.015\)</span>), so its alignment is not
+meaningful here. Tellingly, on the one task where a standard MLP also
+struggles — discrete <code>modarith</code>, where every penalty-only
+method sits at <span
+class="math inline">\(\mathrm{MSE}\,{\ge}\,1.3\)</span> — NeuroPos fits
+<em>best</em> (<span class="math inline">\(0.74\)</span>):
+forward-coupled positions are load-bearing exactly where a
+distance-structured solution is natural. The published forward-coupled
+methods (Erb et al.; Mészáros et al., who report monotonically rising
+modularity <span class="math inline">\(Q\)</span>) demonstrate the
+alignment on tasks their architectures fit; our contribution is to
+locate <em>why</em> it is needed — the gradient path is the only channel
+by which the task can orient a representation it would otherwise
+collapse.</p>
+<h4 id="the-map.">The map.</h4>
+<p>Pulling Reports 2–3 together, task-aligned weight modularity from a
+per-neuron representation is recoverable only inside a narrow region:
+the factors must be (near-)<em>linearly</em> computed and
+<em>axis-aligned</em> (Whittington’s regime, where a neuron partition is
+the energy optimum), <em>and</em> the representation must be prevented
+from collapsing — by fixing it to the right orientation, by a forward
+benefit of distance, or by an anchored non-degeneracy term (companion
+Report B). Our learned free penalty-only codes satisfy none of these,
+and the nonlinear synthetic leaves sit above the localizability ceiling,
+so no amount of coupling, swapping, or anti-collapse recovers a
+neuron-aligned decomposition — the modules are real but rotated, and a
+per-neuron prior is the wrong instrument to read them.</p>
+<p><span><em>Reproducibility.</em> Same harness/sweep as Report 2
+(<code>notebooks/neurep_review/</code>); Oracle coupling sweep
+<code>{oracle,oracle_mid, oracle_strong}</code>, rotation cell
+<code>flat_rot</code>, swap toggle <code>bimt_{swap,noswap}</code>
+(<code>S_swap</code><span class="math inline">\(\in\{200,0\}\)</span>).
+Localizability ceiling after Whittington, Dorrell, Ganguli &amp; Behrens
+(ICLR 2023).</span></p>
+
+  </article>
+  
+  <footer class="pagefoot">
+    Generated from <code>neurep_review/experiment_conditions.tex</code>.
+    <!-- comment widget mounts here in Phase 2 (Hypothes.is / self-hosted) -->
+  </footer>
+</main>
+</body>
+</html>
