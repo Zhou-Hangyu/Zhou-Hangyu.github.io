@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>neurep — per-neuron representation priors</title>
+<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false},{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false});"></script>
+<style>
+:root{--ink:#1b1b1f;--mut:#5b6068;--line:#e3e6ea;--bg:#fff;--accent:#0b66c3;--code:#f4f6f8}
+*{box-sizing:border-box}
+body{margin:0;color:var(--ink);background:var(--bg);
+  font:17px/1.62 Georgia,"Times New Roman",serif;-webkit-font-smoothing:antialiased}
+.topbar{display:flex;gap:1rem;align-items:baseline;flex-wrap:wrap;
+  padding:.7rem 1.2rem;border-bottom:1px solid var(--line);
+  font-family:-apple-system,"Segoe UI",Roboto,sans-serif;font-size:14px}
+.topbar .home{font-weight:700;color:var(--ink);text-decoration:none}
+.crumbs{color:var(--mut)}
+main{max-width:46rem;margin:0 auto;padding:1.6rem 1.2rem 4rem}
+a{color:var(--accent)}
+h1{font-family:-apple-system,"Segoe UI",Roboto,sans-serif;font-size:2rem;line-height:1.15;margin:.2rem 0 .2rem}
+h2{font-family:-apple-system,"Segoe UI",Roboto,sans-serif;font-size:1.28rem;line-height:1.25;
+  margin-top:2.4rem;border-bottom:1px solid var(--line);padding-bottom:.25rem}
+h3{font-family:-apple-system,"Segoe UI",Roboto,sans-serif;font-size:1.03rem;margin:1.4rem 0 .3rem}
+.subtitle{font-size:1.16rem;color:var(--mut);margin:.1rem 0 .8rem}
+.note{font:13px/1.5 -apple-system,"Segoe UI",sans-serif;color:var(--mut)}
+.status{display:inline-flex;align-items:center;gap:.5rem;flex-wrap:wrap;
+  font:13px/1.4 -apple-system,"Segoe UI",sans-serif;color:var(--mut);margin:.2rem 0 0}
+.badge{font:600 11px/1 -apple-system,"Segoe UI",sans-serif;text-transform:uppercase;
+  letter-spacing:.04em;padding:.3em .6em;border-radius:.4em;background:#1a7f37;color:#fff}
+.badge.amber{background:#b9770a}
+p{margin:.7rem 0}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85em;
+  background:var(--code);padding:.12em .35em;border-radius:.3em}
+.lead{font-size:1.06rem}
+.katex-display{overflow-x:auto;overflow-y:hidden;padding:.2rem 0}
+/* research log */
+.log{list-style:none;padding:0;margin:.6rem 0 0}
+.log li{border:1px solid var(--line);border-radius:.5em;padding:.85rem 1rem;margin:.7rem 0}
+.log .row{display:flex;gap:.6rem;align-items:baseline;flex-wrap:wrap}
+.log .ttl{font-family:-apple-system,"Segoe UI",sans-serif;font-weight:600;font-size:1.04rem;text-decoration:none}
+.log .ttl.plain{color:var(--ink)}
+.log .date{color:var(--mut);font:13px -apple-system,"Segoe UI",sans-serif;margin-left:auto}
+.tag{font:600 10.5px/1 -apple-system,"Segoe UI",sans-serif;text-transform:uppercase;letter-spacing:.04em;
+  padding:.28em .5em;border-radius:.4em;border:1px solid var(--line);color:var(--mut)}
+.tag.live{color:#1a7f37;border-color:#9ed3ad}
+.log .take{margin:.5rem 0 0;font-size:.96rem}
+.log .take b{color:var(--ink)}
+/* scope two columns */
+.scope{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem;margin-top:.6rem}
+.scope .col h3{margin-top:0}
+.scope ul{margin:.3rem 0;padding-left:1.15rem}
+.scope li{margin:.3rem 0;font-size:.96rem}
+@media (max-width:640px){.scope{grid-template-columns:1fr}}
+/* method table */
+table{border-collapse:collapse;width:100%;margin:1rem 0;font-size:.92rem}
+th,td{padding:.4rem .6rem;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+thead th{border-top:2px solid var(--ink);border-bottom:1px solid var(--ink);
+  font-family:-apple-system,"Segoe UI",sans-serif}
+.nav-cards{list-style:none;padding:0;margin:.6rem 0}
+.nav-cards li{border:1px solid var(--line);border-radius:.5em;padding:.7rem 1rem;margin:.6rem 0}
+.nav-cards a{font-family:-apple-system,"Segoe UI",sans-serif;font-weight:600;text-decoration:none}
+.nav-cards p{margin:.3rem 0 0;font:14px/1.5 -apple-system,"Segoe UI",sans-serif;color:var(--mut)}
+.pagefoot{margin-top:2.8rem;padding-top:1rem;border-top:1px solid var(--line);
+  color:var(--mut);font:13px/1.6 -apple-system,"Segoe UI",sans-serif}
+.pagefoot a{color:var(--accent)}
+</style>
+</head>
+<body>
+<header class="topbar"><a class="home" href="index.html">neurep</a><span class="crumbs">&nbsp;/&nbsp;overview</span></header>
+<main>
+
+  <h1>neurep</h1>
+  <p class="subtitle">Per-neuron representation priors for sample-efficient compositional learning</p>
+  <p class="status">
+    <span class="badge">NeurIPS&nbsp;2026 · submitted</span>
+    <span>Current phase: consolidating results, deriving the theory behind the regularizers, designing new ones.</span>
+  </p>
+  <p class="note">Internal research notes — shared with collaborators, not for public distribution.
+    This page is the living overview; it is updated as the work progresses.</p>
+
+  <h2>Thesis</h2>
+  <p class="lead">A simple <b>per-neuron representation prior</b> helps a dense network discover hidden
+    task decomposition — and that helps <b>sample efficiency</b>.</p>
+  <p>Each hidden neuron $i$ carries a small learned (or fixed) descriptor $\phi_i$ — a position, a code, a
+    membership vector. A single regularizer prices every weight by the structural distance between the
+    neurons it connects:</p>
+  <div class="eq">$$R(W,\Phi)\;=\;\lambda \sum_{i,j} d(\phi_i,\phi_j)\,\cdot\,\psi(W_{ij})$$</div>
+  <p>Cheap-to-connect neurons end up in the same functional module; expensive ones decouple. The whole
+    program is to test whether <em>one</em> such term, bolted onto an ordinary dense MLP / Transformer,
+    buys a real reduction in the data needed to learn compositional tasks — and to nail down
+    <em>why</em>, or why not.</p>
+
+  <h2>Central question</h2>
+  <p>Does adding one per-neuron representation prior to a standard dense model lower the sample budget
+    needed to learn compositional tasks, and is the gain <b>mediated by recovered decomposition</b> —
+    not by extra capacity, extra regularization strength, or an architecture change in disguise?</p>
+
+  <h2>Latest findings</h2>
+  <p class="note">Most recent first. <span class="tag live">live</span> entries link to a full write-up;
+    others are notes with the write-up in progress.</p>
+  <ul class="log">
+
+    <li>
+      <div class="row">
+        <a class="ttl" href="studies/axdn/sign_orthant_note.html">Why the axon–dendrite prior packs into 2ᵈ sign-orthants</a>
+        <span class="tag live">report</span>
+        <span class="date">2026-06-13</span>
+      </div>
+      <p class="take"><b>The learned geometry is the optimizer's fixed point, not the task's.</b>
+        For the axon–dendrite wiring prior, $\partial\,\text{MSE}/\partial(a,D)\equiv 0$: AdamW erases the
+        radial-force magnitude, leaving constant $\pm\eta$ steps that quantize axon positions onto the
+        $2^d$ sign-orthant diagonals. The count follows a balls-in-bins law; the $d{=}2$ match to four
+        modules is a coincidence, not recovery.</p>
+    </li>
+
+    <li>
+      <div class="row">
+        <a class="ttl" href="studies/axdn/axdn_forensics_report.html">The axon–dendrite wiring prior on <code>flat_modular</code></a>
+        <span class="tag live">report</span>
+        <span class="date">2026-06-11</span>
+      </div>
+      <p class="take"><b>It governs capacity, but it does not decompose.</b>
+        The asymmetric multi-prototype prior (one axon + M dendrites per neuron) beats NoReg — but only the
+        anti-collapse <em>density</em> term earns the MSE. Axons are not variables, there is no subspace
+        carving, and the learned geometry receives no gradient from task performance.</p>
+    </li>
+
+    <li>
+      <div class="row">
+        <span class="ttl plain">Representation-induced modularity: when can a code make weights task-modular?</span>
+        <span class="tag">notes</span>
+        <span class="date">2026-06</span>
+      </div>
+      <p class="take">A decoupling / collapse / localizability theory of when a per-neuron representation can
+        force a weight matrix to be task-modular, with ~400 runs and a Task-B encoding regularizer. Headline:
+        <b>learned penalty-only codes lose to plain ℓ1</b> — the code needs a gradient path from the task, or
+        it is decorative.</p>
+    </li>
+
+    <li>
+      <div class="row">
+        <span class="ttl plain">Functional modularity: function is task-forced, geometry is method-bought</span>
+        <span class="tag">notes</span>
+        <span class="date">2026-06</span>
+      </div>
+      <p class="take">Across cells × tickets × seeds: the <em>function</em> a module computes is forced by the
+        task (Sobol-confirmed), but its <em>geometry</em> is bought by the method. Modules come out
+        <b>rotated, not neuron-aligned</b> — axis-mass ≪ 1, so neuron-level ARI ≈ 0 even when the
+        decomposition is real in a rotated basis.</p>
+    </li>
+
+    <li>
+      <div class="row">
+        <span class="ttl plain">Width sweep: the over-parameterization caveat</span>
+        <span class="tag">notes</span>
+        <span class="date">2026-06</span>
+      </div>
+      <p class="take">A rigorous redo of the flat-forensics width study: <b>the Separator prior wins only at
+        extreme width (128)</b>; a properly tuned ℓ1 is a much stronger baseline than first reported, and the
+        apparent "width-4 destruction" was a hyperparameter artifact, not a property of the method.</p>
+    </li>
+
+    <li>
+      <div class="row">
+        <span class="ttl plain">Separator collapse: pruning-vs-collapse is a race, and timing decides the damage</span>
+        <span class="tag">notes</span>
+        <span class="date">2026</span>
+      </div>
+      <p class="take">The $R\to 0$ separator pathology is a race between pruning and collapse: a larger
+        penalty $c$ delays collapse, and it is the <b>timing — not the collapse itself — that decides how much
+        accuracy is lost</b>. Spike initialization turns out to be irreplaceable.</p>
+    </li>
+
+    <li>
+      <div class="row">
+        <span class="ttl plain">Exact MLP encoding of computation graphs</span>
+        <span class="tag">notes</span>
+        <span class="date">in progress</span>
+      </div>
+      <p class="take">A theory thread (<code>theory/encoding/</code>) building a bit-exact MLP construction
+        that realizes a given computation graph — the constructive counterpart to the "when is a decomposition
+        even representable" question the regularizers probe empirically.</p>
+    </li>
+
+  </ul>
+
+  <h2>What this project is — and is not</h2>
+  <div class="scope">
+    <div class="col">
+      <h3>It is</h3>
+      <ul>
+        <li>a study of whether <em>one</em> simple per-neuron representation prior improves sample efficiency;</li>
+        <li>a study of whether that gain comes from learning the hidden decomposition;</li>
+        <li>a characterization of when this happens and when it fails.</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h3>It is not</h3>
+      <ul>
+        <li>a "unified framework" of regularizers;</li>
+        <li>a sales pitch for interpretability-via-visualization;</li>
+        <li>a claim to beat explicit modular architectures on their own turf;</li>
+        <li>a proof of general PGM structure recovery.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>Method families</h2>
+  <p>Every method carries a canonical ID across three namespaces; the NeuRep family is the regularizer
+    $R(W,\Phi)=\lambda\sum d(\phi_i,\phi_j)\,\psi(W_{ij})$ above, instantiated by a
+    <code>repr</code>–<code>dist</code>–<code>pen</code> codename.</p>
+  <table>
+    <thead><tr><th>Namespace</th><th>Scope</th><th>Example ID</th></tr></thead>
+    <tbody>
+      <tr><td><code>nr.*</code></td><td>NeuRep regularizer family — L1/L2, ModBlock, BIMT, WiringPrior, the Simplex / MultiHot / DualChannel mechanisms.</td><td><code>nr.pos-euc-abs__c=1e-3__d=2</code></td></tr>
+      <tr><td><code>baseline.*</code></td><td>Activation-based regularizers (WA, BWBC, DeCov, CovBlock) + non-regularizer baselines (NoReg, ModArch, NeuroPos).</td><td><code>baseline.wa__c=1e-3__alpha=2</code></td></tr>
+      <tr><td><code>novel.*</code></td><td>Incubator methods that don't fit the NR axes.</td><td><code>novel.neurepdag__c=1e-3__K=8</code></td></tr>
+    </tbody>
+  </table>
+  <p class="note">Comparisons are bound by a strict fairness protocol: matched parameter count and training
+    budget, <b>equal hyperparameter-search budget per method</b>, <b>≥5 seeds</b>, paired Wilcoxon + Cohen's
+    d, and a selection-vs-final-test split that is touched once.</p>
+
+  <h2>Read more</h2>
+  <ul class="nav-cards">
+    <li>
+      <a href="studies/index.html">Research web → the study map</a>
+      <p>Atomic study reports, cross-linked, with the figures and the math. Start here to read any single
+        result end-to-end.</p>
+    </li>
+  </ul>
+
+  <div class="pagefoot">
+    <p>Maintained by <a href="https://github.com/Zhou-Hangyu">Hangyu Zhou</a> ·
+      code repository is private (NeurIPS 2026 under preparation) ·
+      last updated 2026-06-18.</p>
+    <p>Shared with collaborators for reading and comment. Please don't redistribute or cite without asking —
+      numbers and framing are still moving.</p>
+  </div>
+
+</main>
+</body>
+</html>
