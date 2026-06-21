@@ -5,30 +5,172 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>neurep</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false},{left:'$$',right:'$$',display:true}],throwOnError:false});"></script>
 <style>
-body{margin:0;background:#fff;color:#1b1b1f;
-  font:16px/1.7 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
-main{max-width:44rem;margin:0 auto;padding:2.5rem 1.4rem}
-ul{list-style:none;padding:0;margin:0}
-li{margin:.45rem 0}
-a{color:#0b66c3;text-decoration:none}
-a:hover{text-decoration:underline}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:#e7e2d9;color:#16161a;
+  font:18px/1.66 Georgia,'Iowan Old Style','Times New Roman',serif;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+a{color:#4b2e63;text-decoration:none}
+a:hover{text-decoration:underline;text-underline-offset:2px}
+
+/* ---- header (wordmark + tabs), shared by every page ---- */
+.nav{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;
+  gap:1rem;padding:.7rem clamp(1rem,4vw,3rem);
+  background:#e7e2d9eb;backdrop-filter:saturate(140%) blur(8px);
+  border-bottom:1px solid rgba(22,22,26,.12)}
+.brand{display:inline-flex;align-items:center;gap:.5rem;color:#16161a;font:800 1.18rem/1 'Manrope',-apple-system,'Segoe UI',Roboto,sans-serif;
+  letter-spacing:-.03em}
+.brand:hover{text-decoration:none}
+.brand .inkmark{flex:0 0 auto}
+.tabs{display:flex;gap:clamp(.7rem,2.4vw,1.9rem);font:500 .96rem/1 'Manrope',-apple-system,'Segoe UI',Roboto,sans-serif}
+.tabs .tab{color:#6f685f;padding:.2rem 0;border-bottom:2px solid transparent;letter-spacing:.01em}
+.tabs .tab:hover{color:#16161a;text-decoration:none}
+.tabs .tab.active{color:#16161a;border-bottom-color:#4b2e63}
+
+/* ---- landing hero ---- */
+.hero{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;min-height:min(72vh,640px);padding:3rem 1rem 2rem;overflow:hidden}
+.heroink{position:absolute;inset:-6% -2%;width:104%;height:112%;z-index:0;pointer-events:none}
+.bigmark{position:relative;z-index:1;margin:0;color:#16161a;
+  font:800 clamp(4rem,17vw,12rem)/.9 'Manrope',-apple-system,'Segoe UI',Roboto,sans-serif;letter-spacing:-.045em}
+.tagline{position:relative;z-index:1;margin:1.4rem 0 0;max-width:42ch;color:#6f685f;
+  font:400 clamp(1rem,2.1vw,1.22rem)/1.5 'Manrope',-apple-system,'Segoe UI',Roboto,sans-serif;letter-spacing:.01em}
+
+/* ---- landing bands + cards ---- */
+.band{max-width:60rem;margin:0 auto;padding:2.6rem clamp(1rem,4vw,2rem) .6rem;scroll-margin-top:5rem}
+.band-title{font:700 .82rem/1 'Manrope',-apple-system,'Segoe UI',Roboto,sans-serif;text-transform:uppercase;letter-spacing:.18em;color:#6f685f;
+  margin:0 0 1.1rem;display:flex;align-items:center;gap:.6rem}
+.band-title::before{content:"";width:24px;height:2px;background:#4b2e63;display:inline-block}
+.overview{font:400 1.06rem/1.6 Georgia,'Iowan Old Style','Times New Roman',serif;color:#16161a;max-width:60ch;margin:0 0 1.4rem}
+.maplist{margin:.2rem 0 1rem;padding-left:1.2rem;color:#6f685f;font:400 1rem/1.7 Georgia,'Iowan Old Style','Times New Roman',serif}
+.maplist a{color:#16161a}
+.cards{display:grid;gap:.9rem;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr))}
+.card{position:relative;display:block;background:#efeae0;border:1px solid rgba(22,22,26,.12);
+  border-radius:14px;padding:1.05rem 1.1rem 1.15rem;color:#16161a;transition:transform .14s ease,box-shadow .14s ease,border-color .14s}
+.card:hover{text-decoration:none;transform:translateY(-3px);border-color:#4b2e6355;
+  box-shadow:0 10px 26px -16px rgba(43,29,61,.55)}
+.card-dot{position:absolute;top:1.15rem;right:1.1rem;width:9px;height:9px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#5a3a73,#2b1d3d)}
+.card-title{margin:.1rem 2rem .35rem 0;font:600 1.06rem/1.32 'Manrope',-apple-system,'Segoe UI',Roboto,sans-serif;letter-spacing:-.01em}
+.card-sum{margin:0;color:#6f685f;font:400 .92rem/1.45 Georgia,'Iowan Old Style','Times New Roman',serif}
+
+/* ---- study page ---- */
+.study{max-width:46rem;margin:0 auto;padding:2.2rem clamp(1rem,4vw,1.4rem) 5rem}
+.study-head h1{margin:0;font:800 clamp(1.7rem,4.6vw,2.3rem)/1.12 'Manrope',-apple-system,'Segoe UI',Roboto,sans-serif;letter-spacing:-.025em}
+.study-head .sub{margin:.7rem 0 0;color:#6f685f;font:italic 400 1.12rem/1.45 Georgia,'Iowan Old Style','Times New Roman',serif}
+.study-head .rule{height:3px;width:84px;margin:1.3rem 0 .4rem;border-radius:3px;
+  background:linear-gradient(90deg,#4b2e63,#2b1d3d 55%,transparent)}
+article{font-size:18px}
+article :first-child{margin-top:0}
+h1,h2,h3,h4{font-family:'Manrope',-apple-system,'Segoe UI',Roboto,sans-serif;line-height:1.22;letter-spacing:-.015em}
+h2{font-size:1.4rem;margin:2.3rem 0 .5rem;padding-bottom:.25rem;border-bottom:1px solid rgba(22,22,26,.12)}
+h3{font-size:1.1rem;margin:1.6rem 0 .3rem}
+p{margin:.75rem 0}
+strong{font-weight:700}
+ul,ol{padding-left:1.3rem} li{margin:.25rem 0}
+hr{border:0;border-top:1px solid rgba(22,22,26,.12);margin:2rem 0}
+
+/* code: technical identifiers, de-emphasised on cream (never a link) */
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.84em;
+  background:rgba(75,46,99,.09);color:#3a2348;padding:.1em .34em;border-radius:.32em;word-break:break-word}
+
+/* figures */
+figure{margin:1.8rem 0;text-align:center;scroll-margin-top:5rem}
+img.fig{max-width:100%;height:auto;background:#fff;border:1px solid rgba(22,22,26,.12);border-radius:.5em;padding:.4rem}
+figcaption{font:400 14px/1.55 'Manrope',-apple-system,'Segoe UI',Roboto,sans-serif;color:#6f685f;text-align:left;margin-top:.6rem}
+.fignum{color:#16161a;font-weight:700}
+
+/* equation refs + anchors */
+.xref{font-weight:600;text-decoration:none}
+.eqa{position:relative;top:-4.4rem;visibility:hidden}
+.katex-display{overflow-x:auto;overflow-y:hidden;padding:.25rem 0}
+
+/* propositions / proofs (pandoc amsthm) */
+.theorem,.proposition,.lemma,.corollary,.definition,.remark{
+  background:#efeae0;border:1px solid rgba(22,22,26,.12);border-left:3px solid #4b2e63;
+  border-radius:.5em;padding:.7rem 1rem;margin:1.3rem 0;scroll-margin-top:5rem}
+.theorem strong:first-child,.proposition strong:first-child,.lemma strong:first-child,
+.corollary strong:first-child,.definition strong:first-child{
+  font-family:'Manrope',-apple-system,'Segoe UI',Roboto,sans-serif;color:#2b1d3d}
+.proof{margin:1rem 0 1.4rem;padding-left:1rem;border-left:2px solid rgba(22,22,26,.12);color:#3c3833;font-size:.97em}
+.proof::after{content:"\220E";display:block;text-align:right;color:#6f685f}
+
+/* tables (booktabs feel) */
+.tablewrap{overflow-x:auto;margin:1.5rem 0}
+table{border-collapse:collapse;margin:0 auto;font:400 .92rem/1.4 'Manrope',-apple-system,'Segoe UI',Roboto,sans-serif}
+th,td{padding:.4rem .8rem;text-align:left}
+thead th{border-top:2px solid #16161a;border-bottom:1px solid #16161a;font-weight:700}
+tbody tr:last-child td{border-bottom:2px solid #16161a}
+caption{caption-side:bottom;color:#6f685f;font:400 13.5px/1.5 'Manrope',-apple-system,'Segoe UI',Roboto,sans-serif;margin-top:.5rem;text-align:left}
+
+/* TL;DR / boxed callout */
+.tldr{background:#efeae0;border:1px solid rgba(22,22,26,.12);border-left:3px solid #4b2e63;
+  border-radius:.5em;padding:.85rem 1.05rem;margin:0 0 1.6rem;font-size:.98rem}
+
+@media (max-width:600px){
+  .nav{flex-wrap:wrap;gap:.5rem} .tabs{order:3;width:100%} body{font-size:17px}
+}
 </style>
 </head>
 <body>
-<main>
-<ul>
-  <li><a href="neurep_mlp_encoding.html">neurep_mlp_encoding</a></li>
-  <li><a href="flat_forensics_report.html">flat_forensics_report</a></li>
-  <li><a href="collapse_review.html">collapse_review</a></li>
-  <li><a href="collapse_mechanism.html">collapse_mechanism</a></li>
-  <li><a href="axdn_forensics_report.html">axdn_forensics_report</a></li>
-  <li><a href="sign_orthant_note.html">sign_orthant_note</a></li>
-  <li><a href="encoding_regularizer.html">encoding_regularizer</a></li>
-  <li><a href="experiment_conditions.html">experiment_conditions</a></li>
-  <li><a href="experiment_representation.html">experiment_representation</a></li>
-  <li><a href="theory.html">theory</a></li>
-</ul>
-</main>
+<header class="nav"><a class="brand" href="index.html"><svg class="inkmark" viewBox="0 0 100 100" width="26" height="26" aria-hidden="true">
+<defs><filter id="im-f" x="-40%" y="-40%" width="180%" height="180%">
+<feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="11" result="t"/>
+<feDisplacementMap in="SourceGraphic" in2="t" scale="16"/></filter>
+<radialGradient id="im-g" cx="38%" cy="30%" r="78%">
+<stop offset="0%" stop-color="#5a3a73"/><stop offset="55%" stop-color="#2b1d3d"/>
+<stop offset="100%" stop-color="#16161a"/></radialGradient></defs>
+<g filter="url(#im-f)"><ellipse cx="52" cy="50" rx="29" ry="26" fill="url(#im-g)"/>
+<ellipse cx="66" cy="40" rx="12" ry="10" fill="#4b2e63" opacity=".8"/>
+<circle cx="35" cy="64" r="6" fill="#2b1d3d" opacity=".7"/></g></svg><span>neurep</span></a><nav class="tabs"><a class="tab" href="index.html#roadmap">roadmap</a><a class="tab" href="index.html#experiments">experiments</a><a class="tab" href="index.html#theory">theory</a><a class="tab" href="index.html#others">others</a></nav></header>
+<main class="home"><section class="hero"><svg class="heroink" viewBox="0 0 600 400" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+<defs><filter id="hi-f" x="-25%" y="-25%" width="150%" height="150%">
+<feTurbulence type="fractalNoise" baseFrequency="0.011 0.018" numOctaves="3" seed="5" result="t"/>
+<feDisplacementMap in="SourceGraphic" in2="t" scale="130"/>
+<feGaussianBlur stdDeviation="5"/></filter>
+<radialGradient id="hi-g" cx="50%" cy="44%" r="62%">
+<stop offset="0%" stop-color="#4b2e63"/><stop offset="58%" stop-color="#2b1d3d"/>
+<stop offset="100%" stop-color="#16161a"/></radialGradient></defs>
+<g filter="url(#hi-f)" opacity="0.17"><ellipse cx="300" cy="205" rx="205" ry="120" fill="url(#hi-g)"/>
+<ellipse cx="415" cy="150" rx="92" ry="68" fill="#4b2e63"/>
+<ellipse cx="195" cy="255" rx="80" ry="54" fill="#2b1d3d"/></g></svg><h1 class="bigmark">neurep</h1><p class="tagline">exploring sample-efficient learning of functions with sparse computation graphs</p></section><section id="roadmap" class="band"><h2 class="band-title">roadmap</h2><div class="overview">neurep asks when a per-neuron representation prior can decompose a network into task-aligned modules &mdash; and, more often, why the free, penalty-only codes we train cannot. The reports move from theory (what is provable about modularity, encoding, and collapse) to experiments (what the runs actually do).</div><ol class="maplist"><li><a href="neurep_mlp_encoding.html">An Exact MLP Encoding of Computation Graphs</a></li><li><a href="theory.html">When does a neuron representation make a network
+modular?</a></li><li><a href="encoding_regularizer.html">A regularizer for the exact MLP
+encoding</a></li><li><a href="experiment_representation.html">A learned neuron representation does not make weights
+modular</a></li><li><a href="experiment_conditions.html">When can a representation make weights
+modular?</a></li><li><a href="flat_forensics_report.html">The flat winning ticket under the
+microscope</a></li><li><a href="collapse_review.html">What is the Separator regularizer actually
+doing?</a></li><li><a href="axdn_forensics_report.html">The axon–dendrite wiring prior
+(nr.axdn-euc-abs) on
+flat_modular</a></li><li><a href="collapse_mechanism.html">The mechanism behind Separator’s
+collapse</a></li><li><a href="sign_orthant_note.html">Fan-in, then fan-out: the density prior’s two-act
+dynamics on axon positions</a></li></ol></section><section id="experiments" class="band"><h2 class="band-title">experiments</h2><div class="cards"><a class="card" href="experiment_representation.html"><span class="card-dot"></span><h3 class="card-title">A learned neuron representation does not make weights
+modular</h3><p class="card-sum">On the additive bench a plain <span
+class="math inline">\(\ell_1\)</span> penalty aligns weights to the
+task’s factors better than any of our representation regularizers —
+which collapse</p></a><a class="card" href="experiment_conditions.html"><span class="card-dot"></span><h3 class="card-title">When <em>can</em> a representation make weights
+modular?</h3><p class="card-sum">Coupling strength, axis orientation, and the rotation barrier —
+mapping the boundary of recoverable task-aligned modularity</p></a><a class="card" href="flat_forensics_report.html"><span class="card-dot"></span><h3 class="card-title">The flat winning ticket under the
+microscope</h3><p class="card-sum">What <code>nr.dchn-euc-sq</code> actually does on
+<code>flat_modular</code>: a forensic study of one winning run, with
+targeted controls</p></a><a class="card" href="collapse_review.html"><span class="card-dot"></span><h3 class="card-title">What is the Separator regularizer actually
+doing?</h3><p class="card-sum">When its penalty vanishes — pruning, or collapse?</p></a><a class="card" href="axdn_forensics_report.html"><span class="card-dot"></span><h3 class="card-title">The axon–dendrite wiring prior
+(<code>nr.axdn-euc-abs</code>) on
+<code>flat_modular</code></h3></a></div></section><section id="theory" class="band"><h2 class="band-title">theory</h2><div class="cards"><a class="card" href="neurep_mlp_encoding.html"><span class="card-dot"></span><h3 class="card-title">An Exact MLP Encoding of Computation Graphs</h3></a><a class="card" href="theory.html"><span class="card-dot"></span><h3 class="card-title">When does a neuron representation make a network
+modular?</h3><p class="card-sum">A gradient-path, degeneracy, and localizability account — and why
+our learned codes don’t</p></a><a class="card" href="encoding_regularizer.html"><span class="card-dot"></span><h3 class="card-title">A regularizer for the exact MLP
+encoding</h3><p class="card-sum">The note’s refined code, made trainable: an <em>anchored</em>
+containment prior whose minimizer is <span
+class="math inline">\(\mathcal{E}_{\mathrm{MLP}}(G^\star)\)</span>, and
+which recovers the blocks a free code cannot</p></a></div></section><section id="others" class="band"><h2 class="band-title">others</h2><div class="cards"><a class="card" href="collapse_mechanism.html"><span class="card-dot"></span><h3 class="card-title">The mechanism behind Separator’s
+collapse</h3><p class="card-sum">A pruning–collapse race: timing, not collapse itself, decides the
+damage</p></a><a class="card" href="sign_orthant_note.html"><span class="card-dot"></span><h3 class="card-title">Fan-in, then fan-out: the density prior’s two-act
+dynamics on axon positions</h3></a></div></section></main>
 </body>
 </html>

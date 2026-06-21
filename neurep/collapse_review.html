@@ -4,83 +4,157 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>collapse_review — neurep</title>
+<title>What is the Separator regularizer actually
+doing? — neurep</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
   onload="renderMathInElement(document.body,{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false},{left:'$$',right:'$$',display:true}],throwOnError:false});"></script>
 <style>
-:root{--ink:#1b1b1f;--mut:#5b6068;--line:#e3e6ea;--bg:#fff;--accent:#0b66c3;--code:#f4f6f8}
 *{box-sizing:border-box}
-body{margin:0;color:var(--ink);background:var(--bg);
-  font:17px/1.62 Georgia,"Times New Roman",serif;-webkit-font-smoothing:antialiased}
-.topbar{display:flex;gap:1rem;align-items:baseline;flex-wrap:wrap;
-  padding:.7rem 1.2rem;border-bottom:1px solid var(--line);
-  font-family:-apple-system,"Segoe UI",Roboto,sans-serif;font-size:14px}
-.topbar .home{font-weight:700;color:var(--ink);text-decoration:none}
-.crumbs{color:var(--mut)} .crumbs a{color:var(--accent);text-decoration:none}
-main{max-width:46rem;margin:0 auto;padding:1.4rem 1.2rem 4rem}
-a{color:var(--accent)}
-.meta{display:flex;gap:.6rem;align-items:center;font-family:-apple-system,"Segoe UI",sans-serif;margin:.2rem 0 1rem}
-.badge{font:600 11px/1 -apple-system,"Segoe UI",sans-serif;text-transform:uppercase;
-  letter-spacing:.04em;padding:.28em .55em;border-radius:.4em}
-.date{color:var(--mut);font:13px -apple-system,"Segoe UI",sans-serif}
-.hypothesis{background:#f5f8ff;border:1px solid #d6e4fb;border-left:3px solid var(--accent);
-  border-radius:.4em;padding:.7rem .9rem;margin:0 0 1.4rem;
-  font:15px/1.55 -apple-system,"Segoe UI",sans-serif}
+html{scroll-behavior:smooth}
+body{margin:0;background:#e7e2d9;color:#16161a;
+  font:18px/1.66 Georgia,'Iowan Old Style','Times New Roman',serif;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+a{color:#4b2e63;text-decoration:none}
+a:hover{text-decoration:underline;text-underline-offset:2px}
+
+/* ---- header (wordmark + tabs), shared by every page ---- */
+.nav{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;
+  gap:1rem;padding:.7rem clamp(1rem,4vw,3rem);
+  background:#e7e2d9eb;backdrop-filter:saturate(140%) blur(8px);
+  border-bottom:1px solid rgba(22,22,26,.12)}
+.brand{display:inline-flex;align-items:center;gap:.5rem;color:#16161a;font:800 1.18rem/1 'Manrope',-apple-system,'Segoe UI',Roboto,sans-serif;
+  letter-spacing:-.03em}
+.brand:hover{text-decoration:none}
+.brand .inkmark{flex:0 0 auto}
+.tabs{display:flex;gap:clamp(.7rem,2.4vw,1.9rem);font:500 .96rem/1 'Manrope',-apple-system,'Segoe UI',Roboto,sans-serif}
+.tabs .tab{color:#6f685f;padding:.2rem 0;border-bottom:2px solid transparent;letter-spacing:.01em}
+.tabs .tab:hover{color:#16161a;text-decoration:none}
+.tabs .tab.active{color:#16161a;border-bottom-color:#4b2e63}
+
+/* ---- landing hero ---- */
+.hero{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;min-height:min(72vh,640px);padding:3rem 1rem 2rem;overflow:hidden}
+.heroink{position:absolute;inset:-6% -2%;width:104%;height:112%;z-index:0;pointer-events:none}
+.bigmark{position:relative;z-index:1;margin:0;color:#16161a;
+  font:800 clamp(4rem,17vw,12rem)/.9 'Manrope',-apple-system,'Segoe UI',Roboto,sans-serif;letter-spacing:-.045em}
+.tagline{position:relative;z-index:1;margin:1.4rem 0 0;max-width:42ch;color:#6f685f;
+  font:400 clamp(1rem,2.1vw,1.22rem)/1.5 'Manrope',-apple-system,'Segoe UI',Roboto,sans-serif;letter-spacing:.01em}
+
+/* ---- landing bands + cards ---- */
+.band{max-width:60rem;margin:0 auto;padding:2.6rem clamp(1rem,4vw,2rem) .6rem;scroll-margin-top:5rem}
+.band-title{font:700 .82rem/1 'Manrope',-apple-system,'Segoe UI',Roboto,sans-serif;text-transform:uppercase;letter-spacing:.18em;color:#6f685f;
+  margin:0 0 1.1rem;display:flex;align-items:center;gap:.6rem}
+.band-title::before{content:"";width:24px;height:2px;background:#4b2e63;display:inline-block}
+.overview{font:400 1.06rem/1.6 Georgia,'Iowan Old Style','Times New Roman',serif;color:#16161a;max-width:60ch;margin:0 0 1.4rem}
+.maplist{margin:.2rem 0 1rem;padding-left:1.2rem;color:#6f685f;font:400 1rem/1.7 Georgia,'Iowan Old Style','Times New Roman',serif}
+.maplist a{color:#16161a}
+.cards{display:grid;gap:.9rem;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr))}
+.card{position:relative;display:block;background:#efeae0;border:1px solid rgba(22,22,26,.12);
+  border-radius:14px;padding:1.05rem 1.1rem 1.15rem;color:#16161a;transition:transform .14s ease,box-shadow .14s ease,border-color .14s}
+.card:hover{text-decoration:none;transform:translateY(-3px);border-color:#4b2e6355;
+  box-shadow:0 10px 26px -16px rgba(43,29,61,.55)}
+.card-dot{position:absolute;top:1.15rem;right:1.1rem;width:9px;height:9px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#5a3a73,#2b1d3d)}
+.card-title{margin:.1rem 2rem .35rem 0;font:600 1.06rem/1.32 'Manrope',-apple-system,'Segoe UI',Roboto,sans-serif;letter-spacing:-.01em}
+.card-sum{margin:0;color:#6f685f;font:400 .92rem/1.45 Georgia,'Iowan Old Style','Times New Roman',serif}
+
+/* ---- study page ---- */
+.study{max-width:46rem;margin:0 auto;padding:2.2rem clamp(1rem,4vw,1.4rem) 5rem}
+.study-head h1{margin:0;font:800 clamp(1.7rem,4.6vw,2.3rem)/1.12 'Manrope',-apple-system,'Segoe UI',Roboto,sans-serif;letter-spacing:-.025em}
+.study-head .sub{margin:.7rem 0 0;color:#6f685f;font:italic 400 1.12rem/1.45 Georgia,'Iowan Old Style','Times New Roman',serif}
+.study-head .rule{height:3px;width:84px;margin:1.3rem 0 .4rem;border-radius:3px;
+  background:linear-gradient(90deg,#4b2e63,#2b1d3d 55%,transparent)}
+article{font-size:18px}
 article :first-child{margin-top:0}
-h1,h2,h3{font-family:-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.25}
-h1{font-size:1.7rem} h2{font-size:1.28rem;margin-top:2rem;border-bottom:1px solid var(--line);padding-bottom:.2rem}
-h3{font-size:1.05rem}
-.center,div[style*="text-align:center"]{text-align:center}
-p{margin:.7rem 0}
-code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.86em;
-  background:var(--code);padding:.12em .35em;border-radius:.3em}
-code a{text-decoration:none}
-figure{margin:1.6rem 0;text-align:center}
-img.fig{max-width:100%;height:auto;border:1px solid var(--line);border-radius:.4em;background:#fff}
-figcaption{font:13.5px/1.5 -apple-system,"Segoe UI",sans-serif;color:var(--mut);
-  text-align:left;margin-top:.5rem}
-.fignum{color:var(--ink);font-weight:700}
-.katex-display{overflow-x:auto;overflow-y:hidden;padding:.2rem 0}
-.xref{text-decoration:none;font-weight:600}
-table{border-collapse:collapse;margin:1.2rem auto;font-size:.92rem}
-th,td{padding:.3rem .7rem;text-align:left}
-thead th{border-top:2px solid var(--ink);border-bottom:1px solid var(--ink)}
-tbody tr:last-child td{border-bottom:2px solid var(--ink)}
-caption{caption-side:bottom;color:var(--mut);font:13.5px -apple-system,sans-serif;margin-top:.4rem}
-.related{margin-top:2.4rem;border-top:1px solid var(--line);padding-top:1rem;
-  font-family:-apple-system,"Segoe UI",sans-serif;font-size:14.5px}
-.related h3{margin:.2rem 0 .5rem} .related ul{margin:0;padding-left:1.1rem}
-.related li{margin:.3rem 0}
-.pagefoot{margin-top:2.5rem;padding-top:1rem;border-top:1px solid var(--line);
-  color:var(--mut);font:13px -apple-system,"Segoe UI",sans-serif}
-/* index */
-.subtitle{font-size:1.15rem;color:var(--mut);margin:.2rem 0}
-.note{font:13px -apple-system,sans-serif;color:var(--mut)}
-.cards{list-style:none;padding:0;margin:.5rem 0 2rem}
-.card{border:1px solid var(--line);border-radius:.5em;padding:.8rem 1rem;margin:.6rem 0}
-.card-title{font-family:-apple-system,"Segoe UI",sans-serif;font-weight:600;font-size:1.05rem;text-decoration:none}
-.card-hyp{font:14px/1.5 -apple-system,"Segoe UI",sans-serif;color:var(--mut);margin:.4rem 0 0}
+h1,h2,h3,h4{font-family:'Manrope',-apple-system,'Segoe UI',Roboto,sans-serif;line-height:1.22;letter-spacing:-.015em}
+h2{font-size:1.4rem;margin:2.3rem 0 .5rem;padding-bottom:.25rem;border-bottom:1px solid rgba(22,22,26,.12)}
+h3{font-size:1.1rem;margin:1.6rem 0 .3rem}
+p{margin:.75rem 0}
+strong{font-weight:700}
+ul,ol{padding-left:1.3rem} li{margin:.25rem 0}
+hr{border:0;border-top:1px solid rgba(22,22,26,.12);margin:2rem 0}
+
+/* code: technical identifiers, de-emphasised on cream (never a link) */
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.84em;
+  background:rgba(75,46,99,.09);color:#3a2348;padding:.1em .34em;border-radius:.32em;word-break:break-word}
+
+/* figures */
+figure{margin:1.8rem 0;text-align:center;scroll-margin-top:5rem}
+img.fig{max-width:100%;height:auto;background:#fff;border:1px solid rgba(22,22,26,.12);border-radius:.5em;padding:.4rem}
+figcaption{font:400 14px/1.55 'Manrope',-apple-system,'Segoe UI',Roboto,sans-serif;color:#6f685f;text-align:left;margin-top:.6rem}
+.fignum{color:#16161a;font-weight:700}
+
+/* equation refs + anchors */
+.xref{font-weight:600;text-decoration:none}
+.eqa{position:relative;top:-4.4rem;visibility:hidden}
+.katex-display{overflow-x:auto;overflow-y:hidden;padding:.25rem 0}
+
+/* propositions / proofs (pandoc amsthm) */
+.theorem,.proposition,.lemma,.corollary,.definition,.remark{
+  background:#efeae0;border:1px solid rgba(22,22,26,.12);border-left:3px solid #4b2e63;
+  border-radius:.5em;padding:.7rem 1rem;margin:1.3rem 0;scroll-margin-top:5rem}
+.theorem strong:first-child,.proposition strong:first-child,.lemma strong:first-child,
+.corollary strong:first-child,.definition strong:first-child{
+  font-family:'Manrope',-apple-system,'Segoe UI',Roboto,sans-serif;color:#2b1d3d}
+.proof{margin:1rem 0 1.4rem;padding-left:1rem;border-left:2px solid rgba(22,22,26,.12);color:#3c3833;font-size:.97em}
+.proof::after{content:"\220E";display:block;text-align:right;color:#6f685f}
+
+/* tables (booktabs feel) */
+.tablewrap{overflow-x:auto;margin:1.5rem 0}
+table{border-collapse:collapse;margin:0 auto;font:400 .92rem/1.4 'Manrope',-apple-system,'Segoe UI',Roboto,sans-serif}
+th,td{padding:.4rem .8rem;text-align:left}
+thead th{border-top:2px solid #16161a;border-bottom:1px solid #16161a;font-weight:700}
+tbody tr:last-child td{border-bottom:2px solid #16161a}
+caption{caption-side:bottom;color:#6f685f;font:400 13.5px/1.5 'Manrope',-apple-system,'Segoe UI',Roboto,sans-serif;margin-top:.5rem;text-align:left}
+
+/* TL;DR / boxed callout */
+.tldr{background:#efeae0;border:1px solid rgba(22,22,26,.12);border-left:3px solid #4b2e63;
+  border-radius:.5em;padding:.85rem 1.05rem;margin:0 0 1.6rem;font-size:.98rem}
+
+@media (max-width:600px){
+  .nav{flex-wrap:wrap;gap:.5rem} .tabs{order:3;width:100%} body{font-size:17px}
+}
 </style>
 </head>
 <body>
-<header class="topbar">
-  <a class="home" href="index.html">neurep</a>
-  <nav class="crumbs"><a href="index.html">studies</a> / Separator / flat collapse</nav>
-</header>
-<main>
-  <div class="meta">
-    <span class="badge" style="background:#6e7781;color:#fff">draft</span>
-    <span class="date"></span>
-  </div>
-  
-  <article>
-  <div class="center">
-<p><span><strong>What is the Separator regularizer actually
-doing?</strong></span><br />
-<span>When its penalty vanishes — pruning, or collapse?</span></p>
-</div>
+<header class="nav"><a class="brand" href="index.html"><svg class="inkmark" viewBox="0 0 100 100" width="26" height="26" aria-hidden="true">
+<defs><filter id="im-f" x="-40%" y="-40%" width="180%" height="180%">
+<feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="11" result="t"/>
+<feDisplacementMap in="SourceGraphic" in2="t" scale="16"/></filter>
+<radialGradient id="im-g" cx="38%" cy="30%" r="78%">
+<stop offset="0%" stop-color="#5a3a73"/><stop offset="55%" stop-color="#2b1d3d"/>
+<stop offset="100%" stop-color="#16161a"/></radialGradient></defs>
+<g filter="url(#im-f)"><ellipse cx="52" cy="50" rx="29" ry="26" fill="url(#im-g)"/>
+<ellipse cx="66" cy="40" rx="12" ry="10" fill="#4b2e63" opacity=".8"/>
+<circle cx="35" cy="64" r="6" fill="#2b1d3d" opacity=".7"/></g></svg><span>neurep</span></a><nav class="tabs"><a class="tab" href="index.html#roadmap">roadmap</a><a class="tab active" href="index.html#experiments">experiments</a><a class="tab" href="index.html#theory">theory</a><a class="tab" href="index.html#others">others</a></nav></header>
+<main class="study"><header class="study-head"><h1>What is the Separator regularizer actually
+doing?</h1><p class=sub>When its penalty vanishes — pruning, or collapse?</p><div class="rule"></div></header><article>
+<div class="tldr"><p><strong>TL;DR.</strong> Separator (<code>nr.dchn-*</code>, a
+dual-channel per-neuron code regularizer) is our best learned
+regularizer — it beats NoReg on test loss and on causal modularity
+(interchange-intervention accuracy, IIA). Its penalty <span
+class="math inline">\(\mathcal{R}\!\to\!0\)</span> by step <span
+class="math inline">\(\sim\)</span>8–10k, which we’d been reading as
+“the codes collapse.” <strong>A decomposition shows <span
+class="math inline">\(\mathcal{R}\!\to\!0\)</span> means different
+things on different tasks.</strong> On <code>flat_modular</code> the
+regularizer is genuinely <em>working</em>: the codes keep real structure
+and weight is pruned by <span class="math inline">\(&gt;\)</span>2
+orders of magnitude on high-distance edges (corr<span
+class="math inline">\((|W|,d)\!=\!-0.60\)</span>). On
+<code>hier_tree</code> the codes truly <em>collapse</em> (<span
+class="math inline">\(d\!=\!0\)</span> for 100% of pairs) and the
+regularizer goes inert. Separately: the coupling <span
+class="math inline">\(c\)</span> was tuned on validation MSE and
+<strong>under-searched</strong> — on <code>flat</code>, <span
+class="math inline">\(10\times\)</span> <span
+class="math inline">\(c\)</span> triples anatomical modularity (Newman
+<span class="math inline">\(Q\!:\!0.22\!\to\!0.63\)</span>) at no
+significant test-loss cost.</p></div>
 <figure id="fig:traj" data-latex-placement="h">
 <img class="fig" src="assets/fig1_trajectory.svg" alt="fig1_trajectory" loading="lazy" />
 <figcaption><span class="fignum">Figure 1.</span> Test loss (solid, left log axis) for Separator / L1 / NoReg,
@@ -95,7 +169,7 @@ class="math inline">\(\mathcal{R}\)</span> is falling</em> and survives
 after. Winners: <code>flat</code>=<code>dchn-euc-sq</code>,
 <code>hier</code>=<code>dchn-cont-abs</code>.</figcaption>
 </figure>
-<h1 id="setup-and-the-question">Setup and the question</h1>
+<h2 id="setup-and-the-question">Setup and the question</h2>
 <p>Each neuron <span class="math inline">\(i\)</span> carries a
 representation <span class="math inline">\(\phi_i\)</span> —
 dual-channel codes <span
@@ -123,9 +197,9 @@ information; or <strong>(b) the regularizer succeeded</strong> — it
 drove <span class="math inline">\(|W_{ij}|\!\to\!0\)</span> wherever
 <span class="math inline">\(d_{ij}\)</span> is large, while the codes
 stay informative. So we decompose it.</p>
-<h1 id="what-mathcalrto0-actually-means-it-differs-by-task">What <span
+<h2 id="what-mathcalrto0-actually-means-it-differs-by-task">What <span
 class="math inline">\(\mathcal{R}\!\to\!0\)</span> actually means (it
-differs by task)</h1>
+differs by task)</h2>
 <p>We read <span class="math inline">\(\phi\)</span> and <span
 class="math inline">\(W\)</span> from the same converged checkpoint,
 measure every pairwise distance <span
@@ -138,8 +212,8 @@ class="math inline">\(|W|\)</span> within each layer to destroy any
 class="math inline">\(d\)</span> alignment; if the low <span
 class="math inline">\(\mathcal{R}\)</span> were just collapse, shuffling
 <span class="math inline">\(|W|\)</span> would not change it.</p>
-<h4 id="flat-the-regularizer-is-working."><code>flat</code>: the
-regularizer is working.</h4>
+<h5 id="flat-the-regularizer-is-working."><code>flat</code>: the
+regularizer is working.</h5>
 <p>Only 82% of pairs reach <span
 class="math inline">\(d&lt;10^{-3}\)</span>; the rest keep real distance
 (up to <span class="math inline">\(0.49\)</span>). <span
@@ -160,15 +234,15 @@ class="math inline">\(400\times\)</span>). So <span
 class="math inline">\(\mathcal{R}\!\to\!0\)</span> here is the
 regularizer doing its job — pruning weight between incompatible neurons
 — and <strong>the codes remain informative</strong>.</p>
-<h4 id="hier-genuine-collapse."><code>hier</code>: genuine
-collapse.</h4>
+<h5 id="hier-genuine-collapse."><code>hier</code>: genuine
+collapse.</h5>
 <p><span class="math inline">\(d\!=\!0\)</span> for 100% of pairs (max
 <span class="math inline">\(d\!=\!0\)</span>); <span
 class="math inline">\(\mathcal{R}\!=\!0\)</span> regardless of <span
 class="math inline">\(W\)</span> (shuffling does nothing). The codes are
 uninformative and the regularizer is inert.</p>
-<h4 id="ablations-agree-the-codes-must-be-meaningful.">Ablations agree
-the codes must be meaningful.</h4>
+<h5 id="ablations-agree-the-codes-must-be-meaningful.">Ablations agree
+the codes must be meaningful.</h5>
 <p>Freezing <span class="math inline">\(\phi\)</span> at its random init
 (penalty stays large) is <em>worse</em> than NoReg (<code>flat</code>
 <span class="math inline">\(0.049\)</span> vs <span
@@ -202,7 +276,7 @@ alignment <span class="math inline">\(=\)</span> pruning), on
 <code>hier</code> both are <span class="math inline">\(0\)</span>
 (collapse).</figcaption>
 </figure>
-<h1 id="coverage">Coverage</h1>
+<h2 id="coverage">Coverage</h2>
 <p>Across all five v10 cells (Table <a href="#tab:cov"
 data-reference-type="ref" data-reference="tab:cov">1</a>), <strong>no
 single regularizer dominates</strong> — Separator wins
@@ -215,7 +289,7 @@ this: where Separator is best (<code>flat</code>) the regularizer is
 working; where it is worst (<code>hier</code>) the codes collapsed. Only
 Separator’s learned-<span class="math inline">\(\phi\)</span> ever goes
 inert (8–14k); constant-magnitude regularizers (L1, BIMT) never do.</p>
-<table id="tab:cov">
+<div class="tablewrap"><table id="tab:cov">
 <caption><strong>Final test MSE</strong> (mean over 5 seeds; best
 variant per family). Lower is better; <strong>bold</strong> <span
 class="math inline">\(=\)</span> best per column.</caption>
@@ -288,8 +362,8 @@ class="math inline">\(\mathcal{R}\!\approx\!0\)</span> throughout</td>
 <td style="text-align: center;">—</td>
 </tr>
 </tbody>
-</table>
-<h1 id="a-lever-the-hp-search-missed">A lever the HP search missed</h1>
+</table></div>
+<h2 id="a-lever-the-hp-search-missed">A lever the HP search missed</h2>
 <p>The coupling <span class="math inline">\(c\)</span> was selected to
 minimize <em>validation</em> MSE — an objective blind to modularity.
 Re-running the Separator winners at <span
@@ -329,8 +403,8 @@ class="math inline">\(c\)</span>, test MSE flat. Dotted <span
 class="math inline">\(=\)</span> HP-picked <span
 class="math inline">\(c\)</span>.</figcaption>
 </figure>
-<h1 id="open-question-is-the-collapse-a-bug">Open question: is the
-collapse a bug?</h1>
+<h2 id="open-question-is-the-collapse-a-bug">Open question: is the
+collapse a bug?</h2>
 <p>The decomposition sharpens the question. On <code>flat</code> the
 regularizer works (informative codes <span
 class="math inline">\(+\)</span> pruning); on <code>hier</code> it
@@ -365,7 +439,7 @@ free” holds.</p></li>
 <em>per task</em> (pruning vs. collapse), not as a blanket statement
 that the codes are inert.</p></li>
 </ol>
-<h1 class="unnumbered" id="appendix-qa">Appendix — Q&amp;A</h1>
+<h2 class="unnumbered" id="appendix-qa">Appendix — Q&amp;A</h2>
 <p><strong>Q. How is Newman modularity <span
 class="math inline">\(Q\)</span> computed?</strong> Nodes <span
 class="math inline">\(=\)</span> all neurons (input <span
@@ -402,20 +476,13 @@ href="#fig:decomp" data-reference-type="ref"
 data-reference="fig:decomp">2</a>c) separates them: <code>flat</code> is
 pruning, <code>hier</code> is collapse.</p>
 <p><span><em>Reproducibility:</em> all numbers regenerated from per-run
-<code>results.json</code>/<code>events.jsonl</code>, converged
-<code>state.pt</code> (<span class="math inline">\(\phi\)</span> and
+/<code>events.jsonl</code>, converged
+ (<span class="math inline">\(\phi\)</span> and
 <span class="math inline">\(W\)</span>), and intervention chunks by the
 scripts in the <code>collapse_investigation</code> folder
-(<code>decompose_collapse.py</code> for §2). IIA <span
+( for §2). IIA <span
 class="math inline">\(=\)</span> interchange-intervention mediation
 strength; ablations are exact-HP reruns.</span></p>
-
-  </article>
-  
-  <footer class="pagefoot">
-    Generated from <code>collapse_review/collapse_review.tex</code>.
-    <!-- comment widget mounts here in Phase 2 (Hypothes.is / self-hosted) -->
-  </footer>
-</main>
+</article></main>
 </body>
 </html>
