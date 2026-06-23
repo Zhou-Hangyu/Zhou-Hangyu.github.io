@@ -256,7 +256,7 @@ microscope</a></span><span class="repro">reproduce: <a href="https://github.com/
   the static weight-magnitude proxy \(\lvert W_{ij}\rvert\)), we pre-registered a gate testing
   whether \(A\) actually carries module structure. On planted nets, \(A\) recovers disjoint
   modules perfectly (<strong>H1 met</strong>, ARI \(=1.0\)) and — the decisive test — does
-  <strong>not</strong> transitively merge two pipelined modules across a strong reusability
+  <strong>not</strong> transitively merge two pipelined modules (one's output feeds the next) across a strong reusability
   bottleneck (<strong>H2 pass</strong>: \(G{+}1\) communities recovered, root never absorbed in
   10/10 seeds). <strong>But \(A\) never beats \(\lvert W\rvert\)</strong> (<strong>H3 fail</strong>:
   pooled \(\Delta\text{ARI}=-0.01\), not significant) — and in the realistic regime the modules
@@ -273,23 +273,28 @@ microscope</a></span><span class="repro">reproduce: <a href="https://github.com/
   <a class="xref" href="../flat_forensics_report/">the flat winning ticket under the microscope</a>) show the
   consequence: the codes collapse or act only as a capacity-pruning bias, and the task's real
   modules sit in <em>rotated</em> subspaces that mix many neurons.</p>
-  <p><strong>The proposed fix.</strong> Stop pricing connections by weight magnitude; instead shape
-  the codes with a <em>measured</em>, data-driven communication score \(A_{ij}\). The contrastive
-  module-detection term \(\mathcal{R}_{\text{mod}}\) pulls two neurons' codes together when their
-  communication \(A_{ij}\) is strong and pushes them apart — up to a margin \(m\) — when it is weak.
-  The intuition: neurons that consistently participate in the same computation should end up with
-  aligned representations \(\phi\). Concretely,</p>
-  \[\begin{equation}\label{eq:mod}
-    \mathcal{R}_{\text{mod}} = \sum_{\ell}\sum_{i,j}\Big[\,\widetilde A^{(\ell)}_{ij}\,d_{ij}
-      \;+\;\big(1-\widetilde A^{(\ell)}_{ij}\big)\,\max\!\big(0,\,m-d_{ij}\big)\Big],
-    \qquad d_{ij}=\lVert\phi_i-\phi_j\rVert .
+  <p><strong>The proposed fix.</strong> The redesign (C. Dovrolis) drops weight-magnitude pricing
+  entirely: a measured, data-driven communication score \(A_{ij}\) instead shapes the network through
+  <em>two</em> regularizers added to the task loss \(\mathcal{L}_{\text{task}}\) (mean-squared error,
+  for the regression tasks here) — an <em>edge-suppression</em> (prune) term and a
+  contrastive <em>module-detection</em> term:</p>
+  \[\begin{equation}\label{eq:total}
+    \mathcal{L}_{\text{total}} = \mathcal{L}_{\text{task}}(W) \;+\; \lambda_{\text{sup}}\,\mathcal{R}_{\text{sup}} \;+\; \lambda_{\text{mod}}\,\mathcal{R}_{\text{mod}},
   \end{equation}\]
-  <p>Here \(d_{ij}=\lVert\phi_i-\phi_j\rVert\) is the distance between the two codes and
-  \(\widetilde A^{(\ell)}_{ij}\in[0,1]\) the detached, within-layer-normalized communication score.
-  The first term <em>attracts</em> strongly-communicating pairs; the second <em>repels</em>
-  weakly-communicating pairs until they are at least the margin \(m\) apart, so the trivial collapse
-  (all codes equal, \(d_{ij}\equiv0\)) leaves the repulsion positive and is no longer optimal —
-  modules should fall out as clusters of mutually-close codes.</p>
+  \[\begin{align}
+    \mathcal{R}_{\text{sup}} &= \tfrac{1}{L}\sum_{\ell}\sum_{i,j}\big(1-\widetilde A^{(\ell)}_{ij}\big)\,\lvert W^{(\ell)}_{ij}\rvert, \label{eq:sup}\\[2pt]
+    \mathcal{R}_{\text{mod}} &= \sum_{\ell}\sum_{i,j}\Big[\,\widetilde A^{(\ell)}_{ij}\,d_{ij} \;+\; \big(1-\widetilde A^{(\ell)}_{ij}\big)\,\max\!\big(0,\,m-d_{ij}\big)\Big],\quad d_{ij}=\lVert\phi_i-\phi_j\rVert. \label{eq:mod}
+  \end{align}\]
+  <p>Here \(\widetilde A^{(\ell)}_{ij}\in[0,1]\) is the detached, within-layer-normalized score, and it
+  enters <em>both</em> terms only as a constant. \(\mathcal{R}_{\text{sup}}\) prunes
+  weakly-communicating weights — it keeps the high-\(A\) edges and shrinks the rest, a measured
+  replacement for the static \(\lvert W\rvert\) price. \(\mathcal{R}_{\text{mod}}\) organizes the
+  per-neuron codes \(\phi\) (with distance \(d_{ij}=\lVert\phi_i-\phi_j\rVert\) and margin \(m\)): its
+  first term <em>attracts</em> strongly-communicating pairs, its second <em>repels</em>
+  weakly-communicating pairs up to the margin, so the trivial collapse (\(d_{ij}\equiv0\)) leaves the
+  repulsion positive and is no longer optimal — modules fall out as clusters of mutually-close codes.
+  The intuition throughout: neurons that consistently participate in the same computation should end
+  up close.</p>
   <p><strong>The risk.</strong> Strong communication is not the same as shared module
   membership: in a hierarchy one module <em>consumes the output of</em> another, so a hierarchical
   task <em>must</em> contain strong inter-module (pipeline) edges. The repulsion in
@@ -319,7 +324,9 @@ microscope</a></span><span class="repro">reproduce: <a href="https://github.com/
   <div class="repro"><p><strong>Reproducibility (R2).</strong>
   <strong>Replication:</strong> 10 seeds per setting; each seed redraws the random teachers
   (S1/S2) or the task instance + init (S3), so results are over the random task family, not one
-  instance. <strong>Training:</strong> all nets GELU + AdamW (weight-decay 0), learning rate
+  instance. <strong>Training:</strong> every net — planted S1/S2 and realistic S3 alike — minimizes
+  <strong>mean-squared-error (MSE) loss</strong> on the standardized targets, with GELU activations
+  and AdamW (weight-decay 0), learning rate
   \(3\times10^{-3}\), batch 200, eval every 500 steps, patience 20, best-validation-checkpoint
   selection, cap 6000 steps (the nets are tiny and converge by ~2–3k, so the chosen checkpoint is
   unaffected by the cap). <strong>Fit gates</strong> (a net's
@@ -334,22 +341,41 @@ microscope</a></span><span class="repro">reproduce: <a href="https://github.com/
   </p></div>
 
   <h3>3.1 Settings</h3>
-  <p>Two <em>planted</em> masked MLPs, where the module of every neuron and every inter-module
-  edge is known by construction, plus the realistic net:</p>
+  <p>The two <em>planted</em> nets are <strong>masked MLPs</strong>: every layer's weight carries a
+  fixed \(0/1\) mask and the forward uses the effective weight \(W\odot\text{mask}\) (masked entries
+  are held at exactly \(0\), re-zeroed after each step), so the module of every neuron and every
+  inter-module edge is fixed by construction and is read directly by the scores. Each module's
+  sub-function is a fixed random 2-layer <em>teacher</em> MLP (\(\text{in}\to12\to1\), tanh —
+  deliberately distinct from the student's GELU); inputs are \(\mathcal{N}(0,1)\) and every target
+  column is standardized to unit variance (so the MSE is balanced across outputs). We use \(G{=}4\)
+  modules, \(f{=}4\) input dims each, leaf width \(h{=}12\), and root width \(h_{\text{root}}{=}24\);
+  S3 is the unmasked kernel MLP.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th></th><th>Topology (layer widths)</th><th>Masks</th><th>Inter-module edges</th><th>Neurons</th><th>Modules</th></tr></thead>
+    <tbody>
+      <tr><td><strong>S1</strong></td><td>\(16\to48\to48\to4\)</td><td>block-diagonal at every layer</td><td>none</td><td>116</td><td>4</td></tr>
+      <tr><td><strong>S2</strong></td><td>\(16\to48\to4\to24\to1\)</td><td>block-diagonal, except leaf-scalar\(\to\)root-hidden which is <em>full</em></td><td>96 (\(4{\times}24\))</td><td>93</td><td>5</td></tr>
+      <tr><td><strong>S3</strong></td><td>\(24\to64\to64\to1\)</td><td>none (dense)</td><td>dense (unmasked)</td><td>153</td><td>4</td></tr>
+    </tbody>
+  </table></div>
   <ul>
-    <li><strong>S1 — disjoint modules (necessary condition).</strong> \(G{=}4\) independent
-    sub-nets on disjoint inputs, \(G\) separate outputs, <em>no</em> inter-module edges anywhere.
-    Ground truth: the \(G\) blocks.</li>
-    <li><strong>S2 — hierarchy with a reusability bottleneck (decisive).</strong> \(G\) leaf
-    sub-nets each emit one scalar; those scalars feed a shared root sub-net. Masking makes the
-    <em>only</em> inter-module edges the leaf-scalar\(\to\)root-input ones. Ground truth:
-    \(\{\text{leaf}_1,\dots,\text{leaf}_G,\text{root}\}\) (\(G{+}1\) modules) with a known
-    bottleneck. The S1\(\to\)S2 contrast isolates exactly the transitive-merging risk above.</li>
-    <li><strong>S3 — realistic.</strong> The standard \(24\!\to\!64\!\to\!64\!\to\!1\) GELU MLP,
-    plain training, on <code>flat_modular</code> (w=4, ν=16) and <code>hier_tree</code>
-    (w=4, d=3, ν=16). No hidden ground truth; input neurons carry their factor-group labels, and
-    we add three rotation-aware subspace probes (defined in §3.2; adapted from
-    <a class="xref" href="../flat_forensics_report/">flat_forensics</a>).</li>
+    <li><strong>S1 — disjoint modules (necessary condition).</strong> \(G\) independent sub-nets on
+    disjoint input groups, with \(G\) <em>separate</em> outputs and no inter-module edges anywhere —
+    the hidden blocks and the output layer are all block-diagonal, so output \(g\) reads only block
+    \(g\). Each module computes \(y_g=T_g(x_g)\): \(G\) independent regressions. Ground truth: the
+    \(G\) blocks.</li>
+    <li><strong>S2 — hierarchy with a reusability bottleneck (decisive).</strong> \(G\) leaf sub-nets
+    (block-diagonal input→leaf-hidden→one scalar \(s_g\) each) feed a shared root sub-net through a
+    <em>full</em> leaf-scalar→root-hidden layer — that \(4{\times}24\) block is the <em>only</em>
+    inter-module wiring. The target is \(y=R\big(T_1(x_1),\dots,T_G(x_G)\big)\), a root teacher on the
+    \(G\) leaf scalars. Ground truth: \(\{\text{leaf}_1,\dots,\text{leaf}_G,\text{root}\}\)
+    (\(G{+}1\) modules). The S1\(\to\)S2 contrast isolates exactly the transitive-merging risk of §1.</li>
+    <li><strong>S3 — realistic.</strong> The standard \(24\to64\to64\to1\) GELU MLP, plain
+    (unregularized) training, on <code>flat_modular</code> (w=4, ν=16) and <code>hier_tree</code>
+    (w=4, d=3, ν=16) — 24-dim inputs (8 signal + 16 nuisance), \(n_{\text{train}}=2048\). No hidden
+    ground truth; the input neurons carry their factor-group labels
+    (\(\{0,1\},\{2,3\},\{4,5\},\{6,7\}\)), and we add the three rotation-aware subspace probes
+    (defined in §3.2; adapted from <a class="xref" href="../flat_forensics_report/">flat_forensics</a>).</li>
   </ul>
 
   <h3>3.2 Detection and metrics</h3>
@@ -392,9 +418,10 @@ microscope</a></span><span class="repro">reproduce: <a href="https://github.com/
         rotation-aware probes beat the \(\lvert W\rvert\) baseline ⇒ rotated codes; (c) neither</td></tr>
     </tbody>
   </table></div>
-  <p><strong>Decision rule.</strong> Build \(\mathcal{R}_{\text{mod}}\) (\eqref{eq:mod}) <em>only
-  if</em> some single score satisfies H1 <em>and</em> H2 <em>and</em> H3; H4 then sets the
-  representation class. H1–H3 are confirmatory and gating; H4 is non-gating.</p>
+  <p><strong>Decision rule.</strong> Build the three-term objective \(\mathcal{L}_{\text{total}}\)
+  (Eqs. \eqref{eq:total}–\eqref{eq:mod}) <em>only if</em> some single score satisfies H1 <em>and</em>
+  H2 <em>and</em> H3; H4 then sets the representation class. H1–H3 are confirmatory and gating; H4 is
+  non-gating.</p>
   <p class="remark"><strong>H3 is the kill switch.</strong> It is the blocking hypothesis: if a
   measured \(A\) fails to outperform the \(\lvert W\rvert\) proxy by a clear margin, there is no
   reason to replace the proxy and the redesign is effectively closed — however well H1 and H2 go.</p>
@@ -446,7 +473,7 @@ microscope</a></span><span class="repro">reproduce: <a href="https://github.com/
   score (M2) does edge ahead of \(\lvert W\rvert\) — by \(+0.163\) on flat_modular and \(+0.056\)
   on hier_tree — but neither gap is significant (\(p=0.105,\,0.68\)) and both absolute ARIs sit
   well below \(0.50\). Either way, <strong>the measured communication score delivers no decisive
-  advantage over the weight-magnitude proxy already in use.</strong></p>
+  advantage over the weight-magnitude proxy already in use (Fig. 3).</strong></p>
   <figure>
     <img class="fig" src="fig/fig_value_over_proxy.png" alt="Delta ARI of measured scores over |W|"/>
     <figcaption><strong>Figure 3.</strong> Value over the proxy, \(\Delta\text{ARI}=\)(measured
@@ -454,13 +481,21 @@ microscope</a></span><span class="repro">reproduce: <a href="https://github.com/
     but their error bars (\(\pm\)s.e.m.) cross zero and fall short of the \(+0.15\) bar.</figcaption>
   </figure>
 
+  <p><strong>The prune term fares no better.</strong> The other half of the objective is
+  \(\mathcal{R}_{\text{sup}}\), the edge-suppression/prune term. A prune-then-detect pass —
+  magnitude-prune the smallest weights, then re-detect (the Neural-Sculpting "prune, then detect"
+  order \(\mathcal{R}_{\text{sup}}\) is meant to exploit) — leaves S1 perfect but <em>lowers</em> S2
+  recovery (M3 \(0.88\!\to\!0.73\)): it keeps the high-magnitude bottleneck edges and drops weak
+  within-module ones, so pruning-first sharpens nothing relevant. Neither term of
+  \(\mathcal{L}_{\text{total}}\) earns its keep over the existing \(\lvert W\rvert\) approach.</p>
+
   <p><strong>H4 — representation class (non-gating).</strong> On both S3 tasks the input-group ARI is
   weak and high-variance (best score: 0.36 flat, 0.24
   hier; both below the \(0.50\) branch-(a) bar), while the rotation-aware <code>patch_r2</code>
   reliably recovers the modules from <em>rotated</em> subspaces (0.92 flat; 0.47 mean / 0.59 median
   hier) far above the neuron-level view and the rotation-blind control, with low
   <code>axis_mass</code> (\(\approx0.23\), i.e. not single-neuron-aligned). Both tasks therefore
-  land in <strong>branch (b): structure is real but rotated</strong> — per-neuron codes are the
+  land in <strong>branch (b): structure is real but rotated</strong> (Fig. 4) — per-neuron codes are the
   wrong object; only rotation-aware codes could carry it. This corroborates
   <a class="xref" href="../flat_forensics_report/">the flat-forensics rotated-modules finding</a>. H4 is
   non-gating (it would set the representation class only if the gate passed).</p>
@@ -474,7 +509,8 @@ microscope</a></span><span class="repro">reproduce: <a href="https://github.com/
   <h2>5. Verdict</h2>
   <div class="tldr"><p><strong>Decision (rule of §4: proceed iff some single score satisfies
   H1 ∧ H2 ∧ H3).</strong> H1 met, H2 pass, <strong>H3 fail</strong> ⇒
-  <strong>do not proceed</strong> to the \(A\)-based regularizer. Blocking hypothesis: <strong>H3</strong>.
+  <strong>do not build</strong> the \(A\)-based objective \(\mathcal{L}_{\text{total}}\) (neither the
+  \(\mathcal{R}_{\text{sup}}\) prune term nor the \(\mathcal{R}_{\text{mod}}\) code term). Blocking hypothesis: <strong>H3</strong>.
   Two findings are genuinely encouraging for the concept — a measured \(A\) <em>does</em> carry
   module structure (H1) and <em>does not</em> transitively merge pipelined modules (H2, the risk
   that motivated the gate). But the premise of the redesign — that a measured communication score
