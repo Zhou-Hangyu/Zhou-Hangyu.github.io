@@ -37,8 +37,7 @@ a:hover{text-decoration:underline;text-underline-offset:2px}
 /* ---- header (wordmark + tabs), shared by every page ---- */
 .nav{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;
   gap:1rem;padding:.7rem clamp(1rem,4vw,3rem);
-  background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:saturate(140%) blur(8px);
-  border-bottom:1px solid var(--line)}
+  background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:saturate(140%) blur(8px)}
 .brand{display:inline-flex;align-items:center;gap:.5rem;color:var(--ink);font:800 1.18rem/1 var(--disp);
   letter-spacing:-.03em}
 .brand:hover{text-decoration:none}
@@ -59,7 +58,7 @@ a:hover{text-decoration:underline;text-underline-offset:2px}
 /* ---- landing bands + cards ---- */
 .band{max-width:60rem;margin:0 auto;padding:2.6rem clamp(1rem,4vw,2rem) .6rem;scroll-margin-top:5rem}
 .band-title{font:700 .82rem/1 var(--disp);text-transform:uppercase;letter-spacing:.18em;color:var(--mut);
-  margin:0 0 1.1rem;display:flex;align-items:center;gap:.6rem}
+  margin:0 0 1.1rem;display:flex;align-items:center;gap:.6rem;border:0;padding-bottom:0}
 .band-title::before{content:"";width:24px;height:2px;background:var(--violet);display:inline-block}
 .overview{font:400 1.06rem/1.6 var(--serif);color:var(--ink);max-width:60ch;margin:0 0 1.4rem}
 .maplist{margin:.2rem 0 1rem;padding-left:1.2rem;color:var(--mut);font:400 1rem/1.7 var(--serif)}
