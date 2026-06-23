@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow"><title>Does the communication matrix carry module structure? — neurep</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"><script>window.MathJax={tex:{tags:'ams',inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]'],['$$','$$']]},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']},chtml:{displayAlign:'center'}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><style>/* ========================================================================== *
+ *  research-site theme — the single source of truth for the visual language.
+ *  The builder INLINES this file into every generated page's <head>, so each
+ *  report renders standalone (open the .html directly) and is depth-proof.
+ *  Re-theme by editing the :root tokens below, then rebuild.
+ *  Visual language: warm cream ground, charcoal+violet ink, Manrope display.
+ * ========================================================================== */
+:root{
+  --bg:#e7e2d9;          /* warm cream ground */
+  --panel:#efeae0;       /* slightly lifted card/panel */
+  --ink:#16161a;         /* near-black text / wordmark */
+  --mut:#6f685f;         /* muted brown-grey */
+  --violet:#4b2e63;      /* primary accent */
+  --violet-dp:#2b1d3d;   /* deep accent */
+  --line:rgba(22,22,26,.12);
+  --code-bg:rgba(75,46,99,.09);
+  --code-fg:#3a2348;
+  --ok:#2f6b3a;          /* status: supported */
+  --bad:#9a3b2f;         /* status: refuted */
+  --wip:#8a6d1f;         /* status: wip/draft */
+  --disp:'Manrope',-apple-system,'Segoe UI',Roboto,sans-serif;  /* display/UI */
+  --serif:Georgia,'Iowan Old Style','Times New Roman',serif;     /* body */
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:18px/1.66 var(--serif);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+a{color:var(--violet);text-decoration:none}
+a:hover{text-decoration:underline;text-underline-offset:2px}
+
+/* ---- header (wordmark + tabs), shared by every page ---- */
+.nav{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;
+  gap:1rem;padding:.7rem clamp(1rem,4vw,3rem);
+  background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:saturate(140%) blur(8px);
+  border-bottom:1px solid var(--line)}
+.brand{display:inline-flex;align-items:center;gap:.5rem;color:var(--ink);font:800 1.18rem/1 var(--disp);
+  letter-spacing:-.03em}
+.brand:hover{text-decoration:none}
+.tabs{display:flex;gap:clamp(.7rem,2.4vw,1.9rem);font:500 .96rem/1 var(--disp)}
+.tabs .tab{color:var(--mut);padding:.2rem 0;border-bottom:2px solid transparent;letter-spacing:.01em}
+.tabs .tab:hover{color:var(--ink);text-decoration:none}
+.tabs .tab.active{color:var(--ink);border-bottom-color:var(--violet)}
+
+/* ---- landing hero ---- */
+.hero{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;min-height:min(72vh,640px);padding:3rem 1rem 2rem;overflow:hidden}
+.heroink{position:absolute;inset:-6% -2%;width:104%;height:112%;z-index:0;pointer-events:none}
+.bigmark{position:relative;z-index:1;margin:0;color:var(--ink);
+  font:800 clamp(4rem,17vw,12rem)/.9 var(--disp);letter-spacing:-.045em}
+.tagline{position:relative;z-index:1;margin:clamp(2.2rem,5vw,3.3rem) 0 0;max-width:none;color:var(--mut);
+  font:400 clamp(.95rem,2vw,1.18rem)/1.5 var(--disp);letter-spacing:.01em}
+
+/* ---- landing bands + cards ---- */
+.band{max-width:60rem;margin:0 auto;padding:2.6rem clamp(1rem,4vw,2rem) .6rem;scroll-margin-top:5rem}
+.band-title{font:700 .82rem/1 var(--disp);text-transform:uppercase;letter-spacing:.18em;color:var(--mut);
+  margin:0 0 1.1rem;display:flex;align-items:center;gap:.6rem}
+.band-title::before{content:"";width:24px;height:2px;background:var(--violet);display:inline-block}
+.overview{font:400 1.06rem/1.6 var(--serif);color:var(--ink);max-width:60ch;margin:0 0 1.4rem}
+.maplist{margin:.2rem 0 1rem;padding-left:1.2rem;color:var(--mut);font:400 1rem/1.7 var(--serif)}
+.maplist a{color:var(--ink)}
+.cards{display:grid;gap:.9rem;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr))}
+.card{position:relative;display:block;background:var(--panel);border:1px solid var(--line);
+  border-radius:14px;padding:1.05rem 1.1rem 1.15rem;color:var(--ink);transition:transform .14s ease,box-shadow .14s ease,border-color .14s}
+.card:hover{text-decoration:none;transform:translateY(-3px);border-color:color-mix(in srgb,var(--violet) 33%,transparent);
+  box-shadow:0 10px 26px -16px rgba(43,29,61,.55)}
+.card-dot{position:absolute;top:1.15rem;right:1.1rem;width:9px;height:9px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#5a3a73,var(--violet-dp))}
+.card-title{margin:.1rem 2rem .35rem 0;font:600 1.06rem/1.32 var(--disp);letter-spacing:-.01em}
+.card-sum{margin:0;color:var(--mut);font:400 .92rem/1.45 var(--serif)}
+
+/* ---- study page ---- */
+.study{max-width:46rem;margin:0 auto;padding:2.2rem clamp(1rem,4vw,1.4rem) 5rem}
+.study-head h1{margin:0;font:800 clamp(1.7rem,4.6vw,2.3rem)/1.12 var(--disp);letter-spacing:-.025em}
+.study-head .sub{margin:.7rem 0 0;color:var(--mut);font:italic 400 1.12rem/1.45 var(--serif)}
+.study-head .rule{height:3px;width:84px;margin:1.3rem 0 .4rem;border-radius:3px;
+  background:linear-gradient(90deg,var(--violet),var(--violet-dp) 55%,transparent)}
+article{font-size:18px}
+article :first-child{margin-top:0}
+h1,h2,h3,h4{font-family:var(--disp);line-height:1.22;letter-spacing:-.015em}
+h2{font-size:1.4rem;margin:2.3rem 0 .5rem;padding-bottom:.25rem;border-bottom:1px solid var(--line)}
+h3{font-size:1.1rem;margin:1.6rem 0 .3rem}
+p{margin:.75rem 0}
+strong{font-weight:700}
+ul,ol{padding-left:1.3rem} li{margin:.25rem 0}
+hr{border:0;border-top:1px solid var(--line);margin:2rem 0}
+
+/* code: technical identifiers, de-emphasised on cream (never a link) */
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.84em;
+  background:var(--code-bg);color:var(--code-fg);padding:.1em .34em;border-radius:.32em;word-break:break-word}
+
+/* figures */
+figure{margin:1.8rem 0;text-align:center;scroll-margin-top:5rem}
+img.fig{max-width:min(100%,640px);height:auto;display:block;margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:.5em;padding:.4rem}
+.study article img:not(.fig){max-width:100%;height:auto}   /* safety net: no image ever exceeds the line width, even if .fig is forgotten */
+figcaption{font:400 14px/1.55 var(--disp);color:var(--mut);text-align:left;margin:.6rem auto 0;max-width:640px}
+.fignum{color:var(--ink);font-weight:700}
+
+/* equation refs + anchors (KaTeX legacy + MathJax) */
+.xref{font-weight:600;text-decoration:none}
+.eqa{position:relative;top:-4.4rem;visibility:hidden}
+.katex-display{overflow-x:auto;overflow-y:hidden;padding:.25rem 0}
+mjx-container[display="true"]{overflow-x:auto;overflow-y:hidden;padding:.15rem 0}
+mjx-container{outline:none}
+
+/* propositions / proofs (pandoc amsthm) */
+.theorem,.proposition,.lemma,.corollary,.definition,.remark{
+  background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--violet);
+  border-radius:.5em;padding:.7rem 1rem;margin:1.3rem 0;scroll-margin-top:5rem}
+.theorem strong:first-child,.proposition strong:first-child,.lemma strong:first-child,
+.corollary strong:first-child,.definition strong:first-child{
+  font-family:var(--disp);color:var(--violet-dp)}
+.proof{margin:1rem 0 1.4rem;padding-left:1rem;border-left:2px solid var(--line);color:#3c3833;font-size:.97em}
+.proof::after{content:"\220E";display:block;text-align:right;color:var(--mut)}
+
+/* tables (booktabs feel) */
+.tablewrap{overflow-x:auto;margin:1.5rem 0}
+table{border-collapse:collapse;margin:0 auto;font:400 .92rem/1.4 var(--disp)}
+th,td{padding:.4rem .8rem;text-align:left}
+thead th{border-top:2px solid var(--ink);border-bottom:1px solid var(--ink);font-weight:700}
+tbody tr:last-child td{border-bottom:2px solid var(--ink)}
+caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);margin-top:.5rem;text-align:left}
+
+/* TL;DR / boxed callout */
+.tldr{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--violet);
+  border-radius:.5em;padding:.85rem 1.05rem;margin:0 0 1.6rem;font-size:.98rem}
+
+/* ---- study context: thread breadcrumb + builds-on + reproduce badge ---- */
+.context{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem .9rem;margin:.2rem 0 1.4rem;
+  font:500 .9rem/1.4 var(--disp);color:var(--mut)}
+.context a{color:var(--ink)}
+.context .crumb{display:inline-flex;align-items:center;gap:.4rem}
+.context .crumb::before{content:"";width:14px;height:2px;background:var(--violet);display:inline-block}
+.context .dep{color:var(--mut)}
+.status{display:inline-block;font:600 .72rem/1 var(--disp);text-transform:uppercase;letter-spacing:.08em;
+  padding:.22em .5em;border-radius:.4em;border:1px solid var(--line)}
+.status.supported{color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}
+.status.refuted{color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,transparent)}
+.status.wip,.status.draft{color:var(--wip);background:color-mix(in srgb,var(--wip) 12%,transparent)}
+.repro{display:inline-flex;align-items:center;gap:.4rem;font:500 .82rem/1 var(--disp)}
+.repro code{background:var(--code-bg);color:var(--code-fg)}
+.repro .git{opacity:.65}
+
+/* ====== landing ============================================================ */
+.landing{max-width:60rem;margin:0 auto;padding:1rem clamp(1rem,4vw,2rem) 5rem}
+.text-link{display:inline-flex;align-items:center;gap:.45rem;margin-top:1.4rem;color:var(--violet);
+  font:600 1.02rem/1 var(--disp);letter-spacing:.01em}
+.text-link span{transition:transform .14s ease}
+.text-link:hover{text-decoration:none}
+.text-link:hover span{transform:translateX(4px)}
+
+/* ====== studies: controls (pure-CSS view + show-WIP toggles) =============== */
+.studies-page{max-width:64rem;margin:0 auto;padding:1.6rem clamp(1rem,4vw,2rem) 4rem}
+.sv-input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.studies-bar{display:flex;flex-wrap:wrap;align-items:center;gap:1.1rem;margin:.2rem 0 1.8rem}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--panel)}
+.seg-opt{padding:.42rem .95rem;font:600 .8rem/1 var(--disp);text-transform:uppercase;letter-spacing:.08em;
+  color:var(--mut);cursor:pointer;transition:background .14s ease,color .14s ease}
+.seg-opt+.seg-opt{border-left:1px solid var(--line)}
+.seg-opt:hover{color:var(--ink)}
+#sv-tree:checked~.studies-bar label[for=sv-tree],
+#sv-table:checked~.studies-bar label[for=sv-table]{background:var(--violet);color:#fff}
+.wip-chk{display:inline-flex;align-items:center;gap:.5rem;cursor:pointer;color:var(--mut);
+  font:600 .8rem/1 var(--disp);text-transform:uppercase;letter-spacing:.06em}
+.wip-box{width:34px;height:18px;border-radius:10px;background:var(--line);position:relative;
+  transition:background .15s ease;flex:0 0 auto}
+.wip-box::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;
+  background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.3);transition:transform .15s ease}
+#sv-wip:checked~.studies-bar .wip-box{background:var(--violet)}
+#sv-wip:checked~.studies-bar .wip-box::after{transform:translateX(16px)}
+#sv-tree:focus-visible~.studies-bar label[for=sv-tree],
+#sv-table:focus-visible~.studies-bar label[for=sv-table],
+#sv-wip:focus-visible~.studies-bar .wip-chk{outline:2px solid var(--violet);outline-offset:2px;border-radius:6px}
+
+/* view + WIP switching, driven by the hidden inputs */
+.studies-stage{position:relative}
+#sv-table:checked~.studies-stage .view-tree{display:none}
+#sv-tree:checked~.studies-stage .view-table{display:none}
+#sv-wip:not(:checked)~.studies-stage .tree-all{display:none}
+#sv-wip:checked~.studies-stage .tree-stable{display:none}
+#sv-wip:not(:checked)~.studies-stage .view-table .card.is-wip,
+#sv-wip:not(:checked)~.studies-stage .view-table .band.is-wip{display:none}
+
+/* ====== the downward dot-tree ============================================= *
+ *  Bare dots connected by smooth Bézier curves, growing downward. Every LEAF is
+ *  pulled to one bottom row (the "frontier"). A dot's FILL is its verdict and its
+ *  BORDER is solid (proof-read) or dashed (in progress); the thread-start dot is
+ *  haloed in the thread tint, which also colours that thread's curves. Hover a
+ *  dot to reveal its briefing.
+ * ========================================================================== */
+.treeview{padding:.5rem 0 1.5rem}
+.tree-canvas{position:relative;margin:0 auto}
+.tree-svg{position:absolute;inset:0;display:block;pointer-events:none}
+.tree-empty{color:var(--mut);font:400 1rem/1.5 var(--serif);text-align:center;padding:3rem 0}
+
+.tnode{position:absolute;transform:translate(-50%,-50%);width:16px;height:16px;border-radius:50%;
+  background:var(--dot,var(--mut));border:2px solid var(--dot,var(--mut));z-index:2;cursor:pointer;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--dot,var(--mut)) 17%,transparent);   /* one ring for every node */
+  transition:transform .12s ease}
+.tnode.verified{border-style:solid}                                    /* proof-read */
+.tnode.provisional{border-style:dashed;background:color-mix(in srgb,var(--dot) 26%,var(--bg))}  /* wip */
+.st-supported{--dot:var(--ok)}
+.st-refuted{--dot:var(--bad)}
+.st-wip,.st-draft{--dot:var(--wip)}
+.tnode .hit{position:absolute;inset:-10px;border-radius:50%}
+.tnode:hover,.tnode:focus-visible{transform:translate(-50%,-50%) scale(1.22);z-index:30;outline:none}
+/* apex = the synthetic point where the branched roots converge (neutral origin) */
+.tnode.apex{width:12px;height:12px;background:var(--bg);border:2px solid var(--mut);cursor:default;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--mut) 13%,transparent)}
+.tnode.apex:hover{transform:translate(-50%,-50%)}
+
+/* always-on small title beside each node (below leaves, above the rest) */
+.tnode-label{position:absolute;left:50%;transform:translateX(-50%);width:max-content;max-width:152px;
+  text-align:center;font:500 10.5px/1.28 var(--disp);color:var(--ink);letter-spacing:-.004em;
+  pointer-events:none;text-shadow:0 0 3px var(--bg),0 0 3px var(--bg),0 0 6px var(--bg)}
+.tnode-label.lbl-dn{top:calc(100% + 5px)}
+.tnode-label.lbl-up{bottom:calc(100% + 5px)}
+.tnode.provisional .tnode-label{color:var(--mut)}      /* WIP titles read lighter */
+
+/* hover tooltip (the dot's content) */
+.tip{position:absolute;left:50%;top:25px;transform:translateX(-50%);width:max-content;max-width:248px;
+  text-align:left;background:var(--panel);border:1px solid var(--line);
+  border-left:3px solid var(--tree,var(--violet));border-radius:10px;padding:.6rem .75rem;
+  box-shadow:0 18px 44px -22px rgba(22,22,26,.72);opacity:0;visibility:hidden;
+  transition:opacity .13s ease;pointer-events:none;z-index:40}
+.tip-up .tip{top:auto;bottom:25px}
+.tip-l .tip{left:0;transform:none}
+.tip-r .tip{left:auto;right:0;transform:none}
+.tnode:hover .tip,.tnode:focus-visible .tip,.tnode:focus-within .tip{opacity:1;visibility:visible}
+.tip-h{display:flex;align-items:center;gap:.5rem;margin-bottom:.3rem}
+.tip-th{font:700 .58rem/1 var(--disp);text-transform:uppercase;letter-spacing:.11em;color:var(--tree)}
+.tip-st{font:600 .56rem/1 var(--disp);text-transform:uppercase;letter-spacing:.07em;
+  color:var(--dot,var(--mut));padding:.22em .45em;border:1px solid var(--line);border-radius:.5em}
+.tip-t{display:block;font:600 .92rem/1.3 var(--disp);color:var(--ink);letter-spacing:-.01em}
+.tip-sub{display:block;margin-top:.32rem;font:400 .82rem/1.42 var(--serif);color:var(--mut)}
+.tip-x{display:block;margin-top:.35rem;font:500 .72rem/1.35 var(--disp);color:var(--mut)}
+
+@media (max-width:600px){
+  .nav{flex-wrap:wrap;gap:.5rem} .tabs{order:3;width:100%} body{font-size:17px}
+  .studies-page{padding-left:.6rem;padding-right:.6rem}
+}
+</style>
+</head>
+<body>
+<header class="nav"><a class="brand" href="../index.html"><span>neurep</span></a></header><main class="study"><header class="study-head"><h1>Does the communication matrix carry module structure?</h1><p class=sub>Can a measured score \(A\) beat the \(\lvert W\rvert\) proxy it would replace?</p><div class="rule"></div></header><div class="context"><span class="crumb"><a href="../studies.html#thread-representation">Learned representations &amp; modularity</a></span><span class="status wip">wip</span><span class="dep">builds on: <a href="../experiment_conditions/">When can a representation make weights
+modular?</a>, <a href="../flat_forensics_report/">The flat winning ticket under the
+microscope</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou-Hangyu/neurep/commit/2fcdfa8"><code>2fcdfa8</code></a> <span class="git">· feature/runstore-pipeline</span></span></div><article>
+
+  <div class="tldr"><p><strong>TL;DR.</strong> Before building a regularizer that prices each
+  connection by a <em>measured</em> neuron-to-neuron communication score \(A_{ij}\) (replacing
+  the static weight-magnitude proxy \(\lvert W_{ij}\rvert\)), we pre-registered a gate testing
+  whether \(A\) actually carries module structure. On planted nets, \(A\) recovers disjoint
+  modules perfectly (<strong>H1 met</strong>, ARI \(=1.0\)) and — the decisive test — does
+  <strong>not</strong> transitively merge two pipelined modules across a strong reusability
+  bottleneck (<strong>H2 pass</strong>: \(G{+}1\) communities recovered, root never absorbed in
+  10/10 seeds). <strong>But \(A\) never beats \(\lvert W\rvert\)</strong> (<strong>H3 fail</strong>:
+  pooled \(\Delta\text{ARI}=-0.01\), not significant) — and in the realistic regime the modules
+  are <em>rotated</em>, not neuron-aligned (<strong>H4 branch (b)</strong> on both tasks).
+  <strong>Decision: do not build the \(A\)-based regularizer as a replacement for
+  \(\lvert W\rvert\); the blocking hypothesis is H3.</strong> The communication matrix is real and
+  well-behaved, but it furnishes no advantage over the proxy already in use.</p></div>
+
+  <p><span class="status wip">stage 1 — validation gate</span> This report is the validation gate
+  itself: the contrastive code regularizer it would gate (\(\mathcal{R}_{\text{mod}}\),
+  \eqref{eq:mod} below) is built <em>only if</em> the gate passes — it does not. The gate's four
+  hypotheses and its decision rule are stated in full in §2.4, so the report stands alone.</p>
+
+  <h2>1. The risk</h2>
+  <p>In the current NeuRep objective the per-neuron codes receive no task gradient and each
+  connection is priced by weight magnitude \(\rho(W_{ij})\) — a static, data-free proxy. The
+  companion forensics (<a class="xref" href="../experiment_representation/">learned codes don't make weights
+  modular</a>, <a class="xref" href="../flat_forensics_report/">the flat winning ticket under the microscope</a>)
+  show the codes collapse or act only as a
+  capacity-pruning bias, and the task's real modules sit in <em>rotated</em> subspaces that mix
+  many neurons. The proposed remedy is to shape the codes with a <em>measured</em> communication
+  score \(A_{ij}\), with a contrastive module-detection term</p>
+  \[\begin{equation}\label{eq:mod}
+    \mathcal{R}_{\text{mod}} = \sum_{\ell}\sum_{i,j}\Big[\,\widetilde A^{(\ell)}_{ij}\,d_{ij}
+      \;+\;\big(1-\widetilde A^{(\ell)}_{ij}\big)\,\max\!\big(0,\,m-d_{ij}\big)\Big],
+    \qquad d_{ij}=\lVert\phi_i-\phi_j\rVert .
+  \end{equation}\]
+  <p><strong>The risk.</strong> Strong communication is not the same as shared module
+  membership: in a hierarchy one module <em>consumes the output of</em> another, so a hierarchical
+  task <em>must</em> contain strong inter-module (pipeline) edges. The repulsion in
+  \eqref{eq:mod} is weighted by \((1-\widetilde A_{ij})\), so it puts <em>no</em> separating force
+  on the high-\(A\) interface edges between two pipelined modules. Whether they stay separable then
+  depends entirely on whether \(A\) has community structure — dense within a module, sparse
+  between. <strong>If \(A\) lacks that structure, no \(A\)-based regularizer can recover the
+  hierarchy.</strong> Hence we validate \(A\) first.</p>
+
+  <h2 id="setup">2. Setup</h2>
+  <div class="repro"><p><strong>Reproducibility (R2).</strong>
+  <strong>Replication:</strong> 10 seeds per setting; each seed redraws the random teachers
+  (S1/S2) or the task instance + init (S3), so results are over the random task family, not one
+  instance. <strong>Training:</strong> all nets GELU + AdamW (weight-decay 0), learning rate
+  \(3\times10^{-3}\), batch 200, eval every 500 steps, patience 20, best-validation-checkpoint
+  selection, cap 6000 steps (the nets are tiny and converge by ~2–3k, so the chosen checkpoint is
+  unaffected by the cap). <strong>Fit gates</strong> (a net's
+  scores are read only if it fit): planted test \(R^2\!\ge\!0.90\); S3 first-order Sobol
+  sum \(\ge\!0.30\). All 10/10 planted seeds and 20/20 S3 records passed
+  (S1 \(R^2{=}0.998\), S2 \(R^2{=}0.970\), S3 Sobol \(0.96\!-\!0.99\)).
+  <strong>Statistics:</strong> bars are the mean over seeds with per-seed points overlaid;
+  error bars on \(\Delta\)ARI are \(\pm\)1 s.e.m.; H3 uses the paired Wilcoxon signed-rank test
+  with Cohen's \(d_z\). <strong>Code:</strong> apparatus validated by 10 unit tests
+  (masks isolate modules; the score reader equals <code>model(x)</code>; the M3 Jacobian equals
+  M1 on the output layer; the planted-mask ceiling recovers blocks; shuffling collapses recovery).
+  </p></div>
+
+  <h3>2.1 Settings</h3>
+  <p>Two <em>planted</em> masked MLPs, where the module of every neuron and every inter-module
+  edge is known by construction, plus the realistic net:</p>
+  <ul>
+    <li><strong>S1 — disjoint modules (necessary condition).</strong> \(G{=}4\) independent
+    sub-nets on disjoint inputs, \(G\) separate outputs, <em>no</em> inter-module edges anywhere.
+    Ground truth: the \(G\) blocks.</li>
+    <li><strong>S2 — hierarchy with a reusability bottleneck (decisive).</strong> \(G\) leaf
+    sub-nets each emit one scalar; those scalars feed a shared root sub-net. Masking makes the
+    <em>only</em> inter-module edges the leaf-scalar\(\to\)root-input ones. Ground truth:
+    \(\{\text{leaf}_1,\dots,\text{leaf}_G,\text{root}\}\) (\(G{+}1\) modules) with a known
+    bottleneck. The S1\(\to\)S2 contrast isolates exactly the transitive-merging risk above.</li>
+    <li><strong>S3 — realistic.</strong> The standard \(24\!\to\!64\!\to\!64\!\to\!1\) GELU MLP,
+    plain training, on <code>flat_modular</code> (w=4, ν=16) and <code>hier_tree</code>
+    (w=4, d=3, ν=16). No hidden ground truth; input neurons carry their factor-group labels, and
+    we add three rotation-aware subspace probes (defined in §2.3; adapted from
+    <a class="xref" href="../flat_forensics_report/">flat_forensics</a>).</li>
+  </ul>
+
+  <h3>2.2 Communication scores</h3>
+  <p>On each trained net we compute three candidate scores on the effective weights and
+  in-distribution activations \(a^{(\ell)}\) (sender \(j\) post-activation, receiver \(i\)):</p>
+  \[\begin{align}
+    \textbf{(M1)}\ & A^{(\ell)}_{ij}=\mathbb{E}_x\big|\,W^{(\ell)}_{ij}\,a^{(\ell)}_j\,\big|, \label{eq:m1}\\
+    \textbf{(M2)}\ & A^{(\ell)}_{ij}=\big|\mathrm{corr}_x\!\big(a^{(\ell)}_j,\,a^{(\ell+1)}_i\big)\big|, \label{eq:m2}\\
+    \textbf{(M3)}\ & A^{(\ell)}_{ij}=\mathbb{E}_x\Big|\,\tfrac{\partial \hat y}{\partial z^{(\ell+1)}_i}\cdot W^{(\ell)}_{ij}\cdot a^{(\ell)}_j\,\Big|. \label{eq:m3}
+  \end{align}\]
+  <p>M3 uses the <em>output</em> Jacobian \(\partial\hat y/\partial z_i\) (not the loss gradient,
+  which vanishes at convergence). Two controls bracket every score: \(A=\lvert W\rvert\) (the
+  current proxy) and a per-layer <em>shuffle</em> (negative control); a non-gating <em>ceiling</em>
+  sets \(A=\) the planted 0/1 mask.</p>
+
+  <h3>2.3 Detection and metrics</h3>
+  <p>We stack the per-layer \(\widetilde A\) (within-layer max-normalized) into one symmetrized
+  neuron graph and detect communities: known-\(k\) spectral for S1/S2 (isolating "does \(A\) carry
+  the signal" from "can clustering find \(k\)") and modularity (Louvain, chooses \(k\)) for S3.
+  Recovery is scored by the <strong>Adjusted Rand Index</strong> (ARI; \(1\) = perfect agreement
+  with the ground-truth partition, \(0\) = chance) and NMI; we also report the recovered community
+  count, the <strong>block contrast</strong>
+  \(B(A)=\overline{A}_{\text{within}}/\overline{A}_{\text{between}}\) (mean within-module over mean
+  between-module edge weight; \(\ge1\) means dense-within / sparse-between), the S2
+  <strong>merge indicator</strong> (\(1\) if the root is absorbed into a leaf community, \(0\) if it
+  keeps its own), and, for S3, the <strong>input-group ARI</strong> (do the input neurons cluster by
+  their factor group?).</p>
+  <p>For S3 we add three rotation-aware subspace probes that test whether a module lives in a
+  <em>rotated</em> hidden subspace rather than on individual neurons: <strong>axis_mass</strong>
+  (mean squared largest single-neuron loading of a module's estimated hidden subspace — \(1\) =
+  neuron-aligned, \(\approx\!1/\text{width}\) = fully spread), <strong>patch_r2</strong> (the causal
+  \(R^2\) with which patching <em>only</em> a module's rotated subspace reproduces the teacher's
+  output response to resampling that module's inputs — high means the rotated subspace carries the
+  module), and <strong>lane_diag</strong> (the fraction of a module's layer-1 subspace energy that
+  flows into its own layer-2 subspace).</p>
+
+  <h3>2.4 The four hypotheses</h3>
+  <p>The gate fixes four hypotheses with thresholds chosen in advance; where stated, a measured
+  score must also beat both controls (\(\lvert W\rvert\) and the shuffle).</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Hypothesis</th><th>Setting</th><th>Pass criterion</th><th>If it fails</th></tr></thead>
+    <tbody>
+      <tr><td><strong>H1</strong> — necessary condition</td><td>S1</td>
+        <td>the strongest score recovers the disjoint modules with ARI \(\ge0.80\), above both controls</td>
+        <td>a clean modular net's own \(A\) cannot reveal its modules ⇒ redesign \(A\); stop</td></tr>
+      <tr><td><strong>H2</strong> — no transitive merging</td><td>S2</td>
+        <td>ARI \(\ge0.60\); choose-\(k\) count \(=G{+}1\); merge indicator \(=0\) (root keeps its own community)</td>
+        <td>the reusability bottleneck merges the hierarchy ⇒ add a null-model / asymmetry term, re-test</td></tr>
+      <tr><td><strong>H3</strong> — value over the proxy</td><td>S1–S2</td>
+        <td>the best measured score beats \(A=\lvert W\rvert\) by \(\Delta\)ARI \(\ge0.15\) (paired over seeds)</td>
+        <td>measured \(A\) is no better than the proxy already in use ⇒ the premise is unsupported; reconsider it</td></tr>
+      <tr><td><strong>H4</strong> — representation class<br>(non-gating)</td><td>S3</td>
+        <td>exactly one of (a) input-group ARI \(\ge0.50\); (b) ARI \(<0.50\) but the rotation-aware
+        probes beat the neuron-level / \(\lvert W\rvert\) baseline; (c) neither</td>
+        <td>sets the code type — (a) per-neuron codes viable; (b) rotated ⇒ rotation-aware codes;
+        (c) no neuron-level structure</td></tr>
+    </tbody>
+  </table></div>
+  <p><strong>Decision rule.</strong> Build the regularizer \(\mathcal{R}_{\text{mod}}\)
+  (\eqref{eq:mod}) <em>only if</em> some single score satisfies H1 <em>and</em> H2 <em>and</em> H3;
+  H4 then sets the representation class. H1–H3 are confirmatory and gating; H4 is non-gating.</p>
+
+  <h2>3. Results</h2>
+
+  <h3>3.1 H1 — disjoint modules <span class="status supported">met</span></h3>
+  <p>On S1 every measured score recovers the disjoint modules <em>perfectly</em>
+  (ARI \(=1.000\), NMI \(=1.000\)), far above the shuffle control (ARI \(=0.013\)) and equal to
+  the planted-mask ceiling. The necessary condition — "if even a clean modular net's own \(A\) did
+  not reveal its modules, nothing could" — is comfortably met. Note, however, that
+  \(\lvert W\rvert\) is <em>also</em> perfect here: a foreshadowing of H3.</p>
+
+  <h3>3.2 H2 — the reusability bottleneck <span class="status supported">pass</span></h3>
+  <p>This is the decisive test. Across the leaf\(\to\)root bottleneck, detection recovers modules
+  with ARI \(0.88\!-\!0.91\) (well above the \(0.60\) bar); the choose-\(k\) detector recovers
+  exactly \(G{+}1=5\) communities in 10/10 seeds (M1, M2); and the <strong>root is never absorbed
+  into a leaf</strong> — the merge indicator is \(0\) in 10/10 seeds for all three scores. The
+  feared transitive merging simply does not occur: within-module density (block contrast
+  \(B\approx6\!-\!9\)) dominates the single high-\(A\) interface, so community detection keeps the
+  root separate even though the contrastive term would not.</p>
+  <figure>
+    <img class="fig" src="fig/fig_recovery.png" alt="ARI per score for S1 and S2"/>
+    <figcaption><strong>Figure 1.</strong> Module recovery (ARI, 10 seeds; points = seeds).
+    <em>Left (S1, H1):</em> every score and \(\lvert W\rvert\) recover the disjoint modules
+    perfectly; shuffle collapses to \(\approx0\). <em>Right (S2, H2):</em> all scores clear the
+    \(0.60\) bar, but \(\lvert W\rvert\) (0.912) edges out the measured scores (M1 0.887, M2 0.893,
+    M3 0.883).</figcaption>
+  </figure>
+  <figure>
+    <img class="fig" src="fig/fig_s2_structure.png" alt="S2 recovered community count and merge indicator"/>
+    <figcaption><strong>Figure 2.</strong> S2 decisive test. <em>Left:</em> the choose-\(k\)
+    detector recovers \(G{+}1=5\) communities. <em>Right:</em> the root keeps its own community
+    (no transitive merging) in every seed for every score.</figcaption>
+  </figure>
+
+  <h3>3.3 H3 — value over the \(\lvert W\rvert\) proxy <span class="status refuted">fail</span></h3>
+  <p>No measured score beats \(\lvert W\rvert\). Pooling S1+S2, the paired advantage is slightly
+  <em>negative</em> and not significant for every score:</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>score</th><th>S1 ΔARI</th><th>S2 ΔARI</th><th>pooled ΔARI</th><th>Wilcoxon \(p\)</th><th>\(d_z\)</th><th>H3 (≥ +0.15, sig.)</th></tr></thead>
+    <tbody>
+      <tr><td>M1 (flow)</td><td>0.000</td><td>−0.025</td><td>−0.012</td><td>0.107</td><td>−0.38</td><td>✗</td></tr>
+      <tr><td>M2 (co-activation)</td><td>0.000</td><td>−0.018</td><td>−0.009</td><td>0.089</td><td>−0.35</td><td>✗</td></tr>
+      <tr><td>M3 (output-Jacobian)</td><td>0.000</td><td>−0.029</td><td>−0.014</td><td>0.138</td><td>−0.32</td><td>✗</td></tr>
+    </tbody>
+  </table></div>
+  <p>The planted-net result is partly confounded: masking makes \(\lvert W\rvert\) equal the
+  ground-truth wiring <em>by construction</em>, so it is a near-perfect proxy there and nothing can
+  beat it. The fair test is the realistic regime (S3, input-group ARI): there the best measured
+  score (M2) does edge ahead of \(\lvert W\rvert\) — by \(+0.163\) on flat_modular and \(+0.056\)
+  on hier_tree — but neither gap is significant (\(p=0.105,\,0.68\)) and both absolute ARIs sit
+  well below \(0.50\). Either way, <strong>the measured communication score delivers no decisive
+  advantage over the weight-magnitude proxy already in use.</strong></p>
+  <figure>
+    <img class="fig" src="fig/fig_value_over_proxy.png" alt="Delta ARI of measured scores over |W|"/>
+    <figcaption><strong>Figure 3.</strong> Value over the proxy, \(\Delta\text{ARI}=\)(measured
+    \(-\,\lvert W\rvert\)). Planted S1/S2 deltas are \(\le 0\); the realistic S3 deltas are positive
+    but their error bars (\(\pm\)s.e.m.) cross zero and fall short of the \(+0.15\) bar.</figcaption>
+  </figure>
+
+  <h3>3.4 H4 — representation class <span class="status wip">branch (b), non-gating</span></h3>
+  <p>On both S3 tasks the input-group ARI is weak and high-variance (best score: 0.36 flat, 0.24
+  hier; both below the \(0.50\) branch-(a) bar), while the rotation-aware <code>patch_r2</code>
+  reliably recovers the modules from <em>rotated</em> subspaces (0.92 flat; 0.47 mean / 0.59 median
+  hier) far above the neuron-level view and the rotation-blind control, with low
+  <code>axis_mass</code> (\(\approx0.23\), i.e. not single-neuron-aligned). Both tasks therefore
+  land in <strong>branch (b): structure is real but rotated</strong> — per-neuron codes are the
+  wrong object; only rotation-aware codes could carry it. This corroborates
+  <a class="xref" href="../flat_forensics_report/">the flat-forensics rotated-modules finding</a>. H4 is
+  non-gating (it would set the representation class only if the gate passed).</p>
+  <figure>
+    <img class="fig" src="fig/fig_s3.png" alt="S3 input-group ARI and probes for flat_modular and hier_tree"/>
+    <figcaption><strong>Figure 4.</strong> S3 realistic regime. Input-group ARI (neuron-level /
+    \(\lvert W\rvert\) view) stays below the \(0.50\) bar, while the rotation-aware probes
+    (annotated) show real but rotated module structure ⇒ branch (b).</figcaption>
+  </figure>
+
+  <h2>4. Verdict</h2>
+  <div class="tldr"><p><strong>Decision (rule of §2.4: proceed iff some single score satisfies
+  H1 ∧ H2 ∧ H3).</strong> H1 met, H2 pass, <strong>H3 fail</strong> ⇒
+  <strong>do not proceed</strong> to the \(A\)-based regularizer. Blocking hypothesis: <strong>H3</strong>.
+  Two findings are genuinely encouraging for the concept — a measured \(A\) <em>does</em> carry
+  module structure (H1) and <em>does not</em> transitively merge pipelined modules (H2, the risk
+  that motivated the gate). But the premise of the redesign — that a measured communication score
+  beats the static \(\lvert W\rvert\) proxy — is <strong>unsupported</strong>: across planted and
+  realistic regimes, M1/M2/M3 tie or marginally trail \(\lvert W\rvert\). And H4 indicates the
+  modules are rotated, so per-neuron codes are likely the wrong object regardless.</p></div>
+  <p>The action fixed in advance for an H3 failure (§2.4) is to reconsider the premise. The constructive reading: if
+  a code regularizer is pursued, the lever is the <em>representation class</em> (rotation-aware
+  codes, H4 branch b), not swapping \(\lvert W\rvert\) for a measured \(A\) — that swap is not
+  justified by this evidence.</p>
+
+  <h2>5. Caveats</h2>
+  <ul>
+    <li><strong>Confound (flagged, not hidden):</strong> on planted nets \(\lvert W\rvert\) equals
+    the ground-truth mask by construction, so H3-on-planted is biased toward \(\lvert W\rvert\).
+    The S3 supplement is the fair test and still shows no significant advantage.</li>
+    <li><strong>Directional prediction not supported (non-gating):</strong> the plan predicted
+    \(M3>M2>M1\) and that M2 (co-activation) would show the most S2 merging. We see M1\(\approx\)M2
+    \(\approx\)M3 on S2 ARI, <em>zero</em> merging for all scores, and the highest block contrast
+    for M3 — the ordering and the merging prediction do not hold.</li>
+    <li><strong>Scope:</strong> planted nets are small (\(\le\)~120 neurons) with smooth tanh
+    teachers; hier_tree (d=3) is the hardest to fit (higher MSE) and its <code>patch_r2</code>
+    control is heavy-tailed (we report the median). The gate's decision rests on H3, which is robust
+    across both planted settings and the realistic supplement.</li>
+  </ul>
+
+</article></main>
+</body>
+</html>

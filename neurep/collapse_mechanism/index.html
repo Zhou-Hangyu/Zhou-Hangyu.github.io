@@ -1,139 +1,255 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex, nofollow">
-<title>The mechanism behind Separator’s
-collapse — neurep</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
-  onload="renderMathInElement(document.body,{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false},{left:'$$',right:'$$',display:true}],throwOnError:false});"></script>
-<style>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow"><title>The mechanism behind Separator’s
+collapse — neurep</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false},{left:'$$',right:'$$',display:true}],throwOnError:false});"></script><style>/* ========================================================================== *
+ *  research-site theme — the single source of truth for the visual language.
+ *  The builder INLINES this file into every generated page's <head>, so each
+ *  report renders standalone (open the .html directly) and is depth-proof.
+ *  Re-theme by editing the :root tokens below, then rebuild.
+ *  Visual language: warm cream ground, charcoal+violet ink, Manrope display.
+ * ========================================================================== */
+:root{
+  --bg:#e7e2d9;          /* warm cream ground */
+  --panel:#efeae0;       /* slightly lifted card/panel */
+  --ink:#16161a;         /* near-black text / wordmark */
+  --mut:#6f685f;         /* muted brown-grey */
+  --violet:#4b2e63;      /* primary accent */
+  --violet-dp:#2b1d3d;   /* deep accent */
+  --line:rgba(22,22,26,.12);
+  --code-bg:rgba(75,46,99,.09);
+  --code-fg:#3a2348;
+  --ok:#2f6b3a;          /* status: supported */
+  --bad:#9a3b2f;         /* status: refuted */
+  --wip:#8a6d1f;         /* status: wip/draft */
+  --disp:'Manrope',-apple-system,'Segoe UI',Roboto,sans-serif;  /* display/UI */
+  --serif:Georgia,'Iowan Old Style','Times New Roman',serif;     /* body */
+}
+
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{margin:0;background:#e7e2d9;color:#16161a;
-  font:18px/1.66 Georgia,'Iowan Old Style','Times New Roman',serif;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
-a{color:#4b2e63;text-decoration:none}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:18px/1.66 var(--serif);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+a{color:var(--violet);text-decoration:none}
 a:hover{text-decoration:underline;text-underline-offset:2px}
 
 /* ---- header (wordmark + tabs), shared by every page ---- */
 .nav{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;
   gap:1rem;padding:.7rem clamp(1rem,4vw,3rem);
-  background:#e7e2d9eb;backdrop-filter:saturate(140%) blur(8px);
-  border-bottom:1px solid rgba(22,22,26,.12)}
-.brand{display:inline-flex;align-items:center;gap:.5rem;color:#16161a;font:800 1.18rem/1 'Manrope',-apple-system,'Segoe UI',Roboto,sans-serif;
+  background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:saturate(140%) blur(8px);
+  border-bottom:1px solid var(--line)}
+.brand{display:inline-flex;align-items:center;gap:.5rem;color:var(--ink);font:800 1.18rem/1 var(--disp);
   letter-spacing:-.03em}
 .brand:hover{text-decoration:none}
-.brand .inkmark{flex:0 0 auto}
-.tabs{display:flex;gap:clamp(.7rem,2.4vw,1.9rem);font:500 .96rem/1 'Manrope',-apple-system,'Segoe UI',Roboto,sans-serif}
-.tabs .tab{color:#6f685f;padding:.2rem 0;border-bottom:2px solid transparent;letter-spacing:.01em}
-.tabs .tab:hover{color:#16161a;text-decoration:none}
-.tabs .tab.active{color:#16161a;border-bottom-color:#4b2e63}
+.tabs{display:flex;gap:clamp(.7rem,2.4vw,1.9rem);font:500 .96rem/1 var(--disp)}
+.tabs .tab{color:var(--mut);padding:.2rem 0;border-bottom:2px solid transparent;letter-spacing:.01em}
+.tabs .tab:hover{color:var(--ink);text-decoration:none}
+.tabs .tab.active{color:var(--ink);border-bottom-color:var(--violet)}
 
 /* ---- landing hero ---- */
 .hero{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;
   text-align:center;min-height:min(72vh,640px);padding:3rem 1rem 2rem;overflow:hidden}
 .heroink{position:absolute;inset:-6% -2%;width:104%;height:112%;z-index:0;pointer-events:none}
-.bigmark{position:relative;z-index:1;margin:0;color:#16161a;
-  font:800 clamp(4rem,17vw,12rem)/.9 'Manrope',-apple-system,'Segoe UI',Roboto,sans-serif;letter-spacing:-.045em}
-.tagline{position:relative;z-index:1;margin:1.4rem 0 0;max-width:42ch;color:#6f685f;
-  font:400 clamp(1rem,2.1vw,1.22rem)/1.5 'Manrope',-apple-system,'Segoe UI',Roboto,sans-serif;letter-spacing:.01em}
+.bigmark{position:relative;z-index:1;margin:0;color:var(--ink);
+  font:800 clamp(4rem,17vw,12rem)/.9 var(--disp);letter-spacing:-.045em}
+.tagline{position:relative;z-index:1;margin:clamp(2.2rem,5vw,3.3rem) 0 0;max-width:none;color:var(--mut);
+  font:400 clamp(.95rem,2vw,1.18rem)/1.5 var(--disp);letter-spacing:.01em}
 
 /* ---- landing bands + cards ---- */
 .band{max-width:60rem;margin:0 auto;padding:2.6rem clamp(1rem,4vw,2rem) .6rem;scroll-margin-top:5rem}
-.band-title{font:700 .82rem/1 'Manrope',-apple-system,'Segoe UI',Roboto,sans-serif;text-transform:uppercase;letter-spacing:.18em;color:#6f685f;
+.band-title{font:700 .82rem/1 var(--disp);text-transform:uppercase;letter-spacing:.18em;color:var(--mut);
   margin:0 0 1.1rem;display:flex;align-items:center;gap:.6rem}
-.band-title::before{content:"";width:24px;height:2px;background:#4b2e63;display:inline-block}
-.overview{font:400 1.06rem/1.6 Georgia,'Iowan Old Style','Times New Roman',serif;color:#16161a;max-width:60ch;margin:0 0 1.4rem}
-.maplist{margin:.2rem 0 1rem;padding-left:1.2rem;color:#6f685f;font:400 1rem/1.7 Georgia,'Iowan Old Style','Times New Roman',serif}
-.maplist a{color:#16161a}
+.band-title::before{content:"";width:24px;height:2px;background:var(--violet);display:inline-block}
+.overview{font:400 1.06rem/1.6 var(--serif);color:var(--ink);max-width:60ch;margin:0 0 1.4rem}
+.maplist{margin:.2rem 0 1rem;padding-left:1.2rem;color:var(--mut);font:400 1rem/1.7 var(--serif)}
+.maplist a{color:var(--ink)}
 .cards{display:grid;gap:.9rem;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr))}
-.card{position:relative;display:block;background:#efeae0;border:1px solid rgba(22,22,26,.12);
-  border-radius:14px;padding:1.05rem 1.1rem 1.15rem;color:#16161a;transition:transform .14s ease,box-shadow .14s ease,border-color .14s}
-.card:hover{text-decoration:none;transform:translateY(-3px);border-color:#4b2e6355;
+.card{position:relative;display:block;background:var(--panel);border:1px solid var(--line);
+  border-radius:14px;padding:1.05rem 1.1rem 1.15rem;color:var(--ink);transition:transform .14s ease,box-shadow .14s ease,border-color .14s}
+.card:hover{text-decoration:none;transform:translateY(-3px);border-color:color-mix(in srgb,var(--violet) 33%,transparent);
   box-shadow:0 10px 26px -16px rgba(43,29,61,.55)}
 .card-dot{position:absolute;top:1.15rem;right:1.1rem;width:9px;height:9px;border-radius:50%;
-  background:radial-gradient(circle at 35% 30%,#5a3a73,#2b1d3d)}
-.card-title{margin:.1rem 2rem .35rem 0;font:600 1.06rem/1.32 'Manrope',-apple-system,'Segoe UI',Roboto,sans-serif;letter-spacing:-.01em}
-.card-sum{margin:0;color:#6f685f;font:400 .92rem/1.45 Georgia,'Iowan Old Style','Times New Roman',serif}
+  background:radial-gradient(circle at 35% 30%,#5a3a73,var(--violet-dp))}
+.card-title{margin:.1rem 2rem .35rem 0;font:600 1.06rem/1.32 var(--disp);letter-spacing:-.01em}
+.card-sum{margin:0;color:var(--mut);font:400 .92rem/1.45 var(--serif)}
 
 /* ---- study page ---- */
 .study{max-width:46rem;margin:0 auto;padding:2.2rem clamp(1rem,4vw,1.4rem) 5rem}
-.study-head h1{margin:0;font:800 clamp(1.7rem,4.6vw,2.3rem)/1.12 'Manrope',-apple-system,'Segoe UI',Roboto,sans-serif;letter-spacing:-.025em}
-.study-head .sub{margin:.7rem 0 0;color:#6f685f;font:italic 400 1.12rem/1.45 Georgia,'Iowan Old Style','Times New Roman',serif}
+.study-head h1{margin:0;font:800 clamp(1.7rem,4.6vw,2.3rem)/1.12 var(--disp);letter-spacing:-.025em}
+.study-head .sub{margin:.7rem 0 0;color:var(--mut);font:italic 400 1.12rem/1.45 var(--serif)}
 .study-head .rule{height:3px;width:84px;margin:1.3rem 0 .4rem;border-radius:3px;
-  background:linear-gradient(90deg,#4b2e63,#2b1d3d 55%,transparent)}
+  background:linear-gradient(90deg,var(--violet),var(--violet-dp) 55%,transparent)}
 article{font-size:18px}
 article :first-child{margin-top:0}
-h1,h2,h3,h4{font-family:'Manrope',-apple-system,'Segoe UI',Roboto,sans-serif;line-height:1.22;letter-spacing:-.015em}
-h2{font-size:1.4rem;margin:2.3rem 0 .5rem;padding-bottom:.25rem;border-bottom:1px solid rgba(22,22,26,.12)}
+h1,h2,h3,h4{font-family:var(--disp);line-height:1.22;letter-spacing:-.015em}
+h2{font-size:1.4rem;margin:2.3rem 0 .5rem;padding-bottom:.25rem;border-bottom:1px solid var(--line)}
 h3{font-size:1.1rem;margin:1.6rem 0 .3rem}
 p{margin:.75rem 0}
 strong{font-weight:700}
 ul,ol{padding-left:1.3rem} li{margin:.25rem 0}
-hr{border:0;border-top:1px solid rgba(22,22,26,.12);margin:2rem 0}
+hr{border:0;border-top:1px solid var(--line);margin:2rem 0}
 
 /* code: technical identifiers, de-emphasised on cream (never a link) */
 code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.84em;
-  background:rgba(75,46,99,.09);color:#3a2348;padding:.1em .34em;border-radius:.32em;word-break:break-word}
+  background:var(--code-bg);color:var(--code-fg);padding:.1em .34em;border-radius:.32em;word-break:break-word}
 
 /* figures */
 figure{margin:1.8rem 0;text-align:center;scroll-margin-top:5rem}
-img.fig{max-width:100%;height:auto;background:#fff;border:1px solid rgba(22,22,26,.12);border-radius:.5em;padding:.4rem}
-figcaption{font:400 14px/1.55 'Manrope',-apple-system,'Segoe UI',Roboto,sans-serif;color:#6f685f;text-align:left;margin-top:.6rem}
-.fignum{color:#16161a;font-weight:700}
+img.fig{max-width:min(100%,640px);height:auto;display:block;margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:.5em;padding:.4rem}
+.study article img:not(.fig){max-width:100%;height:auto}   /* safety net: no image ever exceeds the line width, even if .fig is forgotten */
+figcaption{font:400 14px/1.55 var(--disp);color:var(--mut);text-align:left;margin:.6rem auto 0;max-width:640px}
+.fignum{color:var(--ink);font-weight:700}
 
-/* equation refs + anchors */
+/* equation refs + anchors (KaTeX legacy + MathJax) */
 .xref{font-weight:600;text-decoration:none}
 .eqa{position:relative;top:-4.4rem;visibility:hidden}
 .katex-display{overflow-x:auto;overflow-y:hidden;padding:.25rem 0}
+mjx-container[display="true"]{overflow-x:auto;overflow-y:hidden;padding:.15rem 0}
+mjx-container{outline:none}
 
 /* propositions / proofs (pandoc amsthm) */
 .theorem,.proposition,.lemma,.corollary,.definition,.remark{
-  background:#efeae0;border:1px solid rgba(22,22,26,.12);border-left:3px solid #4b2e63;
+  background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--violet);
   border-radius:.5em;padding:.7rem 1rem;margin:1.3rem 0;scroll-margin-top:5rem}
 .theorem strong:first-child,.proposition strong:first-child,.lemma strong:first-child,
 .corollary strong:first-child,.definition strong:first-child{
-  font-family:'Manrope',-apple-system,'Segoe UI',Roboto,sans-serif;color:#2b1d3d}
-.proof{margin:1rem 0 1.4rem;padding-left:1rem;border-left:2px solid rgba(22,22,26,.12);color:#3c3833;font-size:.97em}
-.proof::after{content:"\220E";display:block;text-align:right;color:#6f685f}
+  font-family:var(--disp);color:var(--violet-dp)}
+.proof{margin:1rem 0 1.4rem;padding-left:1rem;border-left:2px solid var(--line);color:#3c3833;font-size:.97em}
+.proof::after{content:"\220E";display:block;text-align:right;color:var(--mut)}
 
 /* tables (booktabs feel) */
 .tablewrap{overflow-x:auto;margin:1.5rem 0}
-table{border-collapse:collapse;margin:0 auto;font:400 .92rem/1.4 'Manrope',-apple-system,'Segoe UI',Roboto,sans-serif}
+table{border-collapse:collapse;margin:0 auto;font:400 .92rem/1.4 var(--disp)}
 th,td{padding:.4rem .8rem;text-align:left}
-thead th{border-top:2px solid #16161a;border-bottom:1px solid #16161a;font-weight:700}
-tbody tr:last-child td{border-bottom:2px solid #16161a}
-caption{caption-side:bottom;color:#6f685f;font:400 13.5px/1.5 'Manrope',-apple-system,'Segoe UI',Roboto,sans-serif;margin-top:.5rem;text-align:left}
+thead th{border-top:2px solid var(--ink);border-bottom:1px solid var(--ink);font-weight:700}
+tbody tr:last-child td{border-bottom:2px solid var(--ink)}
+caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);margin-top:.5rem;text-align:left}
 
 /* TL;DR / boxed callout */
-.tldr{background:#efeae0;border:1px solid rgba(22,22,26,.12);border-left:3px solid #4b2e63;
+.tldr{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--violet);
   border-radius:.5em;padding:.85rem 1.05rem;margin:0 0 1.6rem;font-size:.98rem}
+
+/* ---- study context: thread breadcrumb + builds-on + reproduce badge ---- */
+.context{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem .9rem;margin:.2rem 0 1.4rem;
+  font:500 .9rem/1.4 var(--disp);color:var(--mut)}
+.context a{color:var(--ink)}
+.context .crumb{display:inline-flex;align-items:center;gap:.4rem}
+.context .crumb::before{content:"";width:14px;height:2px;background:var(--violet);display:inline-block}
+.context .dep{color:var(--mut)}
+.status{display:inline-block;font:600 .72rem/1 var(--disp);text-transform:uppercase;letter-spacing:.08em;
+  padding:.22em .5em;border-radius:.4em;border:1px solid var(--line)}
+.status.supported{color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}
+.status.refuted{color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,transparent)}
+.status.wip,.status.draft{color:var(--wip);background:color-mix(in srgb,var(--wip) 12%,transparent)}
+.repro{display:inline-flex;align-items:center;gap:.4rem;font:500 .82rem/1 var(--disp)}
+.repro code{background:var(--code-bg);color:var(--code-fg)}
+.repro .git{opacity:.65}
+
+/* ====== landing ============================================================ */
+.landing{max-width:60rem;margin:0 auto;padding:1rem clamp(1rem,4vw,2rem) 5rem}
+.text-link{display:inline-flex;align-items:center;gap:.45rem;margin-top:1.4rem;color:var(--violet);
+  font:600 1.02rem/1 var(--disp);letter-spacing:.01em}
+.text-link span{transition:transform .14s ease}
+.text-link:hover{text-decoration:none}
+.text-link:hover span{transform:translateX(4px)}
+
+/* ====== studies: controls (pure-CSS view + show-WIP toggles) =============== */
+.studies-page{max-width:64rem;margin:0 auto;padding:1.6rem clamp(1rem,4vw,2rem) 4rem}
+.sv-input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.studies-bar{display:flex;flex-wrap:wrap;align-items:center;gap:1.1rem;margin:.2rem 0 1.8rem}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--panel)}
+.seg-opt{padding:.42rem .95rem;font:600 .8rem/1 var(--disp);text-transform:uppercase;letter-spacing:.08em;
+  color:var(--mut);cursor:pointer;transition:background .14s ease,color .14s ease}
+.seg-opt+.seg-opt{border-left:1px solid var(--line)}
+.seg-opt:hover{color:var(--ink)}
+#sv-tree:checked~.studies-bar label[for=sv-tree],
+#sv-table:checked~.studies-bar label[for=sv-table]{background:var(--violet);color:#fff}
+.wip-chk{display:inline-flex;align-items:center;gap:.5rem;cursor:pointer;color:var(--mut);
+  font:600 .8rem/1 var(--disp);text-transform:uppercase;letter-spacing:.06em}
+.wip-box{width:34px;height:18px;border-radius:10px;background:var(--line);position:relative;
+  transition:background .15s ease;flex:0 0 auto}
+.wip-box::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;
+  background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.3);transition:transform .15s ease}
+#sv-wip:checked~.studies-bar .wip-box{background:var(--violet)}
+#sv-wip:checked~.studies-bar .wip-box::after{transform:translateX(16px)}
+#sv-tree:focus-visible~.studies-bar label[for=sv-tree],
+#sv-table:focus-visible~.studies-bar label[for=sv-table],
+#sv-wip:focus-visible~.studies-bar .wip-chk{outline:2px solid var(--violet);outline-offset:2px;border-radius:6px}
+
+/* view + WIP switching, driven by the hidden inputs */
+.studies-stage{position:relative}
+#sv-table:checked~.studies-stage .view-tree{display:none}
+#sv-tree:checked~.studies-stage .view-table{display:none}
+#sv-wip:not(:checked)~.studies-stage .tree-all{display:none}
+#sv-wip:checked~.studies-stage .tree-stable{display:none}
+#sv-wip:not(:checked)~.studies-stage .view-table .card.is-wip,
+#sv-wip:not(:checked)~.studies-stage .view-table .band.is-wip{display:none}
+
+/* ====== the downward dot-tree ============================================= *
+ *  Bare dots connected by smooth Bézier curves, growing downward. Every LEAF is
+ *  pulled to one bottom row (the "frontier"). A dot's FILL is its verdict and its
+ *  BORDER is solid (proof-read) or dashed (in progress); the thread-start dot is
+ *  haloed in the thread tint, which also colours that thread's curves. Hover a
+ *  dot to reveal its briefing.
+ * ========================================================================== */
+.treeview{padding:.5rem 0 1.5rem}
+.tree-canvas{position:relative;margin:0 auto}
+.tree-svg{position:absolute;inset:0;display:block;pointer-events:none}
+.tree-empty{color:var(--mut);font:400 1rem/1.5 var(--serif);text-align:center;padding:3rem 0}
+
+.tnode{position:absolute;transform:translate(-50%,-50%);width:16px;height:16px;border-radius:50%;
+  background:var(--dot,var(--mut));border:2px solid var(--dot,var(--mut));z-index:2;cursor:pointer;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--dot,var(--mut)) 17%,transparent);   /* one ring for every node */
+  transition:transform .12s ease}
+.tnode.verified{border-style:solid}                                    /* proof-read */
+.tnode.provisional{border-style:dashed;background:color-mix(in srgb,var(--dot) 26%,var(--bg))}  /* wip */
+.st-supported{--dot:var(--ok)}
+.st-refuted{--dot:var(--bad)}
+.st-wip,.st-draft{--dot:var(--wip)}
+.tnode .hit{position:absolute;inset:-10px;border-radius:50%}
+.tnode:hover,.tnode:focus-visible{transform:translate(-50%,-50%) scale(1.22);z-index:30;outline:none}
+/* apex = the synthetic point where the branched roots converge (neutral origin) */
+.tnode.apex{width:12px;height:12px;background:var(--bg);border:2px solid var(--mut);cursor:default;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--mut) 13%,transparent)}
+.tnode.apex:hover{transform:translate(-50%,-50%)}
+
+/* always-on small title beside each node (below leaves, above the rest) */
+.tnode-label{position:absolute;left:50%;transform:translateX(-50%);width:max-content;max-width:152px;
+  text-align:center;font:500 10.5px/1.28 var(--disp);color:var(--ink);letter-spacing:-.004em;
+  pointer-events:none;text-shadow:0 0 3px var(--bg),0 0 3px var(--bg),0 0 6px var(--bg)}
+.tnode-label.lbl-dn{top:calc(100% + 5px)}
+.tnode-label.lbl-up{bottom:calc(100% + 5px)}
+.tnode.provisional .tnode-label{color:var(--mut)}      /* WIP titles read lighter */
+
+/* hover tooltip (the dot's content) */
+.tip{position:absolute;left:50%;top:25px;transform:translateX(-50%);width:max-content;max-width:248px;
+  text-align:left;background:var(--panel);border:1px solid var(--line);
+  border-left:3px solid var(--tree,var(--violet));border-radius:10px;padding:.6rem .75rem;
+  box-shadow:0 18px 44px -22px rgba(22,22,26,.72);opacity:0;visibility:hidden;
+  transition:opacity .13s ease;pointer-events:none;z-index:40}
+.tip-up .tip{top:auto;bottom:25px}
+.tip-l .tip{left:0;transform:none}
+.tip-r .tip{left:auto;right:0;transform:none}
+.tnode:hover .tip,.tnode:focus-visible .tip,.tnode:focus-within .tip{opacity:1;visibility:visible}
+.tip-h{display:flex;align-items:center;gap:.5rem;margin-bottom:.3rem}
+.tip-th{font:700 .58rem/1 var(--disp);text-transform:uppercase;letter-spacing:.11em;color:var(--tree)}
+.tip-st{font:600 .56rem/1 var(--disp);text-transform:uppercase;letter-spacing:.07em;
+  color:var(--dot,var(--mut));padding:.22em .45em;border:1px solid var(--line);border-radius:.5em}
+.tip-t{display:block;font:600 .92rem/1.3 var(--disp);color:var(--ink);letter-spacing:-.01em}
+.tip-sub{display:block;margin-top:.32rem;font:400 .82rem/1.42 var(--serif);color:var(--mut)}
+.tip-x{display:block;margin-top:.35rem;font:500 .72rem/1.35 var(--disp);color:var(--mut)}
 
 @media (max-width:600px){
   .nav{flex-wrap:wrap;gap:.5rem} .tabs{order:3;width:100%} body{font-size:17px}
+  .studies-page{padding-left:.6rem;padding-right:.6rem}
 }
 </style>
 </head>
 <body>
-<header class="nav"><a class="brand" href="index.html"><svg class="inkmark" viewBox="0 0 100 100" width="26" height="26" aria-hidden="true">
-<defs><filter id="im-f" x="-40%" y="-40%" width="180%" height="180%">
-<feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="11" result="t"/>
-<feDisplacementMap in="SourceGraphic" in2="t" scale="16"/></filter>
-<radialGradient id="im-g" cx="38%" cy="30%" r="78%">
-<stop offset="0%" stop-color="#5a3a73"/><stop offset="55%" stop-color="#2b1d3d"/>
-<stop offset="100%" stop-color="#16161a"/></radialGradient></defs>
-<g filter="url(#im-f)"><ellipse cx="52" cy="50" rx="29" ry="26" fill="url(#im-g)"/>
-<ellipse cx="66" cy="40" rx="12" ry="10" fill="#4b2e63" opacity=".8"/>
-<circle cx="35" cy="64" r="6" fill="#2b1d3d" opacity=".7"/></g></svg><span>neurep</span></a><nav class="tabs"><a class="tab" href="studies.html#roadmap">roadmap</a><a class="tab" href="studies.html#experiments">experiments</a><a class="tab" href="studies.html#theory">theory</a><a class="tab active" href="studies.html#others">others</a></nav></header>
-<main class="study"><header class="study-head"><h1>The mechanism behind Separator’s
+<header class="nav"><a class="brand" href="../index.html"><span>neurep</span></a></header><main class="study"><header class="study-head"><h1>The mechanism behind Separator’s
 collapse</h1><p class=sub>A pruning–collapse race: timing, not collapse itself, decides the
-damage</p><div class="rule"></div></header><article>
+damage</p><div class="rule"></div></header><div class="context"><span class="crumb"><a href="../studies.html#thread-collapse">neuron representation collapse</a></span><span class="status wip">wip</span><span class="dep">builds on: <a href="../flat_forensics_report/">The flat winning ticket under the
+microscope</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou-Hangyu/neurep/commit/3394642"><code>3394642</code></a> <span class="git">· feature/runstore-pipeline</span></span></div><article>
 <div class="tldr"><p><strong>TL;DR.</strong> We re-ran the v10 Separator winners with full
 <span class="math inline">\(\phi\)</span>/<span
 class="math inline">\(W\)</span> trajectory instrumentation (109 runs;
@@ -265,7 +381,7 @@ does not (<code>flat</code>, <span
 class="math inline">\(c{=}0.03\)</span>: <code>cont</code> collapses at
 13–14k, <code>euc</code> never).</p>
 <figure id="fig:geom" data-latex-placement="h">
-<img class="fig" src="assets/fig_mech_geometry.svg" alt="fig_mech_geometry" loading="lazy" />
+<img class="fig" src="fig/fig_mech_geometry.svg" alt="fig_mech_geometry" loading="lazy" />
 <figcaption><span class="fignum">Figure 1.</span> Converged geometry. (a) <code>flat</code>: one consensus
 code (uniform body) + outlier rows. (b) <code>hier</code>: visible
 per-neuron texture — but binarized codes are near-identical (59/64 share
@@ -314,7 +430,7 @@ class="math inline">\(c{=}1\)</span>: 16k vs. never);
 pattern (euc engaged; cont collapsing late and harmlessly at
 17–19k/8k).</p>
 <figure id="fig:dyn" data-latex-placement="h">
-<img class="fig" src="assets/fig_mech_dynamics.svg" alt="fig_mech_dynamics" loading="lazy" />
+<img class="fig" src="fig/fig_mech_dynamics.svg" alt="fig_mech_dynamics" loading="lazy" />
 <figcaption><span class="fignum">Figure 2.</span> The race, 5 seeds (band = min–max). (a) collapse front <span
 class="math inline">\(\mathrm{frac}_{d0}(t)\)</span>. (b) mean <span
 class="math inline">\(|W|\)</span> on final-top-decile-<span
@@ -381,7 +497,7 @@ class="math inline">\(n{=}5\)</span>) — what differs across seeds is
 presumably <em>which</em> codes form before the collapse, not when it
 happens.</p>
 <figure id="fig:cross" data-latex-placement="h">
-<img class="fig" src="assets/fig_mech_cross.svg" alt="fig_mech_cross" loading="lazy" />
+<img class="fig" src="fig/fig_mech_cross.svg" alt="fig_mech_cross" loading="lazy" />
 <figcaption><span class="fignum">Figure 3.</span> (a) collapse onset, task <span
 class="math inline">\(\times\)</span> dist <span
 class="math inline">\(\times\)</span> <span
@@ -451,7 +567,7 @@ class="math inline">\(0.36\)</span> <code>hier</code>, <span
 class="math inline">\(0.044/0.054\)</span> <code>flat</code>). The
 symmetry-breaking spike init is load-bearing.</p>
 <figure id="fig:unif" data-latex-placement="h">
-<img class="fig" src="assets/fig_mech_unif.svg" alt="fig_mech_unif" loading="lazy" />
+<img class="fig" src="fig/fig_mech_unif.svg" alt="fig_mech_unif" loading="lazy" />
 <figcaption><span class="fignum">Figure 4.</span> Uniformity term (<span class="math inline">\(n{=}3\)</span>;
 point labels = final <span
 class="math inline">\(\mathrm{frac}_{d0}\)</span>; gray lines: NoReg
@@ -490,10 +606,10 @@ class="math inline">\(\times\)</span> 3–5 seeds;
 ); analysis
  <span
 class="math inline">\(\to\)</span>;
-figures; all. Store winners reproduce
+figures; all in. Store winners reproduce
 seed-by-seed to <span class="math inline">\(\le1.2\times10^{-5}\)</span>
 MSE. Anchors (NoReg/L1) from surviving of the v10
-final runs. Companion doc: <a class="xref" href="collapse_review.html">What is the Separator regularizer actually
+final runs. Companion doc: <a class="xref" href="../collapse_review/">What is the Separator regularizer actually
 doing?</a> (the <span
 class="math inline">\(\mathcal{R}\)</span>-decomposition this study
 explains).</span></p>

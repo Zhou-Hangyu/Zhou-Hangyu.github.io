@@ -1,0 +1,855 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow"><title>Confinement, not endpoint sparsity, buys sample efficiency — neurep</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"><script>window.MathJax={tex:{tags:'ams',inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]'],['$$','$$']]},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']},chtml:{displayAlign:'center'}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><style>/* ========================================================================== *
+ *  research-site theme — the single source of truth for the visual language.
+ *  The builder INLINES this file into every generated page's <head>, so each
+ *  report renders standalone (open the .html directly) and is depth-proof.
+ *  Re-theme by editing the :root tokens below, then rebuild.
+ *  Visual language: warm cream ground, charcoal+violet ink, Manrope display.
+ * ========================================================================== */
+:root{
+  --bg:#e7e2d9;          /* warm cream ground */
+  --panel:#efeae0;       /* slightly lifted card/panel */
+  --ink:#16161a;         /* near-black text / wordmark */
+  --mut:#6f685f;         /* muted brown-grey */
+  --violet:#4b2e63;      /* primary accent */
+  --violet-dp:#2b1d3d;   /* deep accent */
+  --line:rgba(22,22,26,.12);
+  --code-bg:rgba(75,46,99,.09);
+  --code-fg:#3a2348;
+  --ok:#2f6b3a;          /* status: supported */
+  --bad:#9a3b2f;         /* status: refuted */
+  --wip:#8a6d1f;         /* status: wip/draft */
+  --disp:'Manrope',-apple-system,'Segoe UI',Roboto,sans-serif;  /* display/UI */
+  --serif:Georgia,'Iowan Old Style','Times New Roman',serif;     /* body */
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:18px/1.66 var(--serif);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+a{color:var(--violet);text-decoration:none}
+a:hover{text-decoration:underline;text-underline-offset:2px}
+
+/* ---- header (wordmark + tabs), shared by every page ---- */
+.nav{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;
+  gap:1rem;padding:.7rem clamp(1rem,4vw,3rem);
+  background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:saturate(140%) blur(8px);
+  border-bottom:1px solid var(--line)}
+.brand{display:inline-flex;align-items:center;gap:.5rem;color:var(--ink);font:800 1.18rem/1 var(--disp);
+  letter-spacing:-.03em}
+.brand:hover{text-decoration:none}
+.tabs{display:flex;gap:clamp(.7rem,2.4vw,1.9rem);font:500 .96rem/1 var(--disp)}
+.tabs .tab{color:var(--mut);padding:.2rem 0;border-bottom:2px solid transparent;letter-spacing:.01em}
+.tabs .tab:hover{color:var(--ink);text-decoration:none}
+.tabs .tab.active{color:var(--ink);border-bottom-color:var(--violet)}
+
+/* ---- landing hero ---- */
+.hero{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;min-height:min(72vh,640px);padding:3rem 1rem 2rem;overflow:hidden}
+.heroink{position:absolute;inset:-6% -2%;width:104%;height:112%;z-index:0;pointer-events:none}
+.bigmark{position:relative;z-index:1;margin:0;color:var(--ink);
+  font:800 clamp(4rem,17vw,12rem)/.9 var(--disp);letter-spacing:-.045em}
+.tagline{position:relative;z-index:1;margin:clamp(2.2rem,5vw,3.3rem) 0 0;max-width:none;color:var(--mut);
+  font:400 clamp(.95rem,2vw,1.18rem)/1.5 var(--disp);letter-spacing:.01em}
+
+/* ---- landing bands + cards ---- */
+.band{max-width:60rem;margin:0 auto;padding:2.6rem clamp(1rem,4vw,2rem) .6rem;scroll-margin-top:5rem}
+.band-title{font:700 .82rem/1 var(--disp);text-transform:uppercase;letter-spacing:.18em;color:var(--mut);
+  margin:0 0 1.1rem;display:flex;align-items:center;gap:.6rem}
+.band-title::before{content:"";width:24px;height:2px;background:var(--violet);display:inline-block}
+.overview{font:400 1.06rem/1.6 var(--serif);color:var(--ink);max-width:60ch;margin:0 0 1.4rem}
+.maplist{margin:.2rem 0 1rem;padding-left:1.2rem;color:var(--mut);font:400 1rem/1.7 var(--serif)}
+.maplist a{color:var(--ink)}
+.cards{display:grid;gap:.9rem;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr))}
+.card{position:relative;display:block;background:var(--panel);border:1px solid var(--line);
+  border-radius:14px;padding:1.05rem 1.1rem 1.15rem;color:var(--ink);transition:transform .14s ease,box-shadow .14s ease,border-color .14s}
+.card:hover{text-decoration:none;transform:translateY(-3px);border-color:color-mix(in srgb,var(--violet) 33%,transparent);
+  box-shadow:0 10px 26px -16px rgba(43,29,61,.55)}
+.card-dot{position:absolute;top:1.15rem;right:1.1rem;width:9px;height:9px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#5a3a73,var(--violet-dp))}
+.card-title{margin:.1rem 2rem .35rem 0;font:600 1.06rem/1.32 var(--disp);letter-spacing:-.01em}
+.card-sum{margin:0;color:var(--mut);font:400 .92rem/1.45 var(--serif)}
+
+/* ---- study page ---- */
+.study{max-width:46rem;margin:0 auto;padding:2.2rem clamp(1rem,4vw,1.4rem) 5rem}
+.study-head h1{margin:0;font:800 clamp(1.7rem,4.6vw,2.3rem)/1.12 var(--disp);letter-spacing:-.025em}
+.study-head .sub{margin:.7rem 0 0;color:var(--mut);font:italic 400 1.12rem/1.45 var(--serif)}
+.study-head .rule{height:3px;width:84px;margin:1.3rem 0 .4rem;border-radius:3px;
+  background:linear-gradient(90deg,var(--violet),var(--violet-dp) 55%,transparent)}
+article{font-size:18px}
+article :first-child{margin-top:0}
+h1,h2,h3,h4{font-family:var(--disp);line-height:1.22;letter-spacing:-.015em}
+h2{font-size:1.4rem;margin:2.3rem 0 .5rem;padding-bottom:.25rem;border-bottom:1px solid var(--line)}
+h3{font-size:1.1rem;margin:1.6rem 0 .3rem}
+p{margin:.75rem 0}
+strong{font-weight:700}
+ul,ol{padding-left:1.3rem} li{margin:.25rem 0}
+hr{border:0;border-top:1px solid var(--line);margin:2rem 0}
+
+/* code: technical identifiers, de-emphasised on cream (never a link) */
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.84em;
+  background:var(--code-bg);color:var(--code-fg);padding:.1em .34em;border-radius:.32em;word-break:break-word}
+
+/* figures */
+figure{margin:1.8rem 0;text-align:center;scroll-margin-top:5rem}
+img.fig{max-width:min(100%,640px);height:auto;display:block;margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:.5em;padding:.4rem}
+.study article img:not(.fig){max-width:100%;height:auto}   /* safety net: no image ever exceeds the line width, even if .fig is forgotten */
+figcaption{font:400 14px/1.55 var(--disp);color:var(--mut);text-align:left;margin:.6rem auto 0;max-width:640px}
+.fignum{color:var(--ink);font-weight:700}
+
+/* equation refs + anchors (KaTeX legacy + MathJax) */
+.xref{font-weight:600;text-decoration:none}
+.eqa{position:relative;top:-4.4rem;visibility:hidden}
+.katex-display{overflow-x:auto;overflow-y:hidden;padding:.25rem 0}
+mjx-container[display="true"]{overflow-x:auto;overflow-y:hidden;padding:.15rem 0}
+mjx-container{outline:none}
+
+/* propositions / proofs (pandoc amsthm) */
+.theorem,.proposition,.lemma,.corollary,.definition,.remark{
+  background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--violet);
+  border-radius:.5em;padding:.7rem 1rem;margin:1.3rem 0;scroll-margin-top:5rem}
+.theorem strong:first-child,.proposition strong:first-child,.lemma strong:first-child,
+.corollary strong:first-child,.definition strong:first-child{
+  font-family:var(--disp);color:var(--violet-dp)}
+.proof{margin:1rem 0 1.4rem;padding-left:1rem;border-left:2px solid var(--line);color:#3c3833;font-size:.97em}
+.proof::after{content:"\220E";display:block;text-align:right;color:var(--mut)}
+
+/* tables (booktabs feel) */
+.tablewrap{overflow-x:auto;margin:1.5rem 0}
+table{border-collapse:collapse;margin:0 auto;font:400 .92rem/1.4 var(--disp)}
+th,td{padding:.4rem .8rem;text-align:left}
+thead th{border-top:2px solid var(--ink);border-bottom:1px solid var(--ink);font-weight:700}
+tbody tr:last-child td{border-bottom:2px solid var(--ink)}
+caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);margin-top:.5rem;text-align:left}
+
+/* TL;DR / boxed callout */
+.tldr{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--violet);
+  border-radius:.5em;padding:.85rem 1.05rem;margin:0 0 1.6rem;font-size:.98rem}
+
+/* ---- study context: thread breadcrumb + builds-on + reproduce badge ---- */
+.context{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem .9rem;margin:.2rem 0 1.4rem;
+  font:500 .9rem/1.4 var(--disp);color:var(--mut)}
+.context a{color:var(--ink)}
+.context .crumb{display:inline-flex;align-items:center;gap:.4rem}
+.context .crumb::before{content:"";width:14px;height:2px;background:var(--violet);display:inline-block}
+.context .dep{color:var(--mut)}
+.status{display:inline-block;font:600 .72rem/1 var(--disp);text-transform:uppercase;letter-spacing:.08em;
+  padding:.22em .5em;border-radius:.4em;border:1px solid var(--line)}
+.status.supported{color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}
+.status.refuted{color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,transparent)}
+.status.wip,.status.draft{color:var(--wip);background:color-mix(in srgb,var(--wip) 12%,transparent)}
+.repro{display:inline-flex;align-items:center;gap:.4rem;font:500 .82rem/1 var(--disp)}
+.repro code{background:var(--code-bg);color:var(--code-fg)}
+.repro .git{opacity:.65}
+
+/* ====== landing ============================================================ */
+.landing{max-width:60rem;margin:0 auto;padding:1rem clamp(1rem,4vw,2rem) 5rem}
+.text-link{display:inline-flex;align-items:center;gap:.45rem;margin-top:1.4rem;color:var(--violet);
+  font:600 1.02rem/1 var(--disp);letter-spacing:.01em}
+.text-link span{transition:transform .14s ease}
+.text-link:hover{text-decoration:none}
+.text-link:hover span{transform:translateX(4px)}
+
+/* ====== studies: controls (pure-CSS view + show-WIP toggles) =============== */
+.studies-page{max-width:64rem;margin:0 auto;padding:1.6rem clamp(1rem,4vw,2rem) 4rem}
+.sv-input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.studies-bar{display:flex;flex-wrap:wrap;align-items:center;gap:1.1rem;margin:.2rem 0 1.8rem}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--panel)}
+.seg-opt{padding:.42rem .95rem;font:600 .8rem/1 var(--disp);text-transform:uppercase;letter-spacing:.08em;
+  color:var(--mut);cursor:pointer;transition:background .14s ease,color .14s ease}
+.seg-opt+.seg-opt{border-left:1px solid var(--line)}
+.seg-opt:hover{color:var(--ink)}
+#sv-tree:checked~.studies-bar label[for=sv-tree],
+#sv-table:checked~.studies-bar label[for=sv-table]{background:var(--violet);color:#fff}
+.wip-chk{display:inline-flex;align-items:center;gap:.5rem;cursor:pointer;color:var(--mut);
+  font:600 .8rem/1 var(--disp);text-transform:uppercase;letter-spacing:.06em}
+.wip-box{width:34px;height:18px;border-radius:10px;background:var(--line);position:relative;
+  transition:background .15s ease;flex:0 0 auto}
+.wip-box::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;
+  background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.3);transition:transform .15s ease}
+#sv-wip:checked~.studies-bar .wip-box{background:var(--violet)}
+#sv-wip:checked~.studies-bar .wip-box::after{transform:translateX(16px)}
+#sv-tree:focus-visible~.studies-bar label[for=sv-tree],
+#sv-table:focus-visible~.studies-bar label[for=sv-table],
+#sv-wip:focus-visible~.studies-bar .wip-chk{outline:2px solid var(--violet);outline-offset:2px;border-radius:6px}
+
+/* view + WIP switching, driven by the hidden inputs */
+.studies-stage{position:relative}
+#sv-table:checked~.studies-stage .view-tree{display:none}
+#sv-tree:checked~.studies-stage .view-table{display:none}
+#sv-wip:not(:checked)~.studies-stage .tree-all{display:none}
+#sv-wip:checked~.studies-stage .tree-stable{display:none}
+#sv-wip:not(:checked)~.studies-stage .view-table .card.is-wip,
+#sv-wip:not(:checked)~.studies-stage .view-table .band.is-wip{display:none}
+
+/* ====== the downward dot-tree ============================================= *
+ *  Bare dots connected by smooth Bézier curves, growing downward. Every LEAF is
+ *  pulled to one bottom row (the "frontier"). A dot's FILL is its verdict and its
+ *  BORDER is solid (proof-read) or dashed (in progress); the thread-start dot is
+ *  haloed in the thread tint, which also colours that thread's curves. Hover a
+ *  dot to reveal its briefing.
+ * ========================================================================== */
+.treeview{padding:.5rem 0 1.5rem}
+.tree-canvas{position:relative;margin:0 auto}
+.tree-svg{position:absolute;inset:0;display:block;pointer-events:none}
+.tree-empty{color:var(--mut);font:400 1rem/1.5 var(--serif);text-align:center;padding:3rem 0}
+
+.tnode{position:absolute;transform:translate(-50%,-50%);width:16px;height:16px;border-radius:50%;
+  background:var(--dot,var(--mut));border:2px solid var(--dot,var(--mut));z-index:2;cursor:pointer;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--dot,var(--mut)) 17%,transparent);   /* one ring for every node */
+  transition:transform .12s ease}
+.tnode.verified{border-style:solid}                                    /* proof-read */
+.tnode.provisional{border-style:dashed;background:color-mix(in srgb,var(--dot) 26%,var(--bg))}  /* wip */
+.st-supported{--dot:var(--ok)}
+.st-refuted{--dot:var(--bad)}
+.st-wip,.st-draft{--dot:var(--wip)}
+.tnode .hit{position:absolute;inset:-10px;border-radius:50%}
+.tnode:hover,.tnode:focus-visible{transform:translate(-50%,-50%) scale(1.22);z-index:30;outline:none}
+/* apex = the synthetic point where the branched roots converge (neutral origin) */
+.tnode.apex{width:12px;height:12px;background:var(--bg);border:2px solid var(--mut);cursor:default;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--mut) 13%,transparent)}
+.tnode.apex:hover{transform:translate(-50%,-50%)}
+
+/* always-on small title beside each node (below leaves, above the rest) */
+.tnode-label{position:absolute;left:50%;transform:translateX(-50%);width:max-content;max-width:152px;
+  text-align:center;font:500 10.5px/1.28 var(--disp);color:var(--ink);letter-spacing:-.004em;
+  pointer-events:none;text-shadow:0 0 3px var(--bg),0 0 3px var(--bg),0 0 6px var(--bg)}
+.tnode-label.lbl-dn{top:calc(100% + 5px)}
+.tnode-label.lbl-up{bottom:calc(100% + 5px)}
+.tnode.provisional .tnode-label{color:var(--mut)}      /* WIP titles read lighter */
+
+/* hover tooltip (the dot's content) */
+.tip{position:absolute;left:50%;top:25px;transform:translateX(-50%);width:max-content;max-width:248px;
+  text-align:left;background:var(--panel);border:1px solid var(--line);
+  border-left:3px solid var(--tree,var(--violet));border-radius:10px;padding:.6rem .75rem;
+  box-shadow:0 18px 44px -22px rgba(22,22,26,.72);opacity:0;visibility:hidden;
+  transition:opacity .13s ease;pointer-events:none;z-index:40}
+.tip-up .tip{top:auto;bottom:25px}
+.tip-l .tip{left:0;transform:none}
+.tip-r .tip{left:auto;right:0;transform:none}
+.tnode:hover .tip,.tnode:focus-visible .tip,.tnode:focus-within .tip{opacity:1;visibility:visible}
+.tip-h{display:flex;align-items:center;gap:.5rem;margin-bottom:.3rem}
+.tip-th{font:700 .58rem/1 var(--disp);text-transform:uppercase;letter-spacing:.11em;color:var(--tree)}
+.tip-st{font:600 .56rem/1 var(--disp);text-transform:uppercase;letter-spacing:.07em;
+  color:var(--dot,var(--mut));padding:.22em .45em;border:1px solid var(--line);border-radius:.5em}
+.tip-t{display:block;font:600 .92rem/1.3 var(--disp);color:var(--ink);letter-spacing:-.01em}
+.tip-sub{display:block;margin-top:.32rem;font:400 .82rem/1.42 var(--serif);color:var(--mut)}
+.tip-x{display:block;margin-top:.35rem;font:500 .72rem/1.35 var(--disp);color:var(--mut)}
+
+@media (max-width:600px){
+  .nav{flex-wrap:wrap;gap:.5rem} .tabs{order:3;width:100%} body{font-size:17px}
+  .studies-page{padding-left:.6rem;padding-right:.6rem}
+}
+</style>
+</head>
+<body>
+<header class="nav"><a class="brand" href="../index.html"><span>neurep</span></a></header><main class="study"><header class="study-head"><h1>Confinement, not endpoint sparsity, buys sample efficiency</h1><div class="rule"></div></header><div class="context"><span class="crumb"><a href="../studies.html#thread-theory">Encoding &amp; modularity theory</a></span><span class="status supported">supported</span><span class="dep">builds on: <a href="../neurep_mlp_encoding/">An Exact MLP Encoding of Computation Graphs</a></span></div><article>
+
+<div class="tldr">
+<p><strong>TL;DR.</strong> Modularity is prized because it should make learning
+<em>sample-efficient</em>. We argue the efficiency is not bought by the trained network
+<em>ending up</em> sparse, but by <em>confining the search</em> to a sparse computation
+graph throughout training — a wiring cost <em>selects</em> modularity, it does not create
+it. We prove this for discrete targets, then test it with a confinement
+<em>ladder</em> on random sparse computation graphs. An oracle confined to
+the true graph (<strong>Fc</strong>) beats an unregularized net <strong>14.5&times;</strong>
+in area-under-the-learning-curve, stays flat as the ambient dimension grows, and recovers
+the wiring perfectly (AP&nbsp;1.00); a collapsing learned price (<strong>L</strong>) ties
+no regularizer; plain&nbsp;\(\ell_1\) never reaches the oracle. The
+decisive test rules out the map's <em>functional</em> sparsity as a hidden efficiency channel
+(the pre-registered falsifier never fires) and the off-diagonal cell pins the gain to
+<em>confinement</em>; causal dose&ndash;response and a continuous-rate test confirm
+confinement is the cause and is ambient-dimension-free; and a <em>learned</em> non-collapsing
+gate (<strong>NC</strong>) beats the baseline but recovers the wiring only barely above
+chance — a learned cost confines, but not yet to the <em>correct</em> graph.
+<span class="status supported">thesis supported</span></p>
+</div>
+
+<h2>1. The question</h2>
+
+<p>Modularity is prized for <em>sample efficiency</em>: a modular learner should need
+far fewer examples, fitting a few small pieces instead of one dense high-dimensional map.
+This report asks <em>where</em> that efficiency comes from, and shows the common intuition
+— &ldquo;the network became sparse, so the sparsity is what helped&rdquo; — mislocates it.
+The argument hinges on three properties that coincide on a hand-built example but are
+distinct:</p>
+
+<ul>
+<li><strong>Functional sparsity</strong> — a property of the <em>map</em> \(f^\star\): it
+has only low-order input interactions (e.g. \(f^\star(x)=\sum_k g_k(x_{S_k})\), each
+\(S_k\) small). Measured by \(\mathrm{F}\).</li>
+<li><strong>Structural modularity</strong> — a property of the trained network's
+<em>realization</em>: the weights, contracted onto units, route along a low-fan-in graph.
+Measured by \(\mathrm{S}\).</li>
+<li><strong>Confinement</strong> — a property of the <em>search</em>: the
+architecture/prior restricts the sparse-graph hypothesis class <em>throughout training</em>,
+not just at the endpoint.</li>
+</ul>
+
+<p><strong>The thesis.</strong> Efficiency is bought by <em>confinement</em>, not by
+functional sparsity of the returned map: a dense, unconfined net can compute a perfectly
+sparse \(f^\star\) and still be sample-hungry, because the search ranged over all maps the
+whole time. The cleanest evidence is that off-diagonal case — a maximally sparse task where
+the unconfined learner is many-fold less efficient than the confined one despite both
+computing the same function (§<a href="#sec-e2">6.2</a>).</p>
+
+<h2>2. Theory</h2>
+
+<p>Let \(G=(V,E)\) be a <em>computation graph</em>: a DAG with \(N\) nodes over \(d\)
+inputs, max fan-in \(r\), each non-input node a map of its \(\le r\) parents. Let
+\(\mathcal{H}_G\) be the maps realizable by the fixed structure \(G\) and
+\(\mathcal{H}_{\mathrm{all}}\) all maps on \(d\) inputs. With the realizable sample bound
+\(n(\mathcal{H})=\Theta(\epsilon^{-1}\log|\mathcal{H}|)\) and alphabet size \(D\),</p>
+
+\[\begin{equation}\label{eq:counting}
+\log|\mathcal{H}_G|=\!\!\sum_{v\notin V_{\mathrm{in}}}\!\! D^{|\mathrm{pa}(v)|}\log D
+\;\le\; N D^{r}\log D,
+\qquad
+\log|\mathcal{H}_{\mathrm{all}}|=D^{d}\log D,
+\end{equation}\]
+
+<p>so sample complexity is governed by the fan-in \(r\), not the ambient dimension \(d\):
+the confined/unconfined ratio is \(O\!\big(N D^{-(d-r)}\big)\), exponential in \(d-r\)
+(Prop.&nbsp;1). And endpoint sparsity does <em>not</em> fix the curve: a learner over
+\(\mathcal{H}_{\mathrm{all}}\) that has seen \(n\) inputs still errs on a \(\Theta(1)\)
+fraction of the rest, so two learners can output the <em>same</em> \(f^\star\) on curves
+separated by the Eq.&nbsp;\eqref{eq:counting} gap (Prop.&nbsp;2). The curve is fixed by
+what the search ranged over, not by the returned point.</p>
+
+<p class="remark"><strong>Continuous targets.</strong> The same holds through approximation
+rates: with \(s\)-Hölder node functions, a sparse estimator matching \(G\) attains a risk
+exponent set by the <em>fan-in</em>, an unconfined \(s\)-smooth estimator of \(d\) variables
+one set by the <em>ambient</em> dimension:</p>
+
+\[\begin{equation}\label{eq:rate}
+\underbrace{\;n^{-\,2s/(2s+r)}\;}_{\text{confined (tracks } r\text{)}}
+\qquad\text{vs.}\qquad
+\underbrace{\;n^{-\,2s/(2s+d)}\;}_{\text{unconfined (tracks } d\text{)}}
+\quad\text{(up to log factors; Schmidt-Hieber 2020).}
+\end{equation}\]
+
+<p>Finally, a learned <em>pricing</em> collapses: with a penalty
+\(\lambda\sum_{ij} c(\phi_i,\phi_j)\,|W_{ij}|\) over free codes \(\phi\), the codes drift
+together so \(c\to 0\) and the penalty vanishes with the weights untouched — confinement
+evaporates, the search reverts to \(\mathcal{H}_{\mathrm{all}}\), and it inherits the dense
+sample complexity. This is why the <strong>L</strong> condition below should match the
+baseline.</p>
+
+<p class="remark"><strong>Numerical gate.</strong> <a href="https://github.com/Zhou-Hangyu/neurep/blob/master/studies/emergent_modularity/src/theory_check.py"><code>src/theory_check.py</code></a> validates
+Eqs.&nbsp;\eqref{eq:counting}&ndash;\eqref{eq:rate} by direct version-space counting
+(\(D{=}3,\,r{=}2\)): the confined learner reaches near-zero error at \(n^\star{=}32\)
+<em>independently of \(d\)</em> (identical at \(d{=}8,11\)), and the gap is exactly
+\(D^{\,d-r}\) — <strong>729&times;</strong> at \(d{=}8\), <strong>19&thinsp;683&times;</strong>
+at \(d{=}11\). The first control: if the counting were wrong, nothing downstream would be
+worth interpreting.</p>
+
+<figure>
+  <img class="fig" src="fig/fig_theory_check.png" alt="confined error plateaus by n~32 independent of d; gap grows as D^(d-r)"/>
+  <figcaption><span class="fignum"></span> <strong>Theory gate.</strong> Left: the
+  confined learner's test error plateaus by \(n\approx32\), the <em>same</em> curve at
+  \(d{=}8\) and \(d{=}11\); the unconfined error stays \(\Theta(1)\) over the same
+  range. Right: the sample-complexity gap \(D^{\,d-r}\) versus ambient dimension.</figcaption>
+</figure>
+
+<h2>3. Task family</h2>
+
+<p>The decisive test needs the structural and functional axes swept independently over many
+instances, which hand-built examples cannot give. So the harness generates an ensemble — a
+random reduced DAG \(\mathcal{G}(d_{\mathrm{eff}},\nu,N,r,\Delta,\kappa,\varepsilon,s)\)
+(<a href="https://github.com/Zhou-Hangyu/neurep/blob/master/studies/emergent_modularity/src/cgraph.py"><code>src/cgraph.py</code></a>):</p>
+
+<ul>
+<li>\(d_{\mathrm{eff}}\) <strong>signal</strong> inputs plus \(\nu\) <strong>nuisance</strong>
+inputs that are present but <em>never read</em>. Ambient \(d=d_{\mathrm{eff}}+\nu\) thus moves
+<em>independently of structure</em> — the lever that grows the search space without changing
+the function (experiments 2 and 4).</li>
+<li>\(N\) nodes in \(\Delta\) tiers, each reading \(\le r\) parents from earlier tiers (reuse
+\(\kappa\) biases toward used parents; entangler \(\varepsilon\) optionally adds a cross-tier
+edge); each node is a random \(s\)-Hölder function (small \(s\) = harder). The readout is the
+<em>mean</em> of terminals, so \(\Delta{=}1\) is <em>additive</em>
+\(f^\star=\mathrm{mean}_k\,g_k(x_{S_k})\) and \(\Delta{>}1\) a fan-in-\(r\) composition.</li>
+<li>each instance emits its ground truth — \(E(G)\), tiers, the nuisance partition, a wrong
+graph \(G'\), and the analytic \(f^\star\) — and is <em>reduced</em> (every signal input read)
+by construction.</li>
+</ul>
+
+<p><strong>The wiring \(E(G)\), concretely.</strong> \(E(G)\) is the graph's edge set: the
+ordered pairs \((v\!\to\!u)\) over the node set \(V=\{d\text{ input nodes}\}\cup\{N\text{
+computation nodes}\}\cup\{\text{sink }O\}\), one per parent\(\to\)child link, meaning node \(u\)
+reads node \(v\). It is the ground-truth wiring that every oracle charges against and the
+recovery metric scores against. The wrong graph \(G'\) is a second edge set drawn with the
+<em>same</em> tier layout and fan-in\(\,\le r\) but computation wiring unrelated to \(E(G)\) (it
+drives the Fw condition); each terminal still feeds the sink, so \(G'\) realizes the same
+<em>observable</em> as \(G\) but routes it differently.</p>
+
+<p>Named regimes are points in the family: <strong>additive</strong> (\(\Delta{=}1\)),
+<strong>hierarchical</strong> (tree, \(\Delta{>}1\)), <strong>reuse-heavy</strong> (large
+\(\kappa\)), <strong>weakly-entangled</strong> (\(\varepsilon{>}0\)), and
+<strong>dense-negative</strong> (\(r\approx d_{\mathrm{eff}}\) — the necessity control).</p>
+
+<h2>4. The ladder</h2>
+
+<p>Every condition trains the <em>same</em> MLP (depth \(\Delta{+}2\), width&nbsp;128) so
+capacity never confounds; only the per-neuron prior differs. To <em>price</em> wiring on the
+weights, every MLP unit is given a graph-node label \(\mu\): an input unit takes its
+coordinate's node (a signal or a nuisance node), the \(m\) hidden units at each boundary are
+split into the \(N\) computation nodes by contiguous blocks (\(\mu_i=\mathrm{comp}[\lfloor iN/m
+\rfloor]\), \(\sim m/N\) units per node), and the lone output unit is the sink \(O\). A weight
+\(W^{(\ell)}_{ij}\) then carries a sender node \(\mu_j\) and a receiver node \(\mu_i\), and the
+oracle cost charges it for crossing a node pair that is not an edge of \(G\),</p>
+
+\[\begin{equation}\label{eq:oracle}
+\mathcal{R}(W)\;=\;\frac{1}{L}\sum_{\ell=1}^{L}\ \operatorname*{mean}_{i}\ \sum_{j}
+\, c(\mu_i,\mu_j)\,\bigl|W^{(\ell)}_{ij}\bigr|,
+\qquad c(\mu_i,\mu_j)=\begin{cases}0 & (\mu_j\!\to\!\mu_i)\in E(G)\cup\{\text{identity}\}\\ 1 & \text{else,}\end{cases}
+\end{equation}\]
+
+<p>The cost \(c(\mu_i,\mu_j)\) is a fixed \(0/1\) table on node pairs — \(0\) when
+\((\mu_j\!\to\!\mu_i)\) is a true edge of \(E(G)\), or the identity \(\mu_i{=}\mu_j\) so a node's
+value can pass through intermediate layers, and \(1\) otherwise. It is read off the ground-truth
+wiring once at initialization and held fixed (no learnable state); a learned condition instead
+prices a <em>distance</em> between learned codes (see below). The penalty is <strong>summed over
+senders, averaged over receivers</strong>, so each receiver pays its full off-graph incoming
+mass and per-weight pressure is invariant to \(\nu\) (needed for the flat-in-\(d\) signature of
+experiment&nbsp;4). Each rung below adds \(c\,\mathcal{R}\) to the MSE (\(c\) annealed \(0\!\to\!c\) over the first
+\(10\%\) of steps; \(\phi\) are learned per-node codes, \(\operatorname*{mean}_i\) a receiver
+average and \(\sum_j\) a sender sum), spanning how — and how correctly — the search is
+confined:</p>
+
+<div class="tablewrap">
+<table>
+<thead><tr><th>Cond.</th><th>method id</th><th>confines to</th><th>what it is / what it tests</th></tr></thead>
+<tbody>
+<tr><td><strong>D</strong></td><td><code>baseline.noreg</code></td><td>\(\mathcal{H}_{\mathrm{all}}\)</td><td>\(\mathcal{R}=0\) — the unconfined baseline; also the implicit-bias probe (does plain GD confine for free? predicted: no).</td></tr>
+<tr><td><strong>L1</strong></td><td><code>nr.empty-flat-abs</code></td><td>—</td><td>plain \(\ell_1\), \(\mathcal{R}=\operatorname*{mean}|W|\): shrinks magnitudes but is blind to the nodes — separates confinement from generic sparsity.</td></tr>
+<tr><td><strong>L</strong></td><td><code>nr.cgl-euc-abs</code></td><td>\(\mathcal{H}_{\mathrm{all}}\) (eff.)</td><td>distance-priced learned codes, \(\mathcal{R}=\operatorname*{mean}_i\sum_j\|\phi_{\mu_i}{-}\phi_{\mu_j}\|\,|W_{ij}|\), penalty-only ⇒ <em>collapses</em> (\(\phi\) coincide); must forfeit the gain (\(\approx\)D).</td></tr>
+<tr><td><strong>Fc</strong></td><td><code>nr.cgfc-bin-abs</code></td><td>\(\mathcal{H}_{G}\)</td><td><strong>oracle</strong> — Eq.&nbsp;\eqref{eq:oracle} with the true \(E(G)\) (cost 0 on edges, 1 else). The ceiling and positive control.</td></tr>
+<tr><td><strong>Fr</strong></td><td><code>nr.cgfr-bin-abs</code></td><td>\(\mathcal{H}_{G}\)</td><td>Fc with codes through a fixed orthogonal frame; distances are preserved ⇒ \(\equiv\)Fc (frame-invariance check).</td></tr>
+<tr><td><strong>Fa</strong></td><td><code>nr.cgfa-bin-abs</code></td><td>\(\mathcal{H}_{r,N}\)</td><td><strong>structure-agnostic</strong> fan-in budget, \(\mathcal{R}=\operatorname*{mean}_i\sum_k\log(1{+}\|W_{i,k}\|_2/\eta)\) over sender-node groups \(k\): bounded fan-in from \((N,r)\), <em>not</em> \(E(G)\).</td></tr>
+<tr><td><strong>Fw</strong></td><td><code>nr.cgfw-bin-abs</code></td><td>\(\mathcal{H}_{G'}\)</td><td>Eq.&nbsp;\eqref{eq:oracle} on a <em>wrong</em> graph \(E(G')\). Tests that mis-confinement hurts.</td></tr>
+<tr><td><strong>Fm</strong></td><td><code>nr.cgfm-bin-abs</code></td><td>interpolates</td><td>Eq.&nbsp;\eqref{eq:oracle} with a fraction \(\tau\) of edges rewired toward \(G'\) (\(\tau{=}0{\equiv}\)Fc, \(\tau{=}1{\equiv}\)Fw). The correctness-dose knob (experiments&nbsp;6,&nbsp;8).</td></tr>
+<tr><td><strong>WL</strong></td><td><code>nr.cgwl-bin-abs</code></td><td>local wiring</td><td>wiring-length \(\mathcal{R}=\operatorname*{mean}_i\sum_j|\mathrm{tier}_i{-}\mathrm{tier}_j|\,|W_{ij}|\): tier-distance, depth only (not \(E(G)\)). A second mechanism (experiment&nbsp;7).</td></tr>
+<tr><td><strong>NC</strong></td><td><code>nr.cgnc-euc-abs</code></td><td>\(\mathcal{H}_{G}\) (discovered)</td><td><strong>non-collapsible learned gate</strong> (§<a href="#sec-nc">6.7</a>): codes gate the weights \(\tilde a_{ij}{=}g_{ij}W_{ij}\), \(g_{ij}{=}g_0{+}(1{-}g_0)e^{-\|\phi_i-\phi_j\|^2/\tau^2}\), penalizing open-gate mass \(\operatorname*{mean}g_{ij}\). Tests whether a <em>learned</em> cost discovers the wiring.</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2 id="sec-metrics">5. Metrics</h2>
+
+<p>Four quantities, computed on disjoint draws (no peeking), with fixed-rule thresholds. Two of
+them (S, B) read the trained weights through one common contraction: sum \(|W|\) along the node
+labels into a node-to-node adjacency</p>
+
+\[\begin{equation}\label{eq:adj}
+a(u\!\to\!v)\;=\;\sum_{\ell}\ \sum_{i:\,\mu_i=v}\ \sum_{j:\,\mu_j=u}\ \bigl|W^{(\ell)}_{ij}\bigr|,
+\end{equation}\]
+
+<p>the realized weight mass routed from node \(u\) to node \(v\) (the identity \(u{=}v\) is
+excluded). The four are:</p>
+
+<ul>
+<li><strong>A — sample efficiency (AULC).</strong> Area under the test-MSE-vs-\(\log n\) curve,
+the headline number (lower is better):
+\[\begin{equation}\label{eq:aulc}
+\mathrm{A}=\frac{1}{\log n_{\max}-\log n_{\min}}\int \widehat{\mathrm{MSE}}(n)\,\mathrm{d}\log n .
+\end{equation}\]</li>
+<li><strong>S — structural recovery (confinement proxy).</strong> Rank every DAG-valid candidate
+edge \(u\!\to\!v\) (those with \(\mathrm{tier}(u)<\mathrm{tier}(v)\)) by \(a(u\!\to\!v)\) and
+score the ranking against \(E(G)\) by <em>average precision</em>
+\[\begin{equation}\label{eq:ap}
+\mathrm{AP}=\frac{1}{|E(G)|}\sum_{k:\,e_k\in E(G)}\frac{\bigl|\{e_{k'}\in E(G):k'\le k\}\bigr|}{k},
+\end{equation}\]
+the mean of precision-at-\(k\) taken at the ranks of the true edges (calibration-free; chance
+\(=|E(G)|/|\text{candidates}|\), reported alongside). The companion <em>effective fan-in</em> is
+the mean number of sender node-groups whose group-norm exceeds \(\tfrac14\) of a receiver's
+maximum (a fixed rule): confined nets sit near \(r\), dense near \(N\).</li>
+<li><strong>F — functional sparsity of the map.</strong> Total higher-order Sobol mass
+\[\begin{equation}\label{eq:fmass}
+\mathrm{F}=1-\sum_{i=1}^{d}S_i,\qquad
+S_i=\frac{\mathbb{E}\bigl[f_B\,(f_{AB^i}-f_A)\bigr]}{\operatorname{Var} f},
+\end{equation}\]
+where \(S_i\) is the first-order Sobol index of input \(i\) by the Saltelli pick-freeze estimator
+(\(A,B\) independent input draws, \(AB^i\) equal to \(A\) but with coordinate \(i\) taken from
+\(B\)), evaluated on the analytic \(f^\star\). \(\mathrm{F}\approx0\) for an additive/sparse map,
+\(\to1\) when interactions dominate. <em>S is of the realization, F of the map — that
+dissociation powers experiment&nbsp;2.</em></li>
+<li><strong>B — realized off-graph communication.</strong> The fraction of contracted mass on
+candidate edges <em>not</em> in \(E(G)\),
+\[\begin{equation}\label{eq:bcomm}
+\mathrm{B}=\frac{\sum_{e\notin E(G)}a_e}{\sum_{e\in\text{candidates}}a_e}
+\end{equation}\]
+(low B = routes along the true wiring). Mechanism-agnostic, for experiment&nbsp;7.</li>
+</ul>
+
+<h3>Setup</h3>
+
+<p>Every run trains one MLP (width&nbsp;128, depth&nbsp;\(\Delta{+}2\), ReLU; a same-shape
+<em>gated</em> MLP for NC) with <strong>AdamW</strong> (learning rate \(2\times10^{-3}\),
+\(\beta=(0.9,0.999)\), default weight decay \(0.01\)), a cosine schedule, batch&nbsp;64, up to
+\(6000\) steps, with early stopping (patience&nbsp;25, evaluated every \(5\%\) of steps) and the
+best-validation checkpoint restored. The penalty coefficient is annealed \(0\!\to\!c\) over the
+first \(10\%\) of steps. Inputs are \(\mathcal{N}(0,1)\); training sizes run on a log grid
+(\(n\in\{32,\dots,4096\}\), or a \(\{64,\dots,2048\}\) core for the larger sweeps); the \(4096\)
+evaluation points are split into <em>disjoint</em> validation (selection / early-stop) and test
+halves, with a separate extrapolation draw at \(\sigma{=}1.5\).</p>
+
+<p>Each <em>seed</em> draws a fresh graph <em>and</em> a fresh initialization, so distributions
+are over graph\(\times\)init jointly: <strong>6 seeds</strong> for the ladder (E1/E8),
+<strong>6 graphs per cell</strong> for the E2 ensemble, <strong>5 seeds</strong> for E5/E6. Each
+condition's coefficient \(c\) is chosen on the validation split and reported once on test
+(val-picks / test-once). Uncertainty is reported as <strong>95% bootstrap percentile
+intervals</strong> — 2000 resamples over seeds for per-condition AULC, and a 3000-resample
+<em>cluster</em> bootstrap over graphs for the E2 coefficients; condition contrasts use a paired
+Wilcoxon test with Holm correction per cell, plus a better-powered pooled cell\(\times\)seed
+contrast (Cohen's \(d_z\)) where the prediction is cell-agnostic. The tiny MLPs run on CPU; the
+discrete theory gate and every metric are recomputed from the run shards.</p>
+
+<h3>Controls</h3>
+
+<p>No learned condition is interpreted until the gate
+passes: Fc must beat D on a sparse task, the dense-negative must show <em>no</em> gain, L
+must match D, \(\ell_1\) must fall short of Fc, and train fit must be comparable (so an AULC
+gap is generalization, not underfitting). On a sparse additive cell all seven pass
+(<a href="https://github.com/Zhou-Hangyu/neurep/blob/master/studies/emergent_modularity/src/controls.py"><code>src/controls.py</code></a>):</p>
+
+<div class="tablewrap">
+<table>
+<thead><tr><th></th><th>Fc</th><th>Fw</th><th>Fa</th><th>L1</th><th>L</th><th>D</th><th>dense-neg (Fc vs D)</th></tr></thead>
+<tbody>
+<tr><td>test MSE</td><td><strong>0.0048</strong></td><td>0.0105</td><td>0.0237</td><td>0.0277</td><td>0.156</td><td>0.163</td><td>0.052 vs 0.050</td></tr>
+<tr><td>recovery AP</td><td><strong>1.00</strong></td><td>0.72</td><td>0.34</td><td>0.59</td><td>0.21</td><td>0.22</td><td>—</td></tr>
+</tbody>
+</table>
+</div>
+
+<p><strong>Fc beats D 34&times;</strong> and recovers the wiring perfectly;
+<strong>L\(\approx\)D</strong> (collapse forfeits the gain); <strong>L1\(\gg\)Fc</strong>
+(shrinkage sparsifies but does not route); the <strong>dense-negative</strong> shows no gain
+(sparsity is necessary). Sweeping the ambient dimension, <strong>Fc is flat</strong> while
+<strong>D degrades 16&times;</strong> — the scaling signature in miniature. These same
+controls cover the necessity and frame checks (\(\lambda{=}0\) reproduces D; Fr\(\equiv\)Fc),
+so the results need no separate experiment for them. Only with the gate green do we read the
+campaign.</p>
+
+<h2 id="sec-results">6. Results</h2>
+
+<p>Each condition's coefficient is tuned on a held-out validation split (val-picks /
+test-once), reporting distributions over graph&times;init seeds. The ladder predictions are
+cell-agnostic, so the powered test pools the paired \((\text{cell},\text{seed})\) AULC
+differences (per-cell Wilcoxon at six seeds is underpowered); we lead with effect sizes and
+bootstrap CIs.</p>
+
+<h3 id="sec-e1">6.1 &nbsp; E1 — the confinement ladder</h3>
+
+<p>Ranking the learning curves places the oracle ceiling, shows the collapse forfeits the
+gain, and checks the structure-agnostic budget against shrinkage. Across all four
+decomposable cells the AULC orders \(\mathrm{Fc}\approx\mathrm{Fr} < \mathrm{Fw} <
+\mathrm{Fa} < \mathrm{L1} < \mathrm{L}\approx\mathrm{D}\). <strong>Fc is the ceiling</strong>,
+beating D in \(24/24\) pooled pairs (Cohen's \(d_z{=}-3.0\), \(p\approx1.2\times10^{-7}\);
+\(14.5\times\) on the additive cell). <strong>L\(\approx\)D</strong> (collapse within \(1\%\)
+of no regularizer); <strong>Fr\(\approx\)Fc</strong> (frame invariance);
+<strong>L1\(<\)Fc</strong> (\(d_z{=}-2.35\), shrinkage never reaches the ceiling). The one
+departure from the literal prediction is <strong>Fw\(<\)D</strong> (not \(\le\)): a wrong
+<em>sparse</em> graph still ignores nuisance and bounds fan-in, confining to a wrong corner
+of \(\mathcal{H}_{r,N}\) — confirming that &ldquo;bounded fan-in, not knowing the exact
+graph&rdquo; is the operative restriction (a depth sweep, §<a href="#sec-e8">6.8</a>, shows this
+holds at every \(\Delta\), with exact-wiring correctness a <em>diminishing</em> premium as
+composition deepens). NC lands between Fa and D (§<a href="#sec-nc">6.7</a>).</p>
+
+<figure>
+  <img class="fig" src="fig/fig_e1_ladder.png" alt="ladder learning curves on the additive cell and AULC pooled over four cells"/>
+  <figcaption><span class="fignum"></span> <strong>E1.</strong> Learning curves on the
+  additive cell (left) and AULC pooled over all four cells (right; lower is better). Fc/Fr
+  (greens) sit far below D/L (reds); Fw, Fa, L1, NC are intermediate.</figcaption>
+</figure>
+
+<h3 id="sec-e2">6.2 &nbsp; E2 — structural vs. functional</h3>
+
+<p>This experiment was designed to separate the thesis from its rival — regress efficiency on
+the two competing explanations,</p>
+
+\[\begin{equation}\label{eq:e2}
+\mathrm{A}\;\sim\;\beta_S\,\mathrm{S}\;+\;\beta_F\,\mathrm{F}\;+\;(\text{graph, seed random effects}),
+\end{equation}\]
+
+<p>with the structural axis S moved by the <em>condition</em> and the functional axis F by
+\((r,\varepsilon)\). The pivotal cell is the off-diagonal one: a dense net (<strong>D</strong>)
+computing a maximally <em>sparse</em> additive \(f^\star\) — high functional sparsity, low
+confinement; if efficiency tracked F it would be cheap. The pre-registered <em>falsifier</em>
+is a significant <em>negative</em> \(\beta_F\) (sparse-but-unconfined maps generalizing for
+free, i.e. plain GD confines on its own).</p>
+
+<p>The result corrects the experiment's own premise. Over the full ensemble (120 rows, 24
+graphs) the fit gives \(\beta_S=-0.079\) and \(\beta_F=+0.133\), but the apparent \(\beta_S<0\)
+is an <em>artifact of the oracle ceiling</em>, not evidence that recovery tracks efficiency: Fc
+saturates the recovery metric at \(\mathrm{S}{=}1.0\) on every graph, and dropping those 30
+degenerate rows the interior slope is \(\beta_S=+0.005\) (CI \([-0.035,0.035]\), straddling
+zero). The reason is itself the finding: <strong>Fa is as efficient as the oracle is structured
+without recovering the graph</strong> (recovery AP \(0.44\approx\)D's \(0.43\), yet AULC
+\(0.28\) beats D's \(0.38\)). Graph-recovery AP measures confinement <em>to the correct
+graph</em>; Fa confines to bounded fan-in (\(\mathcal{H}_{r,N}\)) instead, invisible to the
+metric — the same mechanism-plurality lesson as E7 (§<a href="#sec-e7">6.6</a>). So the
+regression does <em>not</em> cleanly isolate S. What it <em>does</em> show robustly, in both
+fits, is \(\beta_F>0\) (CI \([0.094,0.165]\) full, \([0.062,0.156]\) trimmed): the
+pre-registered falsifier — a <em>negative</em> \(\beta_F\) — never fires, so endpoint functional
+sparsity is not a hidden efficiency channel.</p>
+
+<p>The confinement claim therefore rests not on the regression slope but on the off-diagonal
+cell and the causal dose: on the maximally sparse additive task the unconfined D is
+<strong>14.5&times; less efficient</strong> than Fc despite both computing the same map, and
+raising the oracle coefficient drives AULC down as recovery rises
+(\(\rho(\mathrm{A},\mathrm{S})=-0.91\), §<a href="#sec-e6">6.5</a>).
+<strong>Efficiency follows confinement, not the map's endpoint sparsity.</strong></p>
+
+<figure>
+  <img class="fig" src="fig/fig_e2_regression.png" alt="AULC falls with structural recovery S; beta_S negative, beta_F positive"/>
+  <figcaption><span class="fignum"></span> <strong>E2.</strong> Left: AULC vs structural
+  recovery S (colour = functional mass F); the saturated oracle ceiling (\(\mathrm{S}{=}1.0\),
+  all Fc) is drawn as hollow \(\times\)'s — the rows the robustness trim drops. Right:
+  \(\beta_S\) and \(\beta_F\,|\,S\) on the full sample vs the no-ceiling interior (hatched).
+  \(\beta_F>0\) (difficulty, not the falsifier) survives the trim; \(\beta_S\) is carried by the
+  oracle ceiling — the interior slope is \(\approx0\) because Fa confines without recovering the
+  graph. Cluster-bootstrap over 24 graphs, 95% intervals.</figcaption>
+</figure>
+
+<h3 id="sec-e4">6.3 &nbsp; E4 — scaling in the ambient dimension</h3>
+
+<p>The counting argument predicts a gain exponential in \(d-r\). Holding structure fixed and
+growing the ambient dimension via \(\nu\), the confined curve should be flat while the
+unconfined degrades — the direct image of Eq.&nbsp;\eqref{eq:counting}. Sweeping
+\(\nu\in\{0,8,16,32,64\}\), the confined Fc AULC is <strong>flat</strong> (slope
+\(2\times10^{-4}\)) while D and L <strong>degrade</strong> linearly (\(6.3\times10^{-3}\),
+\(26\times\) steeper); the Fc/D gap widens to \(14\times\) at \(\nu{=}64\). The agnostic
+budget Fa is intermediate (a hard cost zeroes nuisance weights; the soft penalty only
+mostly).</p>
+
+<figure>
+  <img class="fig" src="fig/fig_e4_scaling.png" alt="confined AULC flat in nu while unconfined degrades"/>
+  <figcaption><span class="fignum"></span> <strong>E4.</strong> Confined AULC is flat in the
+  nuisance dimension \(\nu\) while unconfined degrades; the gap widens with \(\nu\) (right:
+  test MSE vs \(n\) at \(\nu{=}64\)).</figcaption>
+</figure>
+
+<h3 id="sec-e5">6.4 &nbsp; E5 — the continuous decay rate</h3>
+
+<p>For real-valued targets the counting argument's analogue is a <em>rate</em>:
+Eq.&nbsp;\eqref{eq:rate} predicts the confined error decays with an exponent set by the
+fan-in \(r\) and <em>independent of \(d\)</em>, the unconfined one set by \(d\). Sweeping
+\(s,r,d\) on additive cells and fitting the log&ndash;log slope of test MSE vs \(n\), the
+robust signature holds: growing the ambient dimension, the <strong>confined rate does not
+degrade</strong> (exponent slope in \(\nu\): \(+7.0\times10^{-3}\)) while the
+<strong>unconfined rate falls</strong> (\(-9.1\times10^{-3}\)). The raw curves make it vivid:
+confined curves at \(d{=}6\) and \(d{=}70\) both reach the floor, while the unconfined
+\(d{=}70\) curve is still stuck at \(n{=}8192\). We do <em>not</em> read absolute exponents
+off these finite-width fits — easy low-\(r\) cells plateau at the floor, so the tail slope is
+an artifact — but the \(d\)-invariance of the confined rate is the point, agreeing with the
+counting (§2) and AULC scaling (§<a href="#sec-e4">6.3</a>).</p>
+
+<figure>
+  <img class="fig" src="fig/fig_e5_rates.png" alt="confined decay rate flat in d while unconfined degrades; raw curves overlap for confined"/>
+  <figcaption><span class="fignum"></span> <strong>E5.</strong> Left: the fitted decay
+  exponent as the ambient dimension grows — the confined (Fc) rate does not fall while the
+  unconfined (D) rate degrades. Right: the raw MSE-vs-\(n\) curves at \(d{=}6\) and
+  \(d{=}70\); the two confined curves overlap onto the floor while the unconfined curves
+  fan apart — the rate, not just the offset, degrades without confinement.</figcaption>
+</figure>
+
+<h3 id="sec-e6">6.5 &nbsp; E6 — causal ablations</h3>
+
+<p>E6 makes confinement <em>causal</em> by perturbing it with the task fixed, three ways.
+<strong>(a) Strength:</strong> raising the oracle coefficient from 0 (= D), AULC falls
+monotonically as realized S rises (Spearman \(\rho=-0.91\)) — a causal \(\mathrm{A}\)-vs-S
+curve. <strong>(b) Correctness:</strong> rewiring a fraction \(\tau\) of edges toward the
+wrong graph raises AULC (\(\rho=+0.30\)), with \(\tau{=}0\) (true graph) best. The middle is
+deliberately <em>non-monotone</em>: a fully but <em>coherently</em> wrong sparse graph
+(\(\tau{=}1\)=Fw) still bounds fan-in, so it beats an <em>incoherent</em> partial rewiring —
+the same Lemma&nbsp;2 effect as E1's Fw\(<\)D. <strong>(c) Timing:</strong> confinement
+throughout is best (AULC \(0.021\)); releasing it early (\(0.029\)) or delaying it
+(\(0.034\)) both forfeit part of the gain, yet stay far below the unconfined baseline
+(\(0.284\)) — it must act while data is scarce, though even part-time confinement leaves a
+large imprint.</p>
+
+<figure>
+  <img class="fig" src="fig/fig_e6_ablations.png" alt="strength dose monotone, correctness dose, timing arms"/>
+  <figcaption><span class="fignum"></span> <strong>E6.</strong> Left: AULC falls as realized
+  structural recovery S rises (strength dose, \(\rho=-0.91\)). Middle: confining to the true
+  graph (\(\tau{=}0\)) is best; rewiring toward the wrong graph hurts, non-monotonically (a
+  coherent wrong graph \(\tau{=}1\) still confines). Right: confinement helps most when
+  present throughout training, but any confinement beats none by an order of
+  magnitude.</figcaption>
+</figure>
+
+<h3 id="sec-e7">6.6 &nbsp; E7 — mechanism universality</h3>
+
+<p>Is the graph cost special, or does <em>any</em> mechanism that lowers communication buy
+the same efficiency? We realize confinement three ways — the graph <strong>oracle</strong>
+(off \(E(G)\)), a spatial <strong>wiring-length</strong> cost (by tier-distance; depth only),
+and a structure-agnostic <strong>fan-in budget</strong> — each swept over its coefficient,
+and plot AULC against the off-graph communication B. The prediction was a single curve
+\(\mathrm{AULC}(B)\). Instead: every mechanism confines (each monotone in its strength, all
+below the baseline), but they do <em>not</em> share one \(\mathrm{AULC}(B)\) curve — and that
+is the finding. The oracle and fan-in budget improve as off-graph mass <em>falls</em>
+(\(\rho=+1.0\)); wiring-length improves as it <em>rises</em> (\(\rho=-1.0\)), shortening
+edges toward local wiring that is cheap but off-graph. The mechanisms head different ways in
+the \((B,\mathrm{AULC})\) plane, so no single &ldquo;communication-left&rdquo; scalar captures
+all of them — the pre-registered &ldquo;separation is informative&rdquo; outcome: confinement
+is real and mechanism-plural.</p>
+
+<figure>
+  <img class="fig" src="fig/fig_e7_mechanisms.png" alt="three mechanisms head in different directions in the (B, AULC) plane"/>
+  <figcaption><span class="fignum"></span> <strong>E7.</strong> AULC vs realized off-graph
+  communication B, each mechanism's points connected in order of increasing strength. All
+  three descend below the unconfined baseline (star), but along different paths: the oracle
+  empties off-graph mass (down-left), the fan-in budget trims it mildly, and wiring-length
+  improves while off-graph mass <em>rises</em> (down-right) — no single \(\mathrm{AULC}(B)\)
+  curve unifies them.</figcaption>
+</figure>
+
+<h3 id="sec-nc">6.7 &nbsp; NC — learned gating</h3>
+
+<p>Every confining condition so far is an oracle or a fixed budget — none <em>learns</em> the
+wiring, yet a learned code is the whole point of a neuron-representation prior. A penalty-only
+learned price <em>collapses</em> (§2): the codes drift together to zero the penalty while the
+weights stay dense. NC closes that escape by letting the codes <em>gate</em> the effective
+weights instead of pricing them,</p>
+
+\[\begin{equation}\label{eq:gate}
+g_{ij}=g_0+(1-g_0)\,e^{-\|\phi_i-\phi_j\|^2/\tau^2},
+\qquad \tilde a_{ij}=g_{ij}\,W_{ij},
+\qquad P=\operatorname*{mean}_{ij} g_{ij},
+\end{equation}\]
+
+<p>so the unit computes on the gated weight \(\tilde a\) and we penalize the open-gate mass
+\(P\). Collapse is now closed off both ways: coinciding codes open every gate
+(\(g\to1\), <em>maximal</em> penalty); codes flying apart close every gate, killing the
+signal. The only way to lower \(P\) while fitting is to close the gates the task does not
+need — and \(\phi\) enters the forward pass, so
+\(\partial\mathcal{L}_{\text{task}}/\partial\phi\neq0\), unlike the collapsing price. (Two
+robustness choices, found the hard way: \(\tau\) is <em>fixed</em>, since a learnable
+\(\tau\!\to\!0\) shuts every gate into a dead, gradient-free state; and a floor \(g_0\) keeps
+a closed gate barely open, while AdamW weight decay makes the uniform-floor dense reversion
+expensive.)</p>
+
+<p>Three outcomes are pre-registered as acceptable — NC matches the oracle, NC \(\approx\) D
+(principle holds, learned cost fails — a diagnosed open problem), or the oracle fails (the
+only falsifier). We find the informative middle. The gate <strong>does not collapse</strong>
+(gate mass \(0.26\)) and <strong>beats the baseline</strong> on every cell
+(\(1.2\)&ndash;\(1.4\times\) lower AULC), but <em>without recovering the true wiring</em>:
+its recovery AP is \(0.37\) — barely above the unconfined chance level (\(0.33\)), far below
+the oracle (\(1.00\)), and short of even the fixed budget Fa. So a learned cost, once
+collapse is engineered out, confines to a <em>smaller</em> class but not the <em>correct</em>
+graph; the oracle gap is \(3\)&ndash;\(10\times\). Closing it — confining to the right
+structure, not merely a sparser one — is the open problem this study isolates, echoing the
+forest's broader finding that free per-neuron codes do not recover task structure on their
+own.</p>
+
+<p><strong>Is the gain real, or just the gated architecture?</strong> A frozen-code ablation
+(NCf, exploratory) settles it: freeze the codes at their random init so only the weights train —
+the gate is then a fixed random reweighting and the open-gate penalty is inert. NCf is
+<em>indistinguishable from the unconfined baseline</em> on every cell (NCf/D \(=0.97\)&ndash;\(1.01\),
+mean \(0.99\)), while NC beats NCf everywhere (\(1.2\)&ndash;\(1.4\times\) lower AULC). So NC's
+gain is genuinely bought by <em>learning</em> the codes, not by the gated architecture — yet NCf
+and NC recover the wiring equally poorly (AP \(0.36\) vs \(0.37\), both at the unconfined chance
+level \(0.33\)). The learned code earns a real efficiency gain by closing <em>some</em> gates,
+just not the ones that trace the true graph.</p>
+
+<figure>
+  <img class="fig" src="fig/fig_nc_gating.png" alt="NC beats D and the frozen-code NCf which ties D; recovery near chance except Fc"/>
+  <figcaption><span class="fignum"></span> <strong>NC.</strong> Left: AULC per cell — the learned
+  gate (NC) beats the unconfined baseline (D) and the <em>frozen-code</em> ablation (NCf, which
+  sits right at D), but stays above the budget (Fa) and well above the oracle (Fc). Right:
+  graph-recovery AP — D, NCf and NC all cluster at the chance level while only Fc recovers the
+  wiring. Learning the codes buys efficiency (NC\(\,<\,\)NCf\(\,\approx\,\)D) without recovering
+  the true graph.</figcaption>
+</figure>
+
+<h3 id="sec-e8">6.8 &nbsp; E8 — depth × wrongness <em>(exploratory)</em></h3>
+
+<p>E1 left one prediction unmet and worth chasing: a <em>wrong</em> sparse graph (Fw) beat the
+unconfined baseline on every cell, including the \(\Delta{=}2\) composition cells — yet the
+design expected the <em>specific</em> wiring to become load-bearing once \(\Delta{>}1\), so Fw
+should have approached D. Was Fw's success merely an artifact of shallow tasks? This post-hoc
+block tests it head-on. Holding everything fixed (\(d_{\mathrm{eff}}{=}6\), \(\nu{=}8\),
+\(N{=}12\), \(r{=}2\)) and sweeping <em>only</em> the composition depth
+\(\Delta\in\{1,\dots,5\}\) — \(N\) fixed, so depth (not node count) is what grows — we run the
+correctness dose Fm(\(\tau\)) at each depth (\(\tau{=}0\equiv\)Fc, the true graph;
+\(\tau{=}1\equiv\)Fw, the wrong graph) against D. The decisive readout is the
+<em>within-depth</em> contrast, which differences out any change in intrinsic difficulty with
+depth.</p>
+
+<p>The prediction fails — informatively. <strong>A wrong sparse graph beats the unconfined
+baseline at every depth</strong> (Fw\(\,<\,\)D throughout: by \(0.15\) at \(\Delta{=}1\), still
+below at \(\Delta{=}5\)), so Fw's success was no shallow-task artifact. And the oracle's premium
+for getting the wiring <em>exactly</em> right <strong>shrinks</strong> as composition deepens
+rather than growing: the Fw/Fc AULC ratio falls monotonically \(1.69\!\to\!1.04\)
+(\(\rho(\Delta,\mathrm{Fw}/\mathrm{Fc})=-1.0\)), and the within-depth correctness dose flattens
+(\(\rho(\mathrm{A},\tau)\!:\;0.18\!\to\!0.03\)). At \(\Delta\ge4\) the deep task is sample-hungry
+enough that <em>even the oracle barely helps</em> (Fc\(\,0.64\) vs D\(\,0.75\) at \(\Delta{=}4\))
+and D, Fc, Fw become statistically indistinguishable (overlapping intervals). So the load-bearing
+ingredient is <strong>bounded-fan-in confinement</strong> — which Fw shares, since \(G'\) is also
+sparse — not the exact wiring; correctness is a <em>diminishing</em> premium, and at great depth
+it is depth itself, not wrongness, that erases the confinement gain. This sharpens Lemma&nbsp;2:
+confining to the <em>right</em> graph buys less and less over confining to <em>a</em> sparse one
+as the function deepens.</p>
+
+<figure>
+  <img class="fig" src="fig/fig_e8_depth_wrongness.png" alt="Fc and Fw track each other below D and converge with depth; the wrongness dose is flat"/>
+  <figcaption><span class="fignum"></span> <strong>E8 (exploratory).</strong> Left: AULC vs
+  composition depth \(\Delta\) for the unconfined baseline (D), the true-graph oracle (Fc) and
+  the wrong-graph oracle (Fw), with 95% bootstrap intervals; Fc and Fw track each other below D
+  and all three converge as \(\Delta\) grows. Right: the correctness dose (AULC vs the fraction
+  \(\tau\) of edges made wrong) is nearly <em>flat</em> at every depth — how wrong the sparse
+  graph is barely matters. The deep cells are noisy (a 6&ndash;7-layer MLP near the hard-task
+  floor); we read the within-depth contrasts, not the absolute levels.</figcaption>
+</figure>
+
+
+<h2>7. Discussion</h2>
+
+<p>Testing the principle and the learned method separately is what makes the conclusion
+robust. The oracle and the fixed budget (Fc, Fa) settle the <em>principle</em> — confinement
+\(\Rightarrow\) efficiency — independent of any learned cost; the whole arc agrees (counting
+and E5: governed by structure not \(d\); E1: oracle ceiling, collapse at the floor; E2 and
+E6: confinement is the causal lever and must act while data is scarce; dense-negative: the
+task must really be sparse).</p>
+
+<p>Four honest nuances sharpen the thesis. <strong>Fw\(<\)D</strong> and the non-monotone
+correctness dose: a coherent wrong sparse graph still confines — bounded fan-in, not the
+exact wiring, is the operative restriction (Lemma&nbsp;2), and a depth sweep
+(§<a href="#sec-e8">6.8</a>) shows the premium for the exact wiring <em>shrinks</em> with
+composition depth rather than growing. <strong>\(\beta_F>0\)</strong>:
+functional mass adds residual <em>difficulty</em>, not the falsifier (negative \(\beta_F\)).
+<strong>Mechanism plurality</strong>: three mechanisms confine along different paths, so no
+single &ldquo;communication-left&rdquo; scalar captures all — and graph-recovery AP itself
+misses Fa's bounded-fan-in confinement (the no-ceiling regression, §<a href="#sec-e2">6.2</a>),
+so even the structural proxy is mechanism-specific. And <strong>NC</strong>: a
+non-collapsing learned gate buys a real gain but confines to a <em>smaller</em> class, not the
+<em>correct</em> graph (recovery near chance, \(3\)&ndash;\(10\times\) oracle gap); the gain is
+bought by <em>learning</em> the codes — a frozen-code gate ties the baseline (§<a href="#sec-nc">6.7</a>).
+The
+principle is settled; a learned cost that self-discovers the right structure is the open
+problem this study isolates and quantifies.</p>
+
+<p>Earlier reports in this forest show a free learned code does <em>not</em> make weights
+modular (<a class="xref" href="../experiment_representation/">a learned neuron representation does not
+make weights modular</a>) and dissect <em>why</em> the Separator price collapses
+(<a class="xref" href="../collapse_mechanism/">the mechanism behind Separator's collapse</a>). This study
+supplies the missing &ldquo;so what&rdquo;: the collapse costs the entire sample-efficiency
+gain, and an oracle that does not collapse recovers it in full.</p>
+
+<div class="repro">
+<p><strong>Reproduce.</strong> <a href="https://github.com/Zhou-Hangyu/neurep/blob/master/studies/emergent_modularity/src/theory_check.py"><code>theory_check.py</code></a> (gate) → <a href="https://github.com/Zhou-Hangyu/neurep/tree/master/studies/emergent_modularity/tests"><code>pytest tests/</code></a>
+(28 tests) → <a href="https://github.com/Zhou-Hangyu/neurep/blob/master/studies/emergent_modularity/src/controls.py"><code>controls.py</code></a> → <a href="https://github.com/Zhou-Hangyu/neurep/tree/master/studies/emergent_modularity/src"><code>materialize_*.py --submit</code></a> (E1, E2, E4, E5,
+E6, E7, NC, and the post-hoc <a href="https://github.com/Zhou-Hangyu/neurep/blob/master/studies/emergent_modularity/src/materialize_e8_depth_wrongness.py"><code>materialize_e8_depth_wrongness.py</code></a>) →
+<a href="https://github.com/Zhou-Hangyu/neurep/tree/master/neurep/runstore"><code>runstore harvest</code></a> → <a href="https://github.com/Zhou-Hangyu/neurep/blob/master/studies/emergent_modularity/src/analyze.py"><code>analyze.py</code></a> → <a href="https://github.com/Zhou-Hangyu/neurep/blob/master/studies/emergent_modularity/report/fig/gen_figs.py"><code>report/fig/gen_figs.py</code></a>.
+Every number traces to a script that reads <code>results/</code>; seeds and git SHAs are in
+<a href="https://github.com/Zhou-Hangyu/neurep/blob/master/studies/emergent_modularity/results/provenance.json"><code>results/provenance.json</code></a> and <a href="https://github.com/Zhou-Hangyu/neurep/blob/master/studies/emergent_modularity/results/summary.json"><code>results/summary.json</code></a>. The realization of
+every abstract object (how each ladder condition becomes a concrete penalty) is frozen in
+<a href="https://github.com/Zhou-Hangyu/neurep/blob/master/studies/emergent_modularity/plan/DESIGN.md"><code>plan/DESIGN.md</code></a>.</p>
+</div>
+
+</article></main>
+</body>
+</html>

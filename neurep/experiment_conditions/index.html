@@ -1,7 +1,8 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow"><title>neurep — research</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"><style>/* ========================================================================== *
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow"><title>When can a representation make weights
+modular? — neurep</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false},{left:'$$',right:'$$',display:true}],throwOnError:false});"></script><style>/* ========================================================================== *
  *  research-site theme — the single source of truth for the visual language.
  *  The builder INLINES this file into every generated page's <head>, so each
  *  report renders standalone (open the .html directly) and is depth-proof.
@@ -245,7 +246,170 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
 </style>
 </head>
 <body>
-<header class="nav"><a class="brand" href="index.html"><span>neurep</span></a></header><section class="hero"><h1 class="bigmark">neurep</h1><p class="tagline">sample-efficient learning of functions with sparse computation graphs</p></section><main class="landing"><h2 class="band-title">overview</h2><p class="overview">neurep asks whether a per-neuron representation prior can help decompose a neural network into task-aligned modules, and whether it improves sample efficiency when learning functions with sparse computation graphs. The reports below explore this question from both theory and empirical study.
-</p><a class="text-link" href="studies.html">Check out the study reports <span aria-hidden="true">&rarr;</span></a></main>
+<header class="nav"><a class="brand" href="../index.html"><span>neurep</span></a></header><main class="study"><header class="study-head"><h1>When <em>can</em> a representation make weights
+modular?</h1><p class=sub>Coupling strength, axis orientation, and the rotation barrier —
+mapping the boundary of recoverable task-aligned modularity</p><div class="rule"></div></header><div class="context"><span class="crumb"><a href="../studies.html#thread-representation">Learned representations &amp; modularity</a></span><span class="status wip">wip</span><span class="dep">builds on: <a href="../experiment_representation/">A learned neuron representation does not make weights
+modular</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou-Hangyu/neurep/commit/3394642"><code>3394642</code></a> <span class="git">· feature/runstore-pipeline</span></span></div><article>
+<div class="tldr"><p><strong>TL;DR.</strong> Report 2 showed our <em>learned</em>
+representations fail. Here we map when <em>any</em> per-neuron
+representation succeeds. Three findings. <strong>(1) Fixity works, if
+strong:</strong> a <em>fixed</em> oracle prior pushed to a strong
+coupling drives input-block alignment to IBA <span
+class="math inline">\(0.99\)</span> (from <span
+class="math inline">\(0.63\)</span> at the hyperparameter-searched
+coupling — which under-couples) — so a non-collapsing,
+correctly-oriented prior <em>does</em> carve the modules. <strong>(2)
+The rotation barrier:</strong> rotate the task’s factors in input space
+and the <em>same</em> oracle falls to chance (<span
+class="math inline">\(0.99\!\to\!0.46\)</span>), <span
+class="math inline">\(\ell_1\)</span> from <span
+class="math inline">\(0.88\!\to\!0.70\)</span> — a per-neuron prior
+aligns only in the basis it assumes. <strong>(3) The discrete swap
+(BIMT) buys nothing here</strong> (<span
+class="math inline">\(d\approx0\)</span> vs no-swap), because on a
+nonlinear task there is no clean neuron-partition to reassign toward.
+The boundary is exactly the <em>localizability</em> predicted by
+Whittington et al.: per-neuron alignment is the optimum only when the
+factor-to-code map is (near-)linear and axis-aligned; our nonlinear,
+distributed modules sit above that ceiling, and no method — learned,
+fixed, or swapped — can name them.</p></div>
+<figure id="fig:rot" data-latex-placement="h">
+<img class="fig" src="fig/fig_rotation.svg" alt="fig_rotation" loading="lazy" />
+<figcaption><span class="fignum">Figure 1.</span> <em>Left:</em> a fixed Oracle prior’s input-block alignment
+rises with coupling strength <span class="math inline">\(c\)</span>
+(<span class="math inline">\(0.63\!\to\!0.97\!\to\!0.99\)</span>),
+crossing <span class="math inline">\(\ell_1\)</span> (blue dashed) and
+far exceeding the free Separator (red dashed); the production
+hyperparameter search picked the leftmost, under-coupled point.
+<em>Right:</em> rotating the factors (<code>flat_rot</code>, <span
+class="math inline">\(x=zQ^\top\)</span>) collapses every method’s
+alignment toward chance — the same Oracle that reaches <span
+class="math inline">\(0.99\)</span> axis-aligned reads <span
+class="math inline">\(0.45\)</span> rotated. <span
+class="math inline">\(\ge5\)</span> seeds, mean<span
+class="math inline">\(\pm\)</span>std.</figcaption>
+</figure>
+<h2
+id="fixity-works-if-the-coupling-is-strong-and-the-orientation-is-right">Fixity
+works — if the coupling is strong and the orientation is right</h2>
+<p>The Oracle (<code>nr.blk-bin-abs</code>) is penalty-only like
+Separator, but its codes are <em>fixed</em> to the task’s true factor
+blocks — the in-codebase analogue of seRNN’s immovable grid or
+Jacobs–Jordan’s pre-placed positions. Unlike the free codes it cannot
+collapse, and Fig. <a href="#fig:rot" data-reference-type="ref"
+data-reference="fig:rot">1</a>(left) shows it pays off: as the coupling
+<span class="math inline">\(c\)</span> grows <span
+class="math inline">\(6\!\times\!10^{-3}\to
+6\!\times\!10^{-2}\to3\!\times\!10^{-1}\)</span>, input-block alignment
+climbs <span class="math inline">\(0.63\to0.97\to0.99\)</span> and <span
+class="math inline">\(Q_{\mathrm{block}}\)</span> <span
+class="math inline">\(0.38\to0.70\to0.73\)</span>, with cross-block
+weight mass driven to <span class="math inline">\(0.3\%\)</span> — a
+clean factorization, at a small accuracy cost (MSE <span
+class="math inline">\(0.016\to0.022\)</span>). The lesson is two-fold:
+<strong>(i)</strong> <em>fixity</em>, not a task gradient, is what lets
+a penalty-only prior align weights (it removes the collapse that sinks
+the learned codes); <strong>(ii)</strong> the production hyperparameter
+search, tuned on validation MSE, picked the <em>weakest</em> coupling,
+where alignment has barely started — modularity was never on the
+objective. But this success is bought with prior knowledge of the
+factors: the Oracle is <em>told</em> the decomposition. The open
+question for a <em>learned</em> method is whether anything can supply
+that orientation without being told — and the next two sections bound
+what is possible.</p>
+<h2 id="the-rotation-barrier">The rotation barrier</h2>
+<p>We rotate the signal factors into a generic basis
+(<code>flat_rot</code>: stored inputs <span
+class="math inline">\(x=zQ^\top\)</span> for a random orthogonal <span
+class="math inline">\(Q\)</span>, so no factor occupies a coordinate
+subset) and re-measure, de-rotating <span
+class="math inline">\(W_0\)</span> back to latent-factor coordinates so
+the metric still targets the true factors. Fig. <a href="#fig:rot"
+data-reference-type="ref" data-reference="fig:rot">1</a>(right):
+<strong>every method’s alignment collapses toward chance</strong>. The
+Oracle that reached <span class="math inline">\(0.99\)</span>
+axis-aligned now reads <span class="math inline">\(0.45\)</span> — its
+fixed <em>contiguous</em> block prior assumes the factors live on
+coordinate blocks, and once they do not, the “informative” prior is
+simply wrong. <span class="math inline">\(\ell_1\)</span> falls <span
+class="math inline">\(0.88\to0.70\)</span> (it sparsifies in the rotated
+input basis, not the latent one), Separator stays at its already-low
+<span class="math inline">\(0.57\)</span>. This is the
+<em>localizability</em> prediction of the theory report (P3) made
+concrete: a per-neuron representation can express only axis-aligned
+module structure, so it aligns weights only when the task’s factors are
+themselves axis-aligned. Rotate the task and the entire family — learned
+or fixed — loses its grip, because there is no longer any per-neuron
+partition to find. (The functional modules still exist in rotated
+subspaces; they are simply invisible to a per-neuron prior, exactly as a
+learned rotation like DAS, not a neuron score, is needed to read
+them.)</p>
+<h2 id="the-discrete-swap-is-not-a-substitute">The discrete swap is not
+a substitute</h2>
+<p>BIMT breaks the permutation symmetry with a discrete neuron
+<em>swap</em> toward fixed grid slots — in the literature (Growing
+Brains) this is what converts a functional clustering into anatomical
+modularity on cognitive tasks. On our additive bench it does nothing:
+BIMT-with-swap and BIMT-without-swap are statistically identical on
+input-block alignment (flat: <span class="math inline">\(0.782\)</span>
+vs <span class="math inline">\(0.786\)</span>, Cohen’s <span
+class="math inline">\(d=-0.10\)</span>, <span
+class="math inline">\(p=1.0\)</span>, <span
+class="math inline">\(n{=}10\)</span>; <code>modarith</code>: <span
+class="math inline">\(0.463\)</span> vs <span
+class="math inline">\(0.464\)</span>, <span
+class="math inline">\(d\approx0\)</span>). The reason is the same
+ceiling: the swap can only relocate a neuron that <em>has</em> a clean
+functional identity to a matching slot, and on a nonlinear additive task
+the hidden units carry mixed, rotated roles, so there is no partition
+for the swap to exploit. Where the literature’s swap succeeds (discrete
+modular addition, <span class="math inline">\(20\)</span>/<span
+class="math inline">\(84\)</span> cognitive tasks), the optimal solution
+<em>is</em> neuron-localized; where ours lives (nonlinear regression),
+it is not. The swap is a symmetry-<em>breaker</em>, not a
+symmetry-<em>creator</em>.</p>
+<h2
+id="forward-coupling-and-the-localizability-ceiling">Forward-coupling,
+and the localizability ceiling</h2>
+<p>Putting the geometry in the gradient path (NeuroPos: <span
+class="math inline">\(w_{ij}=1/\|p_i-p_j\|\)</span>) keeps it engaged —
+its positions never collapse, since the weights <em>are</em> the
+positions — but on this continuous regression task the <span
+class="math inline">\(1/\mathrm{dist}\)</span> parameterization cannot
+fit (<span class="math inline">\(\mathrm{MSE}\approx0.7\)</span> vs
+<span class="math inline">\(0.015\)</span>), so its alignment is not
+meaningful here. Tellingly, on the one task where a standard MLP also
+struggles — discrete <code>modarith</code>, where every penalty-only
+method sits at <span
+class="math inline">\(\mathrm{MSE}\,{\ge}\,1.3\)</span> — NeuroPos fits
+<em>best</em> (<span class="math inline">\(0.74\)</span>):
+forward-coupled positions are load-bearing exactly where a
+distance-structured solution is natural. The published forward-coupled
+methods (Erb et al.; Mészáros et al., who report monotonically rising
+modularity <span class="math inline">\(Q\)</span>) demonstrate the
+alignment on tasks their architectures fit; our contribution is to
+locate <em>why</em> it is needed — the gradient path is the only channel
+by which the task can orient a representation it would otherwise
+collapse.</p>
+<h5 id="the-map.">The map.</h5>
+<p>Pulling Reports 2–3 together, task-aligned weight modularity from a
+per-neuron representation is recoverable only inside a narrow region:
+the factors must be (near-)<em>linearly</em> computed and
+<em>axis-aligned</em> (Whittington’s regime, where a neuron partition is
+the energy optimum), <em>and</em> the representation must be prevented
+from collapsing — by fixing it to the right orientation, by a forward
+benefit of distance, or by an anchored non-degeneracy term (companion
+Report B). Our learned free penalty-only codes satisfy none of these,
+and the nonlinear synthetic leaves sit above the localizability ceiling,
+so no amount of coupling, swapping, or anti-collapse recovers a
+neuron-aligned decomposition — the modules are real but rotated, and a
+per-neuron prior is the wrong instrument to read them.</p>
+<p><span><em>Reproducibility.</em> Same harness/sweep as Report 2; Oracle coupling sweep
+<code>{oracle,oracle_mid, oracle_strong}</code>, rotation cell
+<code>flat_rot</code>, swap toggle <code>bimt_{swap,noswap}</code>
+(<code>S_swap</code><span class="math inline">\(\in\{200,0\}\)</span>).
+Localizability ceiling after Whittington, Dorrell, Ganguli &amp; Behrens
+(ICLR 2023).</span></p>
+</article></main>
 </body>
 </html>
