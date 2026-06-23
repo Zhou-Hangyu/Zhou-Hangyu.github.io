@@ -153,6 +153,8 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
 
 /* ====== studies: controls (pure-CSS view + show-WIP toggles) =============== */
 .studies-page{max-width:64rem;margin:0 auto;padding:1.6rem clamp(1rem,4vw,2rem) 4rem}
+.studies-goal{max-width:66ch;margin:.1rem 0 1.7rem;color:var(--ink);font:400 1.05rem/1.62 var(--serif)}
+.studies-goal strong{font-weight:700}
 .sv-input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
 .studies-bar{display:flex;flex-wrap:wrap;align-items:center;gap:1.1rem;margin:.2rem 0 1.8rem}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--panel)}
@@ -206,10 +208,11 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
 .st-wip,.st-draft{--dot:var(--wip)}
 .tnode .hit{position:absolute;inset:-10px;border-radius:50%}
 .tnode:hover,.tnode:focus-visible{transform:translate(-50%,-50%) scale(1.22);z-index:30;outline:none}
-/* apex = the synthetic point where the branched roots converge (neutral origin) */
-.tnode.apex{width:12px;height:12px;background:var(--bg);border:2px solid var(--mut);cursor:default;
+/* apex = the root of the forest; a neutral hollow origin that links to the landing/overview */
+.tnode.apex{width:13px;height:13px;background:var(--bg);border:2px solid var(--mut);
   box-shadow:0 0 0 3px color-mix(in srgb,var(--mut) 13%,transparent)}
-.tnode.apex:hover{transform:translate(-50%,-50%)}
+.tnode.apex:hover{border-color:var(--violet)}
+.apex-label{color:var(--violet);text-transform:uppercase;letter-spacing:.1em;font-weight:700}
 
 /* always-on small title beside each node (below leaves, above the rest) */
 .tnode-label{position:absolute;left:50%;transform:translateX(-50%);width:max-content;max-width:152px;
