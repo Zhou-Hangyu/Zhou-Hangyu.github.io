@@ -18,9 +18,10 @@
   --line:rgba(22,22,26,.12);
   --code-bg:rgba(75,46,99,.09);
   --code-fg:#3a2348;
-  --ok:#2f6b3a;          /* status: supported */
+  --ok:#1f7a55;          /* status: supported — a clean deep emerald (the old forest green read muddy) */
   --bad:#9a3b2f;         /* status: refuted */
-  --wip:#8a6d1f;         /* status: wip/draft */
+  --wip:#8a6d1f;         /* status: wip/draft (parked) */
+  --active:#c2701c;      /* status: active — the live frontier (warm amber, set apart from the muted wip) */
   --disp:'Manrope',-apple-system,'Segoe UI',Roboto,sans-serif;  /* display/UI */
   --serif:Georgia,'Iowan Old Style','Times New Roman',serif;     /* body */
 }
@@ -58,6 +59,8 @@ a:hover{text-decoration:underline;text-underline-offset:2px}
 .band-title{font:700 .82rem/1 var(--disp);text-transform:uppercase;letter-spacing:.18em;color:var(--mut);
   margin:0 0 1.1rem;display:flex;align-items:center;gap:.6rem;border:0;padding-bottom:0}
 .band-title::before{content:"";width:24px;height:2px;background:var(--violet);display:inline-block}
+/* one line under each thread title saying what that branch is for (the blurb) */
+.band-blurb{margin:-.7rem 0 1.2rem;max-width:62ch;color:var(--mut);font:400 .96rem/1.5 var(--serif)}
 .overview{font:400 1.06rem/1.6 var(--serif);color:var(--ink);max-width:60ch;margin:0 0 1.4rem}
 .maplist{margin:.2rem 0 1rem;padding-left:1.2rem;color:var(--mut);font:400 1rem/1.7 var(--serif)}
 .maplist a{color:var(--ink)}
@@ -70,6 +73,13 @@ a:hover{text-decoration:underline;text-underline-offset:2px}
   background:radial-gradient(circle at 35% 30%,#5a3a73,var(--violet-dp))}
 .card-title{margin:.1rem 2rem .35rem 0;font:600 1.06rem/1.32 var(--disp);letter-spacing:-.01em}
 .card-sum{margin:0;color:var(--mut);font:400 .92rem/1.45 var(--serif)}
+/* a live-frontier card: warm left accent + a breathing dot, so it reads as "in motion" */
+.card.is-active{border-left:3px solid var(--active)}
+.card.is-active .card-dot{background:radial-gradient(circle at 35% 30%,
+  color-mix(in srgb,var(--active) 60%,#fff),var(--active));animation:dotpulse 2.4s ease-in-out infinite}
+@keyframes dotpulse{
+  0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--active) 38%,transparent)}
+  50%    {box-shadow:0 0 0 6px color-mix(in srgb,var(--active) 0%,transparent)}}
 
 /* ---- study page ---- */
 .study{max-width:46rem;margin:0 auto;padding:2.2rem clamp(1rem,4vw,1.4rem) 5rem}
@@ -139,6 +149,8 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
 .status.supported{color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}
 .status.refuted{color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,transparent)}
 .status.wip,.status.draft{color:var(--wip);background:color-mix(in srgb,var(--wip) 12%,transparent)}
+.status.active{color:var(--active);background:color-mix(in srgb,var(--active) 14%,transparent)}
+.status.reference{color:var(--violet);background:color-mix(in srgb,var(--violet) 12%,transparent)}
 .repro{display:inline-flex;align-items:center;gap:.4rem;font:500 .82rem/1 var(--disp)}
 .repro code{background:var(--code-bg);color:var(--code-fg)}
 .repro .git{opacity:.65}
@@ -202,10 +214,23 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
   box-shadow:0 0 0 3px color-mix(in srgb,var(--dot,var(--mut)) 17%,transparent);   /* one ring for every node */
   transition:transform .12s ease}
 .tnode.verified{border-style:solid}                                    /* proof-read */
-.tnode.provisional{border-style:dashed;background:color-mix(in srgb,var(--dot) 26%,var(--bg))}  /* wip */
+.tnode.provisional{border-style:dashed;background:color-mix(in srgb,var(--dot) 26%,var(--bg))}  /* parked wip */
+/* an ACTIVE node restores the live-frontier look — amber fill + a dashed amber ring — set
+   apart from every verdict hue. This OVERRIDES the verdict colour on the tree dot itself;
+   --dot stays the verdict so the node's briefing card + the table pill keep the true colour.
+   (active is ORTHOGONAL to status — see _default_visible.) */
+.tnode.active{border-color:var(--active);border-style:dashed;
+  background:color-mix(in srgb,var(--active) 28%,var(--bg));
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--active) 18%,transparent);
+  animation:apulse 2.4s ease-in-out infinite}
+@keyframes apulse{
+  0%,100%{box-shadow:0 0 0 3px color-mix(in srgb,var(--active) 42%,transparent)}
+  50%    {box-shadow:0 0 0 9px color-mix(in srgb,var(--active) 6%,transparent)}}
 .st-supported{--dot:var(--ok)}
 .st-refuted{--dot:var(--bad)}
 .st-wip,.st-draft{--dot:var(--wip)}
+.st-active{--dot:var(--active)}                                        /* the live frontier */
+.st-reference{--dot:var(--violet)}                                     /* shared reference (not a verdict) */
 .tnode .hit{position:absolute;inset:-10px;border-radius:50%}
 .tnode:hover,.tnode:focus-visible{transform:translate(-50%,-50%) scale(1.22);z-index:30;outline:none}
 /* apex = the root of the forest; a neutral hollow origin that links to the landing/overview */
@@ -215,8 +240,8 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
 .apex-label{color:var(--violet);text-transform:uppercase;letter-spacing:.1em;font-weight:700}
 
 /* always-on small title beside each node (below leaves, above the rest) */
-.tnode-label{position:absolute;left:50%;transform:translateX(-50%);width:max-content;max-width:152px;
-  text-align:center;font:500 10.5px/1.28 var(--disp);color:var(--ink);letter-spacing:-.004em;
+.tnode-label{position:absolute;left:50%;transform:translateX(-50%);width:max-content;max-width:108px;
+  text-align:center;font:600 10px/1.25 var(--disp);color:var(--ink);letter-spacing:-.004em;
   pointer-events:none;text-shadow:0 0 3px var(--bg),0 0 3px var(--bg),0 0 6px var(--bg)}
 .tnode-label.lbl-dn{top:calc(100% + 5px)}
 .tnode-label.lbl-up{bottom:calc(100% + 5px)}
@@ -240,6 +265,64 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
 .tip-sub{display:block;margin-top:.32rem;font:400 .82rem/1.42 var(--serif);color:var(--mut)}
 .tip-x{display:block;margin-top:.35rem;font:500 .72rem/1.35 var(--disp);color:var(--mut)}
 
+/* ---- interactivity: click a node to highlight its subtree, then Focus to isolate it ---- */
+.tree-hint{margin:.2rem 0 1rem;color:var(--mut);font:400 .9rem/1.5 var(--serif)}
+.tree-hint b{color:var(--ink);font-weight:700}
+.treeview .tnode{transition:transform .12s ease,opacity .16s ease}
+.tree-svg path{transition:opacity .16s ease,stroke-opacity .16s ease}
+/* dimmed = not in the selected/focused subtree; highlighted = in it */
+.tnode.is-dim{opacity:.16;animation:none}
+.tnode.is-dim .tnode-label{opacity:.5}
+.tree-svg path.is-dim{stroke-opacity:.06}
+.tree-svg path.is-hl{stroke-opacity:.95;stroke-width:2.6}
+.tree-svg path.is-sel{stroke-opacity:1;stroke-width:3.2}
+/* fat transparent twin over each limb -> an easy click target even though the svg ignores pointers */
+.tree-svg .edge-hit{pointer-events:stroke;cursor:pointer}
+/* the clicked node itself: a firm halo, no pulse */
+.tnode.is-sel{animation:none;box-shadow:0 0 0 3px var(--bg),0 0 0 6px var(--dot,var(--violet));
+  transform:translate(-50%,-50%) scale(1.18);z-index:25}
+
+/* action popup (Focus / Open report) anchored under the clicked node */
+.tree-pop{position:absolute;transform:translate(-50%,0);z-index:50;display:inline-flex;align-items:center;gap:.3rem;
+  background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:.32rem;white-space:nowrap;
+  box-shadow:0 16px 38px -20px rgba(22,22,26,.72)}
+/* the FAN: a transparent wedge above the popup, bridging up to the limb so the cursor can
+   glide from limb to button without leaving an active hover zone */
+.tree-pop::before{content:"";position:absolute;left:-26px;right:-26px;bottom:100%;height:30px}
+/* a little caret pointing up toward the limb */
+.tree-pop::after{content:"";position:absolute;left:50%;bottom:100%;transform:translateX(-50%);margin-bottom:-1px;
+  border:6px solid transparent;border-bottom-color:var(--panel)}
+.pop-focus{font:700 .68rem/1 var(--disp);text-transform:uppercase;letter-spacing:.06em;color:#fff;
+  background:var(--violet);border:0;border-radius:8px;padding:.42rem .6rem;cursor:pointer;transition:background .12s ease}
+.pop-focus:hover{background:var(--violet-dp)}
+.pop-open{font:700 .68rem/1 var(--disp);text-transform:uppercase;letter-spacing:.06em;color:var(--violet);padding:.42rem .5rem}
+.pop-open:hover{text-decoration:none;color:var(--violet-dp)}
+/* when the JS layer is live, the rich hover card is the floating fan-popup (.node-pop) —
+   so the inline CSS tooltip is hidden (it stays the JS-off fallback). */
+.treeview.js-on .tip{display:none}
+/* the node briefing: same fan-popup chrome (caret + fan + shadow), but a left-aligned,
+   multi-line block instead of a button row, centred over the node. */
+.node-pop{display:block;text-align:left;white-space:normal;max-width:264px;
+  padding:.62rem .78rem;border-left:3px solid var(--tree,var(--violet));cursor:pointer;
+  transition:box-shadow .12s ease,transform .12s ease}
+.node-pop:hover{box-shadow:0 24px 52px -22px rgba(22,22,26,.82);transform:translate(-50%,-1px)}
+/* the "click to open" affordance appended to the briefing card */
+.np-open{display:block;margin-top:.55rem;color:var(--violet);
+  font:700 .62rem/1 var(--disp);text-transform:uppercase;letter-spacing:.09em}
+
+/* focus bar — shown only while a branch is isolated */
+.tree-focusbar{display:flex;align-items:center;gap:.7rem;margin:0 0 .4rem;padding:.5rem .85rem;
+  background:color-mix(in srgb,var(--violet) 8%,var(--panel));border:1px solid var(--line);border-radius:11px}
+.fb-label{color:var(--mut);font:700 .72rem/1 var(--disp);text-transform:uppercase;letter-spacing:.09em}
+.fb-exit{margin-left:auto;font:700 .72rem/1 var(--disp);text-transform:uppercase;letter-spacing:.06em;cursor:pointer;
+  color:var(--violet);background:none;border:1px solid var(--line);border-radius:8px;padding:.38rem .65rem;transition:.12s ease}
+.fb-exit:hover{background:var(--violet);color:#fff;border-color:var(--violet)}
+
+/* honour reduced-motion: the live-frontier signal degrades to a static ring */
+@media (prefers-reduced-motion:reduce){
+  .tnode.active,.card.is-active .card-dot{animation:none}
+}
+
 @media (max-width:600px){
   .nav{flex-wrap:wrap;gap:.5rem} .tabs{order:3;width:100%} body{font-size:17px}
   .studies-page{padding-left:.6rem;padding-right:.6rem}
@@ -251,32 +334,33 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
 
 <div class="tldr">
 <p><strong>TL;DR.</strong> Modularity is prized because it should make learning
-<em>sample-efficient</em>. We argue the efficiency is not bought by the trained network
-<em>ending up</em> sparse, but by <em>confining the search</em> to a sparse computation
-graph throughout training — a wiring cost <em>selects</em> modularity, it does not create
-it. We prove this for discrete targets, then test it with a confinement
-<em>ladder</em> on random sparse computation graphs. An oracle confined to
-the true graph (<strong>Fc</strong>) beats an unregularized net <strong>14.5&times;</strong>
-in area-under-the-learning-curve, stays flat as the ambient dimension grows, and recovers
-the wiring perfectly (AP&nbsp;1.00); a collapsing learned price (<strong>L</strong>) ties
-no regularizer; plain&nbsp;\(\ell_1\) never reaches the oracle. The
-decisive test rules out the map's <em>functional</em> sparsity as a hidden efficiency channel
-(the pre-registered falsifier never fires) and the off-diagonal cell pins the gain to
-<em>confinement</em>; causal dose&ndash;response and a continuous-rate test confirm
-confinement is the cause and is ambient-dimension-free; and a <em>learned</em> non-collapsing
-gate (<strong>NC</strong>) beats the baseline but recovers the wiring only barely above
-chance — a learned cost confines, but not yet to the <em>correct</em> graph.
+<em>sample-efficient</em> and <em>compositional</em>. But <em>which</em> modularity? We separate
+<strong>structural</strong> modularity (the trained weights are modular — low fan-in, block
+structure) from <strong>functional</strong> modularity (those modules match the task's true
+computation graph), and test four reference points on random sparse computation graphs:
+<strong>D</strong> (dense, no prior), <strong>L1</strong> (generic \(\ell_1\) shrinkage),
+<strong>Lf</strong> (a fixed-code prior — strongly <em>structurally</em> modular but aligned to a
+random code), and <strong>Fc</strong> (an oracle confined to the <em>true</em> graph). The
+finding: <em>structural modularity is cheap and largely inert; confinement to the </em>correct<em>
+structure is what pays.</em> Fc beats the dense net <strong>14.5&times;</strong> in
+area-under-the-learning-curve, stays flat as the ambient dimension grows, and — the capstone —
+<strong>generalizes compositionally</strong> to never-seen combinations of sub-functions, where
+the dense net collapses to the variance floor. Lf, despite being <em>more</em> modular than the
+oracle (fan-in \(1.2\) vs \(1.7\)), is efficiency-neutral against plain \(\ell_1\) and buys
+<em>no</em> compositional generalization: its modules track the random code, not the task.
+Structural modularity supplies only bounded-fan-in confinement (it matches the agnostic budget Fa
+under nuisance); the prize needs the right structure.
 <span class="status supported">thesis supported</span></p>
 </div>
 
 <h2>1. The question</h2>
 
-<p>Modularity is prized for <em>sample efficiency</em>: a modular learner should need
-far fewer examples, fitting a few small pieces instead of one dense high-dimensional map.
-This report asks <em>where</em> that efficiency comes from, and shows the common intuition
-— &ldquo;the network became sparse, so the sparsity is what helped&rdquo; — mislocates it.
-The argument hinges on three properties that coincide on a hand-built example but are
-distinct:</p>
+<p>Modularity is prized for <em>sample efficiency</em> and <em>compositional generalization</em>:
+a modular learner should need far fewer examples, and should recombine known parts to handle
+inputs it never saw. This report asks <em>which</em> modularity delivers that — and shows the
+common intuition, &ldquo;the network became modular, so the modularity is what helped,&rdquo;
+mislocates it. The argument hinges on three properties that coincide on a hand-built example but
+are distinct:</p>
 
 <ul>
 <li><strong>Functional sparsity</strong> — a property of the <em>map</em> \(f^\star\): it
@@ -290,12 +374,31 @@ architecture/prior restricts the sparse-graph hypothesis class <em>throughout tr
 not just at the endpoint.</li>
 </ul>
 
-<p><strong>The thesis.</strong> Efficiency is bought by <em>confinement</em>, not by
-functional sparsity of the returned map: a dense, unconfined net can compute a perfectly
-sparse \(f^\star\) and still be sample-hungry, because the search ranged over all maps the
-whole time. The cleanest evidence is that off-diagonal case — a maximally sparse task where
-the unconfined learner is many-fold less efficient than the confined one despite both
-computing the same function (§<a href="#sec-e2">6.2</a>).</p>
+<p><strong>The thesis.</strong> Efficiency and compositional generalization are bought by
+<em>confinement to the correct structure</em> — not by functional sparsity of the returned map,
+and not by structural modularity per se. A dense, unconfined net can compute a perfectly sparse
+\(f^\star\) and still be sample-hungry; and a network can be <em>more</em> structurally modular
+than the oracle yet, if its modules are misaligned with the task, buy nothing over plain
+shrinkage. The whole report is read against <strong>four reference points</strong> that
+disentangle these:</p>
+
+<ul>
+<li><strong>D</strong> — dense, no prior. The floor: the search ranges over all maps throughout.</li>
+<li><strong>L1</strong> — plain \(\ell_1\) shrinkage. Generic sparsity, blind to the nodes: shrinks
+weights but carves no module structure.</li>
+<li><strong>Lf</strong> — a fixed-code prior (the traditional neuron-representation construction):
+<em>structurally</em> modular — it drives fan-in below even the oracle — but its modules align
+with a <em>random</em> code, not the task graph. The pivotal case for &ldquo;does structural
+modularity suffice?&rdquo;</li>
+<li><strong>Fc</strong> — an oracle confined to the <em>true</em> graph: <em>functional</em>
+modularity, the ceiling.</li>
+</ul>
+
+<p>The cleanest single contrast is the off-diagonal case — a maximally sparse task where the
+unconfined D is many-fold less efficient than Fc despite both computing the same function
+(§<a href="#sec-e2">6.3</a>) — and the capstone is compositional: only Fc generalizes to
+held-out combinations of sub-functions, while Lf fails with the generic baselines
+(§<a href="#sec-ood">6.9</a>).</p>
 
 <h2>2. Theory</h2>
 
@@ -450,16 +553,19 @@ confined:</p>
 <tr><td><strong>Fr</strong></td><td><code>nr.cgfr-bin-abs</code></td><td>\(\mathcal{H}_{G}\)</td><td>Fc with codes through a fixed orthogonal frame; distances are preserved ⇒ \(\equiv\)Fc (frame-invariance check).</td></tr>
 <tr><td><strong>Fa</strong></td><td><code>nr.cgfa-bin-abs</code></td><td>\(\mathcal{H}_{r,N}\)</td><td><strong>structure-agnostic</strong> fan-in budget, \(\mathcal{R}=\operatorname*{mean}_i\sum_k\log(1{+}\|W_{i,k}\|_2/\eta)\) over sender-node groups \(k\): bounded fan-in from \((N,r)\), <em>not</em> \(E(G)\).</td></tr>
 <tr><td><strong>Fw</strong></td><td><code>nr.cgfw-bin-abs</code></td><td>\(\mathcal{H}_{G'}\)</td><td>Eq.&nbsp;\eqref{eq:oracle} on a <em>wrong</em> graph \(E(G')\). Tests that mis-confinement hurts.</td></tr>
-<tr><td><strong>NC</strong></td><td><code>nr.cgnc-euc-abs</code></td><td>\(\mathcal{H}_{G}\) (discovered)</td><td><strong>non-collapsible learned gate</strong>: codes gate the weights \(\tilde a_{ij}{=}g_{ij}W_{ij}\), \(g_{ij}{=}g_0{+}(1{-}g_0)e^{-\|\phi_i-\phi_j\|^2/\tau^2}\), penalizing open-gate mass \(\operatorname*{mean}g_{ij}\). The one <em>learned</em> rung — does a learned cost discover the wiring? (full treatment §<a href="#sec-nc">6.7</a>).</td></tr>
+<tr><td><strong>Lf</strong></td><td><code>nr.cgfx-euc-abs</code></td><td>\(\mathcal{H}_{r,N}\) (random code)</td><td><strong>fixed-code prior</strong> — the traditional neuron-representation construction: a distance penalty \(\mathcal{R}=\operatorname*{mean}_i\sum_j\|\phi_i-\phi_j\|\,|W_{ij}|\) over <em>frozen random</em> per-node codes (drawn once from the graph seed, so unlike L they cannot collapse). Strongly modular but aligned to the <em>random</em> code, not \(E(G)\) — the structural-vs-functional pivot (§<a href="#sec-fixedrep">6.8</a>).</td></tr>
 </tbody>
 </table>
 </div>
 
-<p>Two further conditions enter later, where the narrative first needs them: a correctness knob
-<strong>Fm</strong> that rewires a fraction \(\tau\) of \(E(G)\) toward \(G'\)
-(\(\tau{=}0{\equiv}\)Fc, \(\tau{=}1{\equiv}\)Fw; §<a href="#sec-e6">6.5</a>, §<a href="#sec-e8">6.8</a>),
-and a second confinement <em>mechanism</em> <strong>WL</strong> that charges wiring length by
-tier-distance (§<a href="#sec-e7">6.6</a>).</p>
+<p>Of these, <strong>D, L1, Lf, Fc</strong> are the four reference points the report returns to —
+nothing / generic sparsity / structural-but-misaligned modularity / correct confinement; the rest
+interpolate the <em>mechanism</em>, isolating collapse (L), frame-invariance (Fr), bounded fan-in
+(Fa), and mis-confinement (Fw). Two further conditions enter where the narrative first needs them:
+a correctness knob <strong>Fm</strong> that rewires a fraction \(\tau\) of \(E(G)\) toward \(G'\)
+(\(\tau{=}0{\equiv}\)Fc, \(\tau{=}1{\equiv}\)Fw; §<a href="#sec-e8">6.2</a>,
+§<a href="#sec-e6">6.6</a>), and a second confinement <em>mechanism</em> <strong>WL</strong> that
+charges wiring length by tier-distance (§<a href="#sec-e7">6.7</a>).</p>
 
 <h2 id="sec-metrics">5. Metrics</h2>
 
@@ -504,8 +610,8 @@ dissociation powers experiment&nbsp;2.</em></li>
 
 <h3>Setup</h3>
 
-<p>Every run trains one MLP (width&nbsp;128, depth&nbsp;\(\Delta{+}2\), ReLU; a same-shape
-<em>gated</em> MLP for NC) with <strong>AdamW</strong> (learning rate \(2\times10^{-3}\),
+<p>Every run trains one MLP (width&nbsp;128, depth&nbsp;\(\Delta{+}2\), ReLU)
+with <strong>AdamW</strong> (learning rate \(2\times10^{-3}\),
 \(\beta=(0.9,0.999)\), default weight decay \(0.01\)), a cosine schedule, batch&nbsp;64, up to
 \(6000\) steps, with early stopping (patience&nbsp;25, evaluated every \(5\%\) of steps) and the
 best-validation checkpoint restored. The penalty coefficient is annealed \(0\!\to\!c\) over the
@@ -515,8 +621,9 @@ evaluation points are split into <em>disjoint</em> validation (selection / early
 halves, with a separate extrapolation draw at \(\sigma{=}1.5\).</p>
 
 <p>Each <em>seed</em> draws a fresh graph <em>and</em> a fresh initialization, so distributions
-are over graph\(\times\)init jointly: <strong>6 seeds</strong> for the ladder (E1/E8),
-<strong>6 graphs per cell</strong> for the E2 ensemble, <strong>5 seeds</strong> for E5/E6. Each
+are over graph\(\times\)init jointly: <strong>6 seeds</strong> for the ladder (E1/E8) and the
+compositional split (E9), <strong>6 graphs per cell</strong> for the E2 ensemble,
+<strong>5 seeds</strong> for E4/E5/E6. Each
 condition's coefficient \(c\) is chosen on the validation split and reported once on test
 (val-picks / test-once). Uncertainty is reported as <strong>95% bootstrap percentile
 intervals</strong> — 2000 resamples over seeds for per-condition AULC, and a 3000-resample
@@ -554,42 +661,95 @@ campaign.</p>
 
 <h2 id="sec-results">6. Results</h2>
 
-<p>The experiments fall into two arcs. The first four ask <em>whether</em> confinement buys
-efficiency, and whether it is confinement rather than endpoint sparsity: E1 ranks the ladder,
-E2 dissociates structural from functional sparsity, and E4&ndash;E5 test the ambient-dimension
-scaling the theory predicts. The rest ask <em>how</em> it works and where it gets subtle: E6
-makes it causal, E7 finds it mechanism-plural, NC asks whether a <em>learned</em> cost can do
-it, and E8 probes mis-confinement at depth. Throughout, each condition's coefficient is tuned on
-a held-out validation split (val-picks / test-once) over graph&times;init seeds; the ladder
-predictions are cell-agnostic, so the powered test pools the paired \((\text{cell},\text{seed})\)
-AULC differences (per-cell Wilcoxon at six seeds is underpowered), and we lead with effect sizes
-and bootstrap CIs.</p>
+<p>The experiments build from the ladder to the capstone. <strong>E1</strong> ranks the four
+reference points (and the mechanism rungs between them); <strong>E8</strong> immediately
+stress-tests the one surprise it leaves — a wrong sparse graph beating the baseline — across
+composition depth. <strong>E2</strong> dissociates structural from functional sparsity, and
+<strong>E4&ndash;E5</strong> test the ambient-dimension scaling the theory predicts.
+<strong>E6&ndash;E7</strong> ask <em>how</em> confinement works — making it causal, and finding it
+mechanism-plural. The last two turn to the structural-vs-functional question head-on: a fixed
+(non-learned) code (§<a href="#sec-fixedrep">6.8</a>) asks whether structural modularity alone
+reproduces the gain, and the compositional-OOD <strong>capstone</strong>
+(§<a href="#sec-ood">6.9</a>) asks whether it <em>generalizes</em> to never-seen combinations.
+Throughout, each condition's coefficient is tuned on a held-out validation split (val-picks /
+test-once) over graph&times;init seeds; the ladder predictions are cell-agnostic, so the powered
+test pools the paired \((\text{cell},\text{seed})\) AULC differences (per-cell Wilcoxon at six
+seeds is underpowered), and we lead with effect sizes and bootstrap CIs.</p>
 
 <h3 id="sec-e1">6.1 &nbsp; E1 — the confinement ladder</h3>
 
 <p>Ranking the learning curves places the oracle ceiling, shows the collapse forfeits the
 gain, and checks the structure-agnostic budget against shrinkage. Across all four
 decomposable cells the AULC orders \(\mathrm{Fc}\approx\mathrm{Fr} < \mathrm{Fw} <
-\mathrm{Fa} < \mathrm{L1} < \mathrm{L}\approx\mathrm{D}\) (Fig&nbsp;2). <strong>Fc is the ceiling</strong>,
-beating D in \(24/24\) pooled pairs (Cohen's \(d_z{=}-3.0\), \(p\approx1.2\times10^{-7}\);
-\(14.5\times\) on the additive cell). <strong>L\(\approx\)D</strong> (collapse within \(1\%\)
-of no regularizer); <strong>Fr\(\approx\)Fc</strong> (frame invariance);
-<strong>L1\(<\)Fc</strong> (\(d_z{=}-2.35\), shrinkage never reaches the ceiling). The one
-departure from the literal prediction is <strong>Fw\(<\)D</strong> (not \(\le\)): a wrong
-<em>sparse</em> graph still ignores nuisance and bounds fan-in, confining to a wrong corner
-of \(\mathcal{H}_{r,N}\) — confirming that &ldquo;bounded fan-in, not knowing the exact
-graph&rdquo; is the operative restriction (a depth sweep, §<a href="#sec-e8">6.8</a>, shows this
-holds at every \(\Delta\), with exact-wiring correctness a <em>diminishing</em> premium as
-composition deepens). NC lands between Fa and D (§<a href="#sec-nc">6.7</a>).</p>
+\mathrm{Fa} < \mathrm{L1}\approx\mathrm{Lf} < \mathrm{L}\approx\mathrm{D}\) (Fig&nbsp;2).
+<strong>Fc is the ceiling</strong>, beating D in \(24/24\) pooled pairs (Cohen's
+\(d_z{=}-3.0\), \(p\approx1.2\times10^{-7}\); \(14.5\times\) on the additive cell).
+<strong>L\(\approx\)D</strong> (collapse within \(1\%\) of no regularizer);
+<strong>Fr\(\approx\)Fc</strong> (frame invariance); <strong>L1\(<\)Fc</strong>
+(\(d_z{=}-2.35\), shrinkage never reaches the ceiling). The structural-vs-functional split is
+already visible: <strong>Lf\(\approx\)L1</strong> (AULC \(0.242\) vs \(0.239\)) — the fixed-code
+prior is the <em>most</em> structurally modular condition (effective fan-in \(1.2\), below even
+the oracle's \(1.7\)) yet ties plain shrinkage, buying nothing for its modularity
+(dissected in §<a href="#sec-fixedrep">6.8</a>). The one departure from the literal prediction
+is <strong>Fw\(<\)D</strong> (not \(\le\)): a wrong <em>sparse</em> graph still ignores nuisance
+and bounds fan-in, confining to a wrong corner of \(\mathcal{H}_{r,N}\) — confirming that
+&ldquo;bounded fan-in, not knowing the exact graph&rdquo; is the operative restriction, which
+the next experiment pursues across composition depth (§<a href="#sec-e8">6.2</a>).</p>
 
 <figure>
   <img class="fig" src="fig/fig_e1_ladder.png" alt="ladder learning curves on the additive cell and AULC pooled over four cells"/>
   <figcaption><span class="fignum">Figure 2.</span> <strong>E1.</strong> Learning curves on the
   additive cell (left) and AULC pooled over all four cells (right; lower is better). Fc/Fr
-  (greens) sit far below D/L (reds); Fw, Fa, L1, NC are intermediate.</figcaption>
+  (greens) sit far below D/L (reds); Fw, Fa, L1, Lf are intermediate.</figcaption>
 </figure>
 
-<h3 id="sec-e2">6.2 &nbsp; E2 — structural vs. functional</h3>
+<h3 id="sec-e8">6.2 &nbsp; E8 — depth × wrongness <em>(exploratory)</em></h3>
+
+<p>E1 leaves one prediction unmet and worth chasing immediately: a <em>wrong</em> sparse graph
+(Fw) beat the unconfined baseline on every cell, including the \(\Delta{=}2\) composition cells —
+yet the design expected the <em>specific</em> wiring to become load-bearing once \(\Delta{>}1\),
+so Fw should have approached D. Was Fw's success a shallow-task artifact? Holding everything fixed
+(\(d_{\mathrm{eff}}{=}6\), \(\nu{=}8\), \(N{=}12\), \(r{=}2\)) and sweeping <em>only</em> the
+composition depth \(\Delta\in\{1,\dots,5\}\) — \(N\) fixed, so depth (not node count) grows — we
+run the correctness dose Fm(\(\tau\)) at each depth (\(\tau{=}0\equiv\)Fc, the true graph;
+\(\tau{=}1\equiv\)Fw, the wrong graph) against D, and add the fixed-code prior <strong>Lf</strong>
+to ask whether <em>structural</em> modularity holds up with depth. The decisive readout is the
+<em>within-depth</em> contrast, differencing out any change in intrinsic difficulty.</p>
+
+<p>The prediction fails — informatively. <strong>A wrong sparse graph beats the unconfined
+baseline at every depth</strong> (Fw\(\,<\,\)D throughout: by \(0.15\) at \(\Delta{=}1\), still
+below at \(\Delta{=}5\); Fig&nbsp;3), so Fw's success was no artifact. And the oracle's premium for
+getting the wiring <em>exactly</em> right <strong>shrinks</strong> as composition deepens rather
+than growing: the Fw/Fc AULC ratio falls monotonically \(1.69\!\to\!1.04\)
+(\(\rho(\Delta,\mathrm{Fw}/\mathrm{Fc})=-1.0\)), and the within-depth correctness dose flattens
+(\(\rho(\mathrm{A},\tau)\!:\;0.18\!\to\!0.03\)). At \(\Delta\ge4\) the deep task is sample-hungry
+enough that <em>even the oracle barely helps</em> (Fc\(\,0.64\) vs D\(\,0.75\) at \(\Delta{=}4\))
+and D, Fc, Fw become statistically indistinguishable. So the load-bearing ingredient is
+<strong>bounded-fan-in confinement</strong> — which Fw shares, since \(G'\) is also sparse — not
+the exact wiring; correctness is a <em>diminishing</em> premium. This sharpens Lemma&nbsp;2:
+confining to the <em>right</em> graph buys less and less over confining to <em>a</em> sparse one
+as the function deepens.</p>
+
+<p>The fixed-code prior places structural modularity in the same frame. <strong>Lf beats D at
+every depth too</strong> (by \(0.08\) at \(\Delta{=}1\), shrinking to \(0.02\) at \(\Delta{=}5\)) —
+so its bounded-fan-in modularity is a genuine, if weak, confiner — but it is the <em>weakest</em>
+of the confining arms, sitting <em>above</em> even the coherently-wrong Fw at every depth. A
+random-code modularity (low fan-in, incoherent routing) is worth less than a coherent wrong sparse
+graph, and both far less than the oracle: structural modularity confines, but feebly.</p>
+
+<figure>
+  <img class="fig" src="fig/fig_e8_depth_wrongness.png" alt="Fc, Fw, Lf track below D and converge with depth; the wrongness dose is flat"/>
+  <figcaption><span class="fignum">Figure 3.</span> <strong>E8 (exploratory).</strong> Left: AULC
+  vs composition depth \(\Delta\) for the unconfined baseline (D), the fixed-code prior (Lf), the
+  true-graph oracle (Fc) and the wrong-graph oracle (Fw), with 95% bootstrap intervals; all three
+  confiners sit below D — Lf the weakest, even above Fw — and converge as \(\Delta\) grows. Right:
+  the correctness dose (AULC vs the fraction \(\tau\) of edges made wrong) is nearly <em>flat</em>
+  at every depth — how wrong the sparse graph is barely matters. The deep cells are noisy (a
+  6&ndash;7-layer MLP near the hard-task floor); we read the within-depth contrasts, not the
+  absolute levels.</figcaption>
+</figure>
+
+<h3 id="sec-e2">6.3 &nbsp; E2 — structural vs. functional</h3>
 
 <p>This experiment was designed to separate the thesis from its rival — regress efficiency on
 the two competing explanations,</p>
@@ -610,11 +770,11 @@ graphs) the fit gives \(\beta_S=-0.079\) and \(\beta_F=+0.133\), but the apparen
 is an <em>artifact of the oracle ceiling</em>, not evidence that recovery tracks efficiency: Fc
 saturates the recovery metric at \(\mathrm{S}{=}1.0\) on every graph, and dropping those 30
 degenerate rows the interior slope is \(\beta_S=+0.005\) (CI \([-0.035,0.035]\), straddling
-zero; Fig&nbsp;3). The reason is itself the finding: <strong>Fa is as efficient as the oracle is structured
+zero; Fig&nbsp;4). The reason is itself the finding: <strong>Fa is as efficient as the oracle is structured
 without recovering the graph</strong> (recovery AP \(0.44\approx\)D's \(0.43\), yet AULC
 \(0.28\) beats D's \(0.38\)). Graph-recovery AP measures confinement <em>to the correct
 graph</em>; Fa confines to bounded fan-in (\(\mathcal{H}_{r,N}\)) instead, invisible to the
-metric — the same mechanism-plurality lesson as E7 (§<a href="#sec-e7">6.6</a>). So the
+metric — the same mechanism-plurality lesson as E7 (§<a href="#sec-e7">6.7</a>). So the
 regression does <em>not</em> cleanly isolate S. What it <em>does</em> show robustly, in both
 fits, is \(\beta_F>0\) (CI \([0.094,0.165]\) full, \([0.062,0.156]\) trimmed): the
 pre-registered falsifier — a <em>negative</em> \(\beta_F\) — never fires, so endpoint functional
@@ -624,12 +784,12 @@ sparsity is not a hidden efficiency channel.</p>
 cell and the causal dose: on the maximally sparse additive task the unconfined D is
 <strong>14.5&times; less efficient</strong> than Fc despite both computing the same map, and
 raising the oracle coefficient drives AULC down as recovery rises
-(\(\rho(\mathrm{A},\mathrm{S})=-0.91\), §<a href="#sec-e6">6.5</a>).
+(\(\rho(\mathrm{A},\mathrm{S})=-0.91\), §<a href="#sec-e6">6.6</a>).
 <strong>Efficiency follows confinement, not the map's endpoint sparsity.</strong></p>
 
 <figure>
   <img class="fig" src="fig/fig_e2_regression.png" alt="AULC falls with structural recovery S; beta_S negative, beta_F positive"/>
-  <figcaption><span class="fignum">Figure 3.</span> <strong>E2.</strong> Left: AULC vs structural
+  <figcaption><span class="fignum">Figure 4.</span> <strong>E2.</strong> Left: AULC vs structural
   recovery S (colour = functional mass F); the saturated oracle ceiling (\(\mathrm{S}{=}1.0\),
   all Fc) is drawn as hollow \(\times\)'s — the rows the robustness trim drops. Right:
   \(\beta_S\) and \(\beta_F\,|\,S\) on the full sample vs the no-ceiling interior (hatched).
@@ -638,54 +798,54 @@ raising the oracle coefficient drives AULC down as recovery rises
   graph. Cluster-bootstrap over 24 graphs, 95% intervals.</figcaption>
 </figure>
 
-<h3 id="sec-e4">6.3 &nbsp; E4 — scaling in the ambient dimension</h3>
+<h3 id="sec-e4">6.4 &nbsp; E4 — scaling in the ambient dimension</h3>
 
 <p>The counting argument predicts a gain exponential in \(d-r\). Holding structure fixed and
 growing the ambient dimension via \(\nu\), the confined curve should be flat while the
 unconfined degrades — the direct image of Eq.&nbsp;\eqref{eq:counting}. Sweeping
 \(\nu\in\{0,8,16,32,64\}\), the confined Fc AULC is <strong>flat</strong> (slope
 \(2\times10^{-4}\)) while D and L <strong>degrade</strong> linearly (\(6.3\times10^{-3}\),
-\(26\times\) steeper); the Fc/D gap widens to \(14\times\) at \(\nu{=}64\) (Fig&nbsp;4). The agnostic
+\(26\times\) steeper); the Fc/D gap widens to \(14\times\) at \(\nu{=}64\) (Fig&nbsp;5). The agnostic
 budget Fa is intermediate (a hard cost zeroes nuisance weights; the soft penalty only
 mostly).</p>
 
 <figure>
   <img class="fig" src="fig/fig_e4_scaling.png" alt="confined AULC flat in nu while unconfined degrades"/>
-  <figcaption><span class="fignum">Figure 4.</span> <strong>E4.</strong> Confined AULC is flat in the
+  <figcaption><span class="fignum">Figure 5.</span> <strong>E4.</strong> Confined AULC is flat in the
   nuisance dimension \(\nu\) while unconfined degrades; the gap widens with \(\nu\) (right:
   test MSE vs \(n\) at \(\nu{=}64\)).</figcaption>
 </figure>
 
-<h3 id="sec-e5">6.4 &nbsp; E5 — the continuous decay rate</h3>
+<h3 id="sec-e5">6.5 &nbsp; E5 — the continuous decay rate</h3>
 
 <p>For real-valued targets the counting argument's analogue is a <em>rate</em>:
 Eq.&nbsp;\eqref{eq:rate} predicts the confined error decays with an exponent set by the
 fan-in \(r\) and <em>independent of \(d\)</em>, the unconfined one set by \(d\). Sweeping
 \(s,r,d\) on additive cells and fitting the log&ndash;log slope of test MSE vs \(n\), the
-robust signature holds (Fig&nbsp;5): growing the ambient dimension, the <strong>confined rate does not
+robust signature holds (Fig&nbsp;6): growing the ambient dimension, the <strong>confined rate does not
 degrade</strong> (exponent slope in \(\nu\): \(+7.0\times10^{-3}\)) while the
 <strong>unconfined rate falls</strong> (\(-9.1\times10^{-3}\)). The raw curves make it vivid:
 confined curves at \(d{=}6\) and \(d{=}70\) both reach the floor, while the unconfined
 \(d{=}70\) curve is still stuck at \(n{=}8192\). We do <em>not</em> read absolute exponents
 off these finite-width fits — easy low-\(r\) cells plateau at the floor, so the tail slope is
 an artifact — but the \(d\)-invariance of the confined rate is the point, agreeing with the
-counting (§2) and AULC scaling (§<a href="#sec-e4">6.3</a>).</p>
+counting (§2) and AULC scaling (§<a href="#sec-e4">6.4</a>).</p>
 
 <figure>
   <img class="fig" src="fig/fig_e5_rates.png" alt="confined decay rate flat in d while unconfined degrades; raw curves overlap for confined"/>
-  <figcaption><span class="fignum">Figure 5.</span> <strong>E5.</strong> Left: the fitted decay
+  <figcaption><span class="fignum">Figure 6.</span> <strong>E5.</strong> Left: the fitted decay
   exponent as the ambient dimension grows — the confined (Fc) rate does not fall while the
   unconfined (D) rate degrades. Right: the raw MSE-vs-\(n\) curves at \(d{=}6\) and
   \(d{=}70\); the two confined curves overlap onto the floor while the unconfined curves
   fan apart — the rate, not just the offset, degrades without confinement.</figcaption>
 </figure>
 
-<h3 id="sec-e6">6.5 &nbsp; E6 — causal ablations</h3>
+<h3 id="sec-e6">6.6 &nbsp; E6 — causal ablations</h3>
 
 <p>E6 makes confinement <em>causal</em> by perturbing it with the task fixed, three ways.
 <strong>(a) Strength:</strong> raising the oracle coefficient from 0 (= D), AULC falls
 monotonically as realized S rises (Spearman \(\rho=-0.91\)) — a causal \(\mathrm{A}\)-vs-S
-curve (Fig&nbsp;6). <strong>(b) Correctness:</strong> rewiring a fraction \(\tau\) of edges toward the
+curve (Fig&nbsp;7). <strong>(b) Correctness:</strong> rewiring a fraction \(\tau\) of edges toward the
 wrong graph raises AULC (\(\rho=+0.30\)), with \(\tau{=}0\) (true graph) best. The middle is
 deliberately <em>non-monotone</em>: a fully but <em>coherently</em> wrong sparse graph
 (\(\tau{=}1\)=Fw) still bounds fan-in, so it beats an <em>incoherent</em> partial rewiring —
@@ -697,7 +857,7 @@ large imprint.</p>
 
 <figure>
   <img class="fig" src="fig/fig_e6_ablations.png" alt="strength dose monotone, correctness dose, timing arms"/>
-  <figcaption><span class="fignum">Figure 6.</span> <strong>E6.</strong> Left: AULC falls as realized
+  <figcaption><span class="fignum">Figure 7.</span> <strong>E6.</strong> Left: AULC falls as realized
   structural recovery S rises (strength dose, \(\rho=-0.91\)). Middle: confining to the true
   graph (\(\tau{=}0\)) is best; rewiring toward the wrong graph hurts, non-monotonically (a
   coherent wrong graph \(\tau{=}1\) still confines). Right: confinement helps most when
@@ -705,7 +865,7 @@ large imprint.</p>
   magnitude.</figcaption>
 </figure>
 
-<h3 id="sec-e7">6.6 &nbsp; E7 — mechanism universality</h3>
+<h3 id="sec-e7">6.7 &nbsp; E7 — mechanism universality</h3>
 
 <p>Is the graph cost special, or does <em>any</em> mechanism that lowers communication buy the
 same efficiency? We realize confinement three ways — the graph <strong>oracle</strong> Fc (off
@@ -720,7 +880,7 @@ on candidate edges <em>not</em> in \(E(G)\),</p>
 \mathrm{B}=\frac{\sum_{e\notin E(G)}a_e}{\sum_{e\in\text{candidates}}a_e}\qquad(\text{low B = routes along the true wiring}).
 \end{equation}\]
 
-<p>The prediction was a single curve \(\mathrm{AULC}(B)\). Instead (Fig&nbsp;7): every mechanism
+<p>The prediction was a single curve \(\mathrm{AULC}(B)\). Instead (Fig&nbsp;8): every mechanism
 confines — each monotone in its strength, all below the baseline — but they do <em>not</em> share
 one \(\mathrm{AULC}(B)\) curve. The oracle and fan-in budget improve as off-graph mass
 <em>falls</em> (\(\rho=+1.0\)); wiring-length improves as it <em>rises</em> (\(\rho=-1.0\)),
@@ -731,7 +891,7 @@ confinement is real and mechanism-plural.</p>
 
 <figure>
   <img class="fig" src="fig/fig_e7_mechanisms.png" alt="three mechanisms head in different directions in the (B, AULC) plane"/>
-  <figcaption><span class="fignum">Figure 7.</span> <strong>E7.</strong> AULC vs realized off-graph
+  <figcaption><span class="fignum">Figure 8.</span> <strong>E7.</strong> AULC vs realized off-graph
   communication B, each mechanism's points connected in order of increasing strength. All
   three descend below the unconfined baseline (star), but along different paths: the oracle
   empties off-graph mass (down-left), the fan-in budget trims it mildly, and wiring-length
@@ -739,130 +899,143 @@ confinement is real and mechanism-plural.</p>
   curve unifies them.</figcaption>
 </figure>
 
-<h3 id="sec-nc">6.7 &nbsp; NC — learned gating</h3>
+<h3 id="sec-fixedrep">6.8 &nbsp; Structural vs. functional modularity <em>(exploratory)</em></h3>
 
-<p>Every confining condition so far is an oracle or a fixed budget — none <em>learns</em> the
-wiring, yet a learned code is the whole point of a neuron-representation prior. A penalty-only
-learned price <em>collapses</em> (§2): the codes drift together to zero the penalty while the
-weights stay dense. NC closes that escape by letting the codes <em>gate</em> the effective
-weights instead of pricing them,</p>
+<p>The note's spine is the gap between the <em>structural</em> and <em>functional</em> senses of
+modularity, and the four reference points isolate it. <strong>Lf</strong> is the traditional
+fixed-code prior — a plain MLP with a distance penalty over <em>fixed random per-node codes</em>,
+\(\mathcal{R}=\operatorname*{mean}_i\sum_j\|\phi_i-\phi_j\|\,|W_{ij}|\), the codes drawn once from
+the graph seed and frozen (so, unlike L, they cannot collapse). Prior neuron-representation work
+reports that such a fixed code reliably induces structural modularity; we ask whether it does, and
+whether the modularity is worth anything.</p>
 
-\[\begin{equation}\label{eq:gate}
-g_{ij}=g_0+(1-g_0)\,e^{-\|\phi_i-\phi_j\|^2/\tau^2},
-\qquad \tilde a_{ij}=g_{ij}\,W_{ij},
-\qquad P=\operatorname*{mean}_{ij} g_{ij},
-\end{equation}\]
+<p>It does — emphatically (Fig&nbsp;9). Lf drives the effective fan-in from the dense baseline's
+\(\approx9\) down to \(\approx1.2\), <em>below</em> even the oracle's \(\approx1.7\): the distance
+penalty over frozen codes carves a low-fan-in, block-modular network, exactly the prior-work
+result. But the modules are <strong>task-misaligned</strong>: Lf's graph-recovery AP is \(0.25\),
+at or below the chance level \(0.33\) — they track the <em>random code geometry</em>, not \(E(G)\),
+and only the oracle recovers the true wiring. So the structural modularity is real but points the
+wrong way.</p>
 
-<p>so the unit computes on the gated weight \(\tilde a\) and we penalize the open-gate mass
-\(P\). Collapse is now closed off both ways: coinciding codes open every gate
-(\(g\to1\), <em>maximal</em> penalty); codes flying apart close every gate, killing the
-signal. The only way to lower \(P\) while fitting is to close the gates the task does not
-need — and \(\phi\) enters the forward pass, so
-\(\partial\mathcal{L}_{\text{task}}/\partial\phi\neq0\), unlike the collapsing price. (Two
-robustness choices, found the hard way: \(\tau\) is <em>fixed</em>, since a learnable
-\(\tau\!\to\!0\) shuts every gate into a dead, gradient-free state; and a floor \(g_0\) keeps
-a closed gate barely open, while AdamW weight decay makes the uniform-floor dense reversion
-expensive.)</p>
-
-<p>Three outcomes are pre-registered as acceptable — NC matches the oracle, NC \(\approx\) D
-(principle holds, learned cost fails — a diagnosed open problem), or the oracle fails (the
-only falsifier). We find the informative middle. The gate <strong>does not collapse</strong>
-(gate mass \(0.26\)) and <strong>beats the baseline</strong> on every cell
-(\(1.2\)&ndash;\(1.4\times\) lower AULC; Fig&nbsp;8), but <em>without recovering the true wiring</em>:
-its recovery AP is \(0.37\) — barely above the unconfined chance level (\(0.33\)), far below
-the oracle (\(1.00\)), and short of even the fixed budget Fa. So a learned cost, once
-collapse is engineered out, confines to a <em>smaller</em> class but not the <em>correct</em>
-graph; the oracle gap is \(3\)&ndash;\(10\times\). Closing it — confining to the right
-structure, not merely a sparser one — is the open problem this study isolates, echoing the
-forest's broader finding that free per-neuron codes do not recover task structure on their
-own.</p>
-
-<p><strong>Is the gain real, or just the gated architecture?</strong> A frozen-code ablation
-(NCf, exploratory) settles it: freeze the codes at their random init so only the weights train —
-the gate is then a fixed random reweighting and the open-gate penalty is inert. NCf is
-<em>indistinguishable from the unconfined baseline</em> on every cell (NCf/D \(=0.97\)&ndash;\(1.01\),
-mean \(0.99\)), while NC beats NCf everywhere (\(1.2\)&ndash;\(1.4\times\) lower AULC). So NC's
-gain is genuinely bought by <em>learning</em> the codes, not by the gated architecture — yet NCf
-and NC recover the wiring equally poorly (AP \(0.36\) vs \(0.37\), both at the unconfined chance
-level \(0.33\)). The learned code earns a real efficiency gain by closing <em>some</em> gates,
-just not the ones that trace the true graph.</p>
+<p>And it buys almost nothing. Against the four reference points,
+<strong>Lf\(\approx\)L1</strong>: plain \(\ell_1\) shrinkage — essentially unmodular (fan-in
+\(8.0\)) — matches Lf's efficiency <em>exactly</em> (AULC \(0.239\) vs \(0.242\), ratio \(1.01\)),
+far above the oracle's \(0.079\), so Lf's dramatic modularity adds nothing over generic weight
+sparsity. The dissociation is the finding: a fixed code reliably yields <em>structural</em>
+modularity (reproducing the neurep literature), but that modularity is only as useful as the code
+geometry is task-relevant — a random code produces modules misaligned with the task, and its
+efficiency collapses to plain shrinkage. <strong>Efficiency tracks confinement to the
+<em>right</em> structure, not modularity per se</strong> — the E2/E7 lesson, now stated through the
+four reference points. What structural modularity <em>does</em> reliably buy is the weak,
+bounded-fan-in confinement of E4 and E8 — it matches the agnostic budget Fa in nuisance-robustness
+and beats the dense baseline at every depth; what it does <em>not</em> buy is the prize, which the
+capstone now makes vivid.</p>
 
 <figure>
-  <img class="fig" src="fig/fig_nc_gating.png" alt="NC beats D and the frozen-code NCf which ties D; recovery near chance except Fc"/>
-  <figcaption><span class="fignum">Figure 8.</span> <strong>NC.</strong> Left: AULC per cell — the learned
-  gate (NC) beats the unconfined baseline (D) and the <em>frozen-code</em> ablation (NCf, which
-  sits right at D), but stays above the budget (Fa) and well above the oracle (Fc). Right:
-  graph-recovery AP — D, NCf and NC all cluster at the chance level while only Fc recovers the
-  wiring. Learning the codes buys efficiency (NC\(\,<\,\)NCf\(\,\approx\,\)D) without recovering
-  the true graph.</figcaption>
+  <img class="fig" src="fig/fig_fixedrep.png" alt="Lf is most modular (low fan-in) but recovers the graph at chance and ties L1 on efficiency; only Fc recovers and is efficient"/>
+  <figcaption><span class="fignum">Figure 9.</span> <strong>Structural vs. functional
+  modularity.</strong> The four reference points (+Fa) on three axes. Left: structural modularity
+  (effective fan-in, low = modular) — the fixed-code prior Lf is the <em>most</em> modular, below
+  even the oracle. Middle: only the oracle (Fc) recovers the true graph; Lf's modularity sits at
+  the chance level (dashed), aligned with its random codes, not the task. Right: sample efficiency
+  (AULC) — Lf ties plain \(\ell_1\) (L1, essentially unmodular) and falls far short of the oracle.
+  Structural modularity is cheap; functional modularity is what pays.</figcaption>
 </figure>
 
-<h3 id="sec-e8">6.8 &nbsp; E8 — depth × wrongness <em>(exploratory)</em></h3>
+<h3 id="sec-ood">6.9 &nbsp; Compositional generalization — the capstone <em>(exploratory)</em></h3>
 
-<p>E1 left one prediction unmet and worth chasing: a <em>wrong</em> sparse graph (Fw) beat the
-unconfined baseline on every cell, including the \(\Delta{=}2\) composition cells — yet the
-design expected the <em>specific</em> wiring to become load-bearing once \(\Delta{>}1\), so Fw
-should have approached D. Was Fw's success merely an artifact of shallow tasks? This post-hoc
-block tests it head-on. Holding everything fixed (\(d_{\mathrm{eff}}{=}6\), \(\nu{=}8\),
-\(N{=}12\), \(r{=}2\)) and sweeping <em>only</em> the composition depth
-\(\Delta\in\{1,\dots,5\}\) — \(N\) fixed, so depth (not node count) is what grows — we run the
-correctness dose Fm(\(\tau\)) at each depth (\(\tau{=}0\equiv\)Fc, the true graph;
-\(\tau{=}1\equiv\)Fw, the wrong graph) against D. The decisive readout is the
-<em>within-depth</em> contrast, which differences out any change in intrinsic difficulty with
-depth.</p>
+<p>Everything so far is measured <em>in-distribution</em>: test inputs are drawn from the same law
+as training. But the deepest promise of modularity is <em>compositional</em> — a learner with the
+right modules should recombine them to handle inputs it never saw. This is also the sharpest test
+of the structural-vs-functional question: if structural modularity sufficed, the modular-but-
+misaligned Lf should generalize compositionally; if only the <em>right</em> structure works, only
+Fc should. We give structural modularity its strongest case and let the data decide.</p>
 
-<p>The prediction fails — informatively. <strong>A wrong sparse graph beats the unconfined
-baseline at every depth</strong> (Fw\(\,<\,\)D throughout: by \(0.15\) at \(\Delta{=}1\), still
-below at \(\Delta{=}5\); Fig&nbsp;9), so Fw's success was no shallow-task artifact. And the oracle's premium
-for getting the wiring <em>exactly</em> right <strong>shrinks</strong> as composition deepens
-rather than growing: the Fw/Fc AULC ratio falls monotonically \(1.69\!\to\!1.04\)
-(\(\rho(\Delta,\mathrm{Fw}/\mathrm{Fc})=-1.0\)), and the within-depth correctness dose flattens
-(\(\rho(\mathrm{A},\tau)\!:\;0.18\!\to\!0.03\)). At \(\Delta\ge4\) the deep task is sample-hungry
-enough that <em>even the oracle barely helps</em> (Fc\(\,0.64\) vs D\(\,0.75\) at \(\Delta{=}4\))
-and D, Fc, Fw become statistically indistinguishable (overlapping intervals). So the load-bearing
-ingredient is <strong>bounded-fan-in confinement</strong> — which Fw shares, since \(G'\) is also
-sparse — not the exact wiring; correctness is a <em>diminishing</em> premium, and at great depth
-it is depth itself, not wrongness, that erases the confinement gain. This sharpens Lemma&nbsp;2:
-confining to the <em>right</em> graph buys less and less over confining to <em>a</em> sparse one
-as the function deepens.</p>
+<p><strong>The systematicity split.</strong> Partition the \(d_{\mathrm{eff}}\) signal coordinates
+into \(K\) binary-mode <em>factors</em>; each input draws every factor from one of two modes
+(\(\mathcal{N}(\pm\mu,\sigma^2)\)). Training and the in-distribution eval draw their combinations
+from a <em>train</em> subset of the \(2^K\) mode-patterns; the OOD eval draws from the
+<em>held-out</em> patterns. Per-factor marginals are matched across the two (each factor is
+\(\pm\) equally often), so the ID\(\to\)OOD shift is a <em>pure novel co-activation</em> — the
+canonical &ldquo;see A&amp;B and B&amp;C, then test A&amp;C.&rdquo; We run D, L1, Lf, Fc over
+\(K\in\{3,5\}\) on the additive and hierarchical cells, six seeds, and report the OOD gap (AULC on
+held-out minus held-in combinations).</p>
+
+<p>The result is decisive (Fig&nbsp;10). <strong>The oracle composes; nothing else does.</strong>
+Fc <em>closes</em> the compositional gap on every cell and \(K\) (gap
+\(\approx0.02\)&ndash;\(0.10\), \(3.6\)&ndash;\(61\times\) smaller than the dense net's); the
+pooled paired contrast is \(d_z{=}1.26\), \(p{=}1.2\times10^{-4}\). The dense net memorizes the
+seen combinations and predicts the mean on novel ones (on the additive cell its held-out MSE
+reaches the variance floor). And the pivotal case lands flat against the hypothesis:
+<strong>Lf generalizes no better than plain \(\ell_1\)</strong> — its OOD gap tracks L1's and D's,
+far from Fc's, on every cell. Structural modularity, however dramatic (Lf is the <em>most</em>
+modular condition of all), buys <em>no</em> compositional generalization, because its modules align
+with a random code rather than the true factor axes. So the hypothesis that structural modularity
+confers compositional generalization is <strong>refuted</strong>; what stands is the sharper
+claim — it is functional modularity, confinement to the <em>correct</em> structure, that
+composes.</p>
 
 <figure>
-  <img class="fig" src="fig/fig_e8_depth_wrongness.png" alt="Fc and Fw track each other below D and converge with depth; the wrongness dose is flat"/>
-  <figcaption><span class="fignum">Figure 9.</span> <strong>E8 (exploratory).</strong> Left: AULC vs
-  composition depth \(\Delta\) for the unconfined baseline (D), the true-graph oracle (Fc) and
-  the wrong-graph oracle (Fw), with 95% bootstrap intervals; Fc and Fw track each other below D
-  and all three converge as \(\Delta\) grows. Right: the correctness dose (AULC vs the fraction
-  \(\tau\) of edges made wrong) is nearly <em>flat</em> at every depth — how wrong the sparse
-  graph is barely matters. The deep cells are noisy (a 6&ndash;7-layer MLP near the hard-task
-  floor); we read the within-depth contrasts, not the absolute levels.</figcaption>
+  <img class="fig" src="fig/fig_e9_compositional.png" alt="D/L1/Lf jump badly from held-in to held-out combinations; only Fc keeps a near-zero gap"/>
+  <figcaption><span class="fignum">Figure 10.</span> <strong>E9 — compositional OOD
+  (exploratory).</strong> Left: in-distribution (held-in combinations, light) vs OOD (held-out
+  combinations, dark) AULC on a representative cell — D, L1 and Lf all jump badly; only Fc barely
+  moves. Right: the OOD gap pooled over cells and \(K\); Fc collapses it to near zero while Lf sits
+  squarely on L1 and D. Error bars are marginal sd across cells\(\times K\); the D\(-\)Fc gap is
+  significant <em>paired</em> (\(d_z{=}1.26\), \(p{=}1.2\times10^{-4}\)), holding within every
+  cell\(\times K\).</figcaption>
 </figure>
 
+<p><strong>A second OOD axis, for free.</strong> Every run is also evaluated at a larger input
+norm (\(\sigma{:}\,1.0\to1.5\)), a covariate shift present in all \(7{,}960\) runs. Here Fc reaches
+the <em>lowest absolute</em> off-distribution error (\(0.23\) vs the dense net's \(0.69\),
+\(\approx3\times\)), and Lf again sits between L1 and D (Fig&nbsp;11). The ordering is concordant
+with the compositional axis — but confinement does not protect the degradation <em>ratio</em>
+(Fc's near-zero in-distribution error inflates its ratio): magnitude shift is not the failure mode
+confinement targets. Compositional shift is, and that is where the gap between structural and
+functional modularity is starkest.</p>
+
+<figure>
+  <img class="fig" src="fig/fig_ood_extrap.png" alt="absolute OOD test MSE: Fc lowest, Lf between L1 and D"/>
+  <figcaption><span class="fignum">Figure 11.</span> <strong>Magnitude-extrapolation OOD.</strong>
+  In-distribution (\(\sigma{=}1.0\), light) vs off-distribution (\(\sigma{=}1.5\), dark) absolute
+  test MSE for the four reference points. Fc reaches the lowest absolute OOD error; Lf sits between
+  L1 and D — the same ordering as the compositional axis.</figcaption>
+</figure>
 
 <h2>7. Discussion</h2>
 
-<p>Testing the principle and the learned method separately is what makes the conclusion
-robust. The oracle and the fixed budget (Fc, Fa) settle the <em>principle</em> — confinement
-\(\Rightarrow\) efficiency — independent of any learned cost; the whole arc agrees (counting
-and E5: governed by structure not \(d\); E1: oracle ceiling, collapse at the floor; E2 and
-E6: confinement is the causal lever and must act while data is scarce; dense-negative: the
-task must really be sparse).</p>
+<p>Reading the whole arc against the four reference points settles which modularity matters. The
+oracle and the fixed budget (Fc, Fa) establish the <em>principle</em> — confinement
+\(\Rightarrow\) efficiency — independent of any learned cost: the counting and E5 govern it by
+structure not \(d\), E1 places the oracle ceiling, E2 and E6 make confinement the causal lever that
+must act while data is scarce, and the dense-negative confirms the task must really be sparse. The
+capstone then lifts the claim from efficiency to <em>generalization</em>: only the correctly-confined
+oracle composes to never-seen combinations of sub-functions (§<a href="#sec-ood">6.9</a>).</p>
 
-<p>Four honest nuances sharpen the thesis. <strong>Fw\(<\)D</strong> and the non-monotone
-correctness dose: a coherent wrong sparse graph still confines — bounded fan-in, not the
-exact wiring, is the operative restriction (Lemma&nbsp;2), and a depth sweep
-(§<a href="#sec-e8">6.8</a>) shows the premium for the exact wiring <em>shrinks</em> with
-composition depth rather than growing. <strong>\(\beta_F>0\)</strong>:
-functional mass adds residual <em>difficulty</em>, not the falsifier (negative \(\beta_F\)).
-<strong>Mechanism plurality</strong>: three mechanisms confine along different paths, so no
-single &ldquo;communication-left&rdquo; scalar captures all — and graph-recovery AP itself
-misses Fa's bounded-fan-in confinement (the no-ceiling regression, §<a href="#sec-e2">6.2</a>),
-so even the structural proxy is mechanism-specific. And <strong>NC</strong>: a
-non-collapsing learned gate buys a real gain but confines to a <em>smaller</em> class, not the
-<em>correct</em> graph (recovery near chance, \(3\)&ndash;\(10\times\) oracle gap); the gain is
-bought by <em>learning</em> the codes — a frozen-code gate ties the baseline (§<a href="#sec-nc">6.7</a>).
-The
-principle is settled; a learned cost that self-discovers the right structure is the open
-problem this study isolates and quantifies.</p>
+<p>The sharpest result is the dissociation the four points draw. <strong>Structural modularity is
+cheap and largely inert.</strong> The fixed-code prior Lf is the <em>most</em> structurally modular
+condition of all — fan-in below the oracle — yet it is task-misaligned (it recovers the random
+code, not \(E(G)\)), ties plain \(\ell_1\) on in-distribution efficiency, and buys <em>no</em>
+compositional generalization, failing alongside the generic baselines while only Fc composes. What
+structural modularity reliably supplies is a weak <em>bounded-fan-in</em> confinement: it matches
+the agnostic budget Fa under nuisance (E4) and beats the dense net at every depth (E8) — useful
+where the failure is wasted capacity, useless where it is wrong wiring. <strong>Modularity is
+cheap; confinement to the <em>right</em> structure is scarce — and it is the right structure that
+composes.</strong></p>
+
+<p>Three honest nuances qualify the principle without denting it. <strong>Fw\(<\)D</strong> and the
+non-monotone correctness dose: a coherent wrong sparse graph still confines — bounded fan-in, not
+the exact wiring, is the operative restriction (Lemma&nbsp;2) — and the depth sweep
+(§<a href="#sec-e8">6.2</a>) shows the premium for the exact wiring <em>shrinks</em> as composition
+deepens rather than growing. <strong>\(\beta_F>0\)</strong>: functional mass adds residual
+<em>difficulty</em>, not the pre-registered falsifier (a negative \(\beta_F\)). <strong>Mechanism
+plurality</strong>: three mechanisms confine along different paths, so no single
+&ldquo;communication-left&rdquo; scalar captures all — and graph-recovery AP itself misses Fa's
+bounded-fan-in confinement (the no-ceiling regression, §<a href="#sec-e2">6.3</a>), so even the
+structural proxy is mechanism-specific. The principle is settled; a learned cost that
+self-discovers the <em>right</em> structure — not merely a sparser or a randomly-modular one — is
+the open problem this study isolates and quantifies.</p>
 
 <p>Earlier reports in this forest show a free learned code does <em>not</em> make weights
 modular (<a class="xref" href="../experiment_representation/">a learned neuron representation does not
@@ -873,8 +1046,8 @@ gain, and an oracle that does not collapse recovers it in full.</p>
 
 <div class="repro">
 <p><strong>Reproduce.</strong> <a href="https://github.com/Zhou-Hangyu/neurep/blob/master/studies/emergent_modularity/src/theory_check.py"><code>theory_check.py</code></a> (gate) → <a href="https://github.com/Zhou-Hangyu/neurep/tree/master/studies/emergent_modularity/tests"><code>pytest tests/</code></a>
-(28 tests) → <a href="https://github.com/Zhou-Hangyu/neurep/blob/master/studies/emergent_modularity/src/controls.py"><code>controls.py</code></a> → <a href="https://github.com/Zhou-Hangyu/neurep/tree/master/studies/emergent_modularity/src"><code>materialize_*.py --submit</code></a> (E1, E2, E4, E5,
-E6, E7, NC, and the post-hoc <a href="https://github.com/Zhou-Hangyu/neurep/blob/master/studies/emergent_modularity/src/materialize_e8_depth_wrongness.py"><code>materialize_e8_depth_wrongness.py</code></a>) →
+(33 tests) → <a href="https://github.com/Zhou-Hangyu/neurep/blob/master/studies/emergent_modularity/src/controls.py"><code>controls.py</code></a> → <a href="https://github.com/Zhou-Hangyu/neurep/tree/master/studies/emergent_modularity/src"><code>materialize_*.py --submit</code></a> (E1, E2, E4, E5,
+E6, E7, and the post-hoc depth (with Lf), fixed-code, and <a href="https://github.com/Zhou-Hangyu/neurep/blob/master/studies/emergent_modularity/src/materialize_e9_compositional.py"><code>compositional-OOD</code></a> sweeps) →
 <a href="https://github.com/Zhou-Hangyu/neurep/tree/master/neurep/runstore"><code>runstore harvest</code></a> → <a href="https://github.com/Zhou-Hangyu/neurep/blob/master/studies/emergent_modularity/src/analyze.py"><code>analyze.py</code></a> → <a href="https://github.com/Zhou-Hangyu/neurep/blob/master/studies/emergent_modularity/report/fig/gen_figs.py"><code>report/fig/gen_figs.py</code></a>.
 Every number traces to a script that reads <code>results/</code>; seeds and git SHAs are in
 <a href="https://github.com/Zhou-Hangyu/neurep/blob/master/studies/emergent_modularity/results/provenance.json"><code>results/provenance.json</code></a> and <a href="https://github.com/Zhou-Hangyu/neurep/blob/master/studies/emergent_modularity/results/summary.json"><code>results/summary.json</code></a>. The realization of

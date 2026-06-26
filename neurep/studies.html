@@ -18,9 +18,10 @@
   --line:rgba(22,22,26,.12);
   --code-bg:rgba(75,46,99,.09);
   --code-fg:#3a2348;
-  --ok:#2f6b3a;          /* status: supported */
+  --ok:#1f7a55;          /* status: supported — a clean deep emerald (the old forest green read muddy) */
   --bad:#9a3b2f;         /* status: refuted */
-  --wip:#8a6d1f;         /* status: wip/draft */
+  --wip:#8a6d1f;         /* status: wip/draft (parked) */
+  --active:#c2701c;      /* status: active — the live frontier (warm amber, set apart from the muted wip) */
   --disp:'Manrope',-apple-system,'Segoe UI',Roboto,sans-serif;  /* display/UI */
   --serif:Georgia,'Iowan Old Style','Times New Roman',serif;     /* body */
 }
@@ -58,6 +59,8 @@ a:hover{text-decoration:underline;text-underline-offset:2px}
 .band-title{font:700 .82rem/1 var(--disp);text-transform:uppercase;letter-spacing:.18em;color:var(--mut);
   margin:0 0 1.1rem;display:flex;align-items:center;gap:.6rem;border:0;padding-bottom:0}
 .band-title::before{content:"";width:24px;height:2px;background:var(--violet);display:inline-block}
+/* one line under each thread title saying what that branch is for (the blurb) */
+.band-blurb{margin:-.7rem 0 1.2rem;max-width:62ch;color:var(--mut);font:400 .96rem/1.5 var(--serif)}
 .overview{font:400 1.06rem/1.6 var(--serif);color:var(--ink);max-width:60ch;margin:0 0 1.4rem}
 .maplist{margin:.2rem 0 1rem;padding-left:1.2rem;color:var(--mut);font:400 1rem/1.7 var(--serif)}
 .maplist a{color:var(--ink)}
@@ -70,6 +73,13 @@ a:hover{text-decoration:underline;text-underline-offset:2px}
   background:radial-gradient(circle at 35% 30%,#5a3a73,var(--violet-dp))}
 .card-title{margin:.1rem 2rem .35rem 0;font:600 1.06rem/1.32 var(--disp);letter-spacing:-.01em}
 .card-sum{margin:0;color:var(--mut);font:400 .92rem/1.45 var(--serif)}
+/* a live-frontier card: warm left accent + a breathing dot, so it reads as "in motion" */
+.card.is-active{border-left:3px solid var(--active)}
+.card.is-active .card-dot{background:radial-gradient(circle at 35% 30%,
+  color-mix(in srgb,var(--active) 60%,#fff),var(--active));animation:dotpulse 2.4s ease-in-out infinite}
+@keyframes dotpulse{
+  0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--active) 38%,transparent)}
+  50%    {box-shadow:0 0 0 6px color-mix(in srgb,var(--active) 0%,transparent)}}
 
 /* ---- study page ---- */
 .study{max-width:46rem;margin:0 auto;padding:2.2rem clamp(1rem,4vw,1.4rem) 5rem}
@@ -139,6 +149,8 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
 .status.supported{color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}
 .status.refuted{color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,transparent)}
 .status.wip,.status.draft{color:var(--wip);background:color-mix(in srgb,var(--wip) 12%,transparent)}
+.status.active{color:var(--active);background:color-mix(in srgb,var(--active) 14%,transparent)}
+.status.reference{color:var(--violet);background:color-mix(in srgb,var(--violet) 12%,transparent)}
 .repro{display:inline-flex;align-items:center;gap:.4rem;font:500 .82rem/1 var(--disp)}
 .repro code{background:var(--code-bg);color:var(--code-fg)}
 .repro .git{opacity:.65}
@@ -202,10 +214,23 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
   box-shadow:0 0 0 3px color-mix(in srgb,var(--dot,var(--mut)) 17%,transparent);   /* one ring for every node */
   transition:transform .12s ease}
 .tnode.verified{border-style:solid}                                    /* proof-read */
-.tnode.provisional{border-style:dashed;background:color-mix(in srgb,var(--dot) 26%,var(--bg))}  /* wip */
+.tnode.provisional{border-style:dashed;background:color-mix(in srgb,var(--dot) 26%,var(--bg))}  /* parked wip */
+/* an ACTIVE node restores the live-frontier look — amber fill + a dashed amber ring — set
+   apart from every verdict hue. This OVERRIDES the verdict colour on the tree dot itself;
+   --dot stays the verdict so the node's briefing card + the table pill keep the true colour.
+   (active is ORTHOGONAL to status — see _default_visible.) */
+.tnode.active{border-color:var(--active);border-style:dashed;
+  background:color-mix(in srgb,var(--active) 28%,var(--bg));
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--active) 18%,transparent);
+  animation:apulse 2.4s ease-in-out infinite}
+@keyframes apulse{
+  0%,100%{box-shadow:0 0 0 3px color-mix(in srgb,var(--active) 42%,transparent)}
+  50%    {box-shadow:0 0 0 9px color-mix(in srgb,var(--active) 6%,transparent)}}
 .st-supported{--dot:var(--ok)}
 .st-refuted{--dot:var(--bad)}
 .st-wip,.st-draft{--dot:var(--wip)}
+.st-active{--dot:var(--active)}                                        /* the live frontier */
+.st-reference{--dot:var(--violet)}                                     /* shared reference (not a verdict) */
 .tnode .hit{position:absolute;inset:-10px;border-radius:50%}
 .tnode:hover,.tnode:focus-visible{transform:translate(-50%,-50%) scale(1.22);z-index:30;outline:none}
 /* apex = the root of the forest; a neutral hollow origin that links to the landing/overview */
@@ -215,8 +240,8 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
 .apex-label{color:var(--violet);text-transform:uppercase;letter-spacing:.1em;font-weight:700}
 
 /* always-on small title beside each node (below leaves, above the rest) */
-.tnode-label{position:absolute;left:50%;transform:translateX(-50%);width:max-content;max-width:152px;
-  text-align:center;font:500 10.5px/1.28 var(--disp);color:var(--ink);letter-spacing:-.004em;
+.tnode-label{position:absolute;left:50%;transform:translateX(-50%);width:max-content;max-width:108px;
+  text-align:center;font:600 10px/1.25 var(--disp);color:var(--ink);letter-spacing:-.004em;
   pointer-events:none;text-shadow:0 0 3px var(--bg),0 0 3px var(--bg),0 0 6px var(--bg)}
 .tnode-label.lbl-dn{top:calc(100% + 5px)}
 .tnode-label.lbl-up{bottom:calc(100% + 5px)}
@@ -240,6 +265,64 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
 .tip-sub{display:block;margin-top:.32rem;font:400 .82rem/1.42 var(--serif);color:var(--mut)}
 .tip-x{display:block;margin-top:.35rem;font:500 .72rem/1.35 var(--disp);color:var(--mut)}
 
+/* ---- interactivity: click a node to highlight its subtree, then Focus to isolate it ---- */
+.tree-hint{margin:.2rem 0 1rem;color:var(--mut);font:400 .9rem/1.5 var(--serif)}
+.tree-hint b{color:var(--ink);font-weight:700}
+.treeview .tnode{transition:transform .12s ease,opacity .16s ease}
+.tree-svg path{transition:opacity .16s ease,stroke-opacity .16s ease}
+/* dimmed = not in the selected/focused subtree; highlighted = in it */
+.tnode.is-dim{opacity:.16;animation:none}
+.tnode.is-dim .tnode-label{opacity:.5}
+.tree-svg path.is-dim{stroke-opacity:.06}
+.tree-svg path.is-hl{stroke-opacity:.95;stroke-width:2.6}
+.tree-svg path.is-sel{stroke-opacity:1;stroke-width:3.2}
+/* fat transparent twin over each limb -> an easy click target even though the svg ignores pointers */
+.tree-svg .edge-hit{pointer-events:stroke;cursor:pointer}
+/* the clicked node itself: a firm halo, no pulse */
+.tnode.is-sel{animation:none;box-shadow:0 0 0 3px var(--bg),0 0 0 6px var(--dot,var(--violet));
+  transform:translate(-50%,-50%) scale(1.18);z-index:25}
+
+/* action popup (Focus / Open report) anchored under the clicked node */
+.tree-pop{position:absolute;transform:translate(-50%,0);z-index:50;display:inline-flex;align-items:center;gap:.3rem;
+  background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:.32rem;white-space:nowrap;
+  box-shadow:0 16px 38px -20px rgba(22,22,26,.72)}
+/* the FAN: a transparent wedge above the popup, bridging up to the limb so the cursor can
+   glide from limb to button without leaving an active hover zone */
+.tree-pop::before{content:"";position:absolute;left:-26px;right:-26px;bottom:100%;height:30px}
+/* a little caret pointing up toward the limb */
+.tree-pop::after{content:"";position:absolute;left:50%;bottom:100%;transform:translateX(-50%);margin-bottom:-1px;
+  border:6px solid transparent;border-bottom-color:var(--panel)}
+.pop-focus{font:700 .68rem/1 var(--disp);text-transform:uppercase;letter-spacing:.06em;color:#fff;
+  background:var(--violet);border:0;border-radius:8px;padding:.42rem .6rem;cursor:pointer;transition:background .12s ease}
+.pop-focus:hover{background:var(--violet-dp)}
+.pop-open{font:700 .68rem/1 var(--disp);text-transform:uppercase;letter-spacing:.06em;color:var(--violet);padding:.42rem .5rem}
+.pop-open:hover{text-decoration:none;color:var(--violet-dp)}
+/* when the JS layer is live, the rich hover card is the floating fan-popup (.node-pop) —
+   so the inline CSS tooltip is hidden (it stays the JS-off fallback). */
+.treeview.js-on .tip{display:none}
+/* the node briefing: same fan-popup chrome (caret + fan + shadow), but a left-aligned,
+   multi-line block instead of a button row, centred over the node. */
+.node-pop{display:block;text-align:left;white-space:normal;max-width:264px;
+  padding:.62rem .78rem;border-left:3px solid var(--tree,var(--violet));cursor:pointer;
+  transition:box-shadow .12s ease,transform .12s ease}
+.node-pop:hover{box-shadow:0 24px 52px -22px rgba(22,22,26,.82);transform:translate(-50%,-1px)}
+/* the "click to open" affordance appended to the briefing card */
+.np-open{display:block;margin-top:.55rem;color:var(--violet);
+  font:700 .62rem/1 var(--disp);text-transform:uppercase;letter-spacing:.09em}
+
+/* focus bar — shown only while a branch is isolated */
+.tree-focusbar{display:flex;align-items:center;gap:.7rem;margin:0 0 .4rem;padding:.5rem .85rem;
+  background:color-mix(in srgb,var(--violet) 8%,var(--panel));border:1px solid var(--line);border-radius:11px}
+.fb-label{color:var(--mut);font:700 .72rem/1 var(--disp);text-transform:uppercase;letter-spacing:.09em}
+.fb-exit{margin-left:auto;font:700 .72rem/1 var(--disp);text-transform:uppercase;letter-spacing:.06em;cursor:pointer;
+  color:var(--violet);background:none;border:1px solid var(--line);border-radius:8px;padding:.38rem .65rem;transition:.12s ease}
+.fb-exit:hover{background:var(--violet);color:#fff;border-color:var(--violet)}
+
+/* honour reduced-motion: the live-frontier signal degrades to a static ring */
+@media (prefers-reduced-motion:reduce){
+  .tnode.active,.card.is-active .card-dot{animation:none}
+}
+
 @media (max-width:600px){
   .nav{flex-wrap:wrap;gap:.5rem} .tabs{order:3;width:100%} body{font-size:17px}
   .studies-page{padding-left:.6rem;padding-right:.6rem}
@@ -247,83 +330,237 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
 </style>
 </head>
 <body>
-<header class="nav"><a class="brand" href="index.html"><span>neurep</span></a></header><main class="studies-page"><h2 class="band-title">studies</h2><p class="studies-goal"><strong>The question.</strong> Can a per-neuron representation prior decompose a network into task-aligned modules &mdash; and does that buy sample efficiency when the target function has a sparse computation graph?</p><input type="radio" name="sv-view" id="sv-tree" class="sv-input" checked><input type="radio" name="sv-view" id="sv-table" class="sv-input"><input type="checkbox" id="sv-wip" class="sv-input"><div class="studies-bar"><div class="seg" role="group" aria-label="view"><label class="seg-opt" for="sv-tree">tree</label><label class="seg-opt" for="sv-table">table</label></div><label class="wip-chk" for="sv-wip"><span class="wip-box" aria-hidden="true"></span>show work-in-progress</label></div><div class="studies-stage"><div class="view view-tree"><div class="treeview tree-stable"><div class="tree-canvas" style="width:512px;height:536px"><svg class="tree-svg" viewBox="0 0 512 536" aria-hidden="true"><path d="M212.0 64.0C212.0 196.0 80.0 196.0 80.0 328.0" fill="none" stroke="#4b2e63" stroke-width="2.2" stroke-opacity=".55" stroke-linecap="round" vector-effect="non-scaling-stroke"/><path d="M80.0 328.0C80.0 394.0 80.0 394.0 80.0 460.0" fill="none" stroke="#4b2e63" stroke-width="2.2" stroke-opacity=".55" stroke-linecap="round" vector-effect="non-scaling-stroke"/><path d="M212.0 64.0C212.0 130.0 344.0 130.0 344.0 196.0" fill="none" stroke="#7a4a2f" stroke-width="2.2" stroke-opacity=".55" stroke-linecap="round" vector-effect="non-scaling-stroke"/><path d="M344.0 196.0C344.0 328.0 256.0 328.0 256.0 460.0" fill="none" stroke="#7a4a2f" stroke-width="2.2" stroke-opacity=".55" stroke-linecap="round" vector-effect="non-scaling-stroke"/><path d="M344.0 196.0C344.0 262.0 432.0 262.0 432.0 328.0" fill="none" stroke="#455a64" stroke-width="2.2" stroke-opacity=".55" stroke-linecap="round" vector-effect="non-scaling-stroke"/><path d="M432.0 328.0C432.0 394.0 432.0 394.0 432.0 460.0" fill="none" stroke="#455a64" stroke-width="2.2" stroke-opacity=".55" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg><a class="tnode st-supported verified is-seed tip-l tip-up" href="neurep_mlp_encoding/" style="left:80px;top:328px;--tree:#4b2e63" aria-label="An Exact MLP Encoding of Computation Graphs"><span class="hit"></span><span class="tnode-label lbl-up">An Exact MLP Encoding of Computation Graphs</span><span class="tip"><span class="tip-h"><span class="tip-th">theory</span><span class="tip-st st-supported">supported</span></span><span class="tip-t">An Exact MLP Encoding of Computation Graphs</span></span></a><a class="tnode st-supported verified is-leaf tip-l tip-up" href="emergent_modularity_report/" style="left:80px;top:460px;--tree:#4b2e63" aria-label="Confinement, not endpoint sparsity, buys sample efficiency"><span class="hit"></span><span class="tnode-label lbl-dn">Confinement, not endpoint sparsity, buys sample efficiency</span><span class="tip"><span class="tip-h"><span class="tip-th">theory</span><span class="tip-st st-supported">supported</span></span><span class="tip-t">Confinement, not endpoint sparsity, buys sample efficiency</span></span></a><a class="tnode st-supported verified is-seed tip-c tip-dn" href="collapse_review/" style="left:344px;top:196px;--tree:#7a4a2f" aria-label="What is the Separator regularizer actually
-doing?"><span class="hit"></span><span class="tnode-label lbl-up">What is the Separator regularizer actually
-doing?</span><span class="tip"><span class="tip-h"><span class="tip-th">collapse</span><span class="tip-st st-supported">supported</span></span><span class="tip-t">What is the Separator regularizer actually
-doing?</span><span class="tip-sub">When its penalty vanishes — pruning, or collapse?</span></span></a><a class="tnode st-supported verified is-leaf tip-c tip-up" href="flat_forensics_report/" style="left:256px;top:460px;--tree:#7a4a2f" aria-label="The flat winning ticket under the
-microscope"><span class="hit"></span><span class="tnode-label lbl-dn">The flat winning ticket under the
-microscope</span><span class="tip"><span class="tip-h"><span class="tip-th">collapse</span><span class="tip-st st-supported">supported</span></span><span class="tip-t">The flat winning ticket under the
+<header class="nav"><a class="brand" href="index.html"><span>neurep</span></a></header><main class="studies-page"><h2 class="band-title">studies</h2><p class="studies-goal"><strong>The question.</strong> Can a per-neuron representation prior decompose a network into task-aligned modules &mdash; and does that buy sample efficiency when the target function has a sparse computation graph?
+</p><input type="radio" name="sv-view" id="sv-tree" class="sv-input" checked><input type="radio" name="sv-view" id="sv-table" class="sv-input"><input type="checkbox" id="sv-wip" class="sv-input"><div class="studies-bar"><div class="seg" role="group" aria-label="view"><label class="seg-opt" for="sv-tree">tree</label><label class="seg-opt" for="sv-table">table</label></div><label class="wip-chk" for="sv-wip"><span class="wip-box" aria-hidden="true"></span>show drafts</label></div><div class="studies-stage"><div class="view view-tree"><p class="tree-hint"><b>Hover</b> a node for its briefing, <b>click</b> it to open the report; <b>click</b> a limb to highlight that cluster &mdash; then <b>Focus</b> to isolate it.</p><div class="treeview tree-stable" data-set="stable"><div class="tree-canvas" style="width:584px;height:400px"><svg class="tree-svg" viewBox="0 0 584 400" aria-hidden="true"><path d="M292.0 48.0C292.0 98.0 52.0 98.0 52.0 148.0" fill="none" stroke="#4b2e63" stroke-width="2.2" stroke-opacity=".55" stroke-linecap="round" vector-effect="non-scaling-stroke" data-from="__apex__" data-to="neurep_mlp_encoding"/><path d="M52.0 148.0C52.0 198.0 52.0 198.0 52.0 248.0" fill="none" stroke="#4b2e63" stroke-width="2.2" stroke-opacity=".55" stroke-linecap="round" vector-effect="non-scaling-stroke" data-from="neurep_mlp_encoding" data-to="emergent_modularity_report"/><path d="M292.0 148.0C292.0 198.0 172.0 198.0 172.0 248.0" fill="none" stroke="#2f6d6a" stroke-width="2.2" stroke-opacity=".55" stroke-linecap="round" vector-effect="non-scaling-stroke" data-from="collapse_review" data-to="explicit_communication"/><path d="M292.0 48.0C292.0 98.0 292.0 98.0 292.0 148.0" fill="none" stroke="#7a4a2f" stroke-width="2.2" stroke-opacity=".55" stroke-linecap="round" vector-effect="non-scaling-stroke" data-from="__apex__" data-to="collapse_review"/><path d="M292.0 148.0C292.0 198.0 292.0 198.0 292.0 248.0" fill="none" stroke="#7a4a2f" stroke-width="2.2" stroke-opacity=".55" stroke-linecap="round" vector-effect="non-scaling-stroke" data-from="collapse_review" data-to="flat_forensics_report"/><path d="M292.0 148.0C292.0 198.0 412.0 198.0 412.0 248.0" fill="none" stroke="#455a64" stroke-width="2.2" stroke-opacity=".55" stroke-linecap="round" vector-effect="non-scaling-stroke" data-from="collapse_review" data-to="axdn_forensics_report"/><path d="M412.0 248.0C412.0 298.0 412.0 298.0 412.0 348.0" fill="none" stroke="#455a64" stroke-width="2.2" stroke-opacity=".55" stroke-linecap="round" vector-effect="non-scaling-stroke" data-from="axdn_forensics_report" data-to="sign_orthant_note"/><path d="M292.0 48.0C292.0 98.0 532.0 98.0 532.0 148.0" fill="none" stroke="#5a4a73" stroke-width="2.2" stroke-opacity=".55" stroke-linecap="round" vector-effect="non-scaling-stroke" data-from="__apex__" data-to="metrics_reference"/><path d="M292.0 48.0C292.0 98.0 52.0 98.0 52.0 148.0" fill="none" stroke="transparent" stroke-width="15" class="edge-hit" vector-effect="non-scaling-stroke" data-from="__apex__" data-to="neurep_mlp_encoding"/><path d="M52.0 148.0C52.0 198.0 52.0 198.0 52.0 248.0" fill="none" stroke="transparent" stroke-width="15" class="edge-hit" vector-effect="non-scaling-stroke" data-from="neurep_mlp_encoding" data-to="emergent_modularity_report"/><path d="M292.0 148.0C292.0 198.0 172.0 198.0 172.0 248.0" fill="none" stroke="transparent" stroke-width="15" class="edge-hit" vector-effect="non-scaling-stroke" data-from="collapse_review" data-to="explicit_communication"/><path d="M292.0 48.0C292.0 98.0 292.0 98.0 292.0 148.0" fill="none" stroke="transparent" stroke-width="15" class="edge-hit" vector-effect="non-scaling-stroke" data-from="__apex__" data-to="collapse_review"/><path d="M292.0 148.0C292.0 198.0 292.0 198.0 292.0 248.0" fill="none" stroke="transparent" stroke-width="15" class="edge-hit" vector-effect="non-scaling-stroke" data-from="collapse_review" data-to="flat_forensics_report"/><path d="M292.0 148.0C292.0 198.0 412.0 198.0 412.0 248.0" fill="none" stroke="transparent" stroke-width="15" class="edge-hit" vector-effect="non-scaling-stroke" data-from="collapse_review" data-to="axdn_forensics_report"/><path d="M412.0 248.0C412.0 298.0 412.0 298.0 412.0 348.0" fill="none" stroke="transparent" stroke-width="15" class="edge-hit" vector-effect="non-scaling-stroke" data-from="axdn_forensics_report" data-to="sign_orthant_note"/><path d="M292.0 48.0C292.0 98.0 532.0 98.0 532.0 148.0" fill="none" stroke="transparent" stroke-width="15" class="edge-hit" vector-effect="non-scaling-stroke" data-from="__apex__" data-to="metrics_reference"/></svg><a class="tnode st-supported verified is-seed tip-l tip-dn" href="neurep_mlp_encoding/" style="left:52px;top:148px;--tree:#4b2e63" data-id="neurep_mlp_encoding" data-thread="theory" data-title="An Exact MLP Encoding of Computation Graphs" aria-label="An Exact MLP Encoding of Computation Graphs"><span class="hit"></span><span class="tnode-label lbl-up">Exact MLP encoding</span><span class="tip"><span class="tip-h"><span class="tip-th">theory</span><span class="tip-st st-supported">supported</span></span><span class="tip-t">An Exact MLP Encoding of Computation Graphs</span></span></a><a class="tnode st-supported verified active is-leaf tip-l tip-up" href="emergent_modularity_report/" style="left:52px;top:248px;--tree:#4b2e63" data-id="emergent_modularity_report" data-thread="theory" data-title="Confinement, not endpoint sparsity, buys sample efficiency" aria-label="Confinement, not endpoint sparsity, buys sample efficiency"><span class="hit"></span><span class="tnode-label lbl-dn">Confinement buys efficiency</span><span class="tip"><span class="tip-h"><span class="tip-th">theory</span><span class="tip-st st-supported">supported</span></span><span class="tip-t">Confinement, not endpoint sparsity, buys sample efficiency</span></span></a><a class="tnode st-supported verified active is-seed is-leaf tip-c tip-up" href="explicit_communication/" style="left:172px;top:248px;--tree:#2f6d6a" data-id="explicit_communication" data-thread="representation" data-title="A measured-communication prior for neuron-aligned modules" aria-label="A measured-communication prior for neuron-aligned modules"><span class="hit"></span><span class="tnode-label lbl-dn">Communication-priced code prior</span><span class="tip"><span class="tip-h"><span class="tip-th">representation</span><span class="tip-st st-supported">supported</span></span><span class="tip-t">A measured-communication prior for neuron-aligned modules</span><span class="tip-sub">Does the communication matrix \(A\) carry the module structure a code prior needs — and what does training that prior do to the network?</span><span class="tip-x">also builds on The flat winning ticket under the
+microscope</span></span></a><a class="tnode st-supported verified is-seed tip-c tip-dn" href="collapse_review/" style="left:292px;top:148px;--tree:#7a4a2f" data-id="collapse_review" data-thread="collapse" data-title="What is the Separator regularizer actually
+doing?" aria-label="What is the Separator regularizer actually
+doing?"><span class="hit"></span><span class="tnode-label lbl-up">What Separator does</span><span class="tip"><span class="tip-h"><span class="tip-th">collapse</span><span class="tip-st st-supported">supported</span></span><span class="tip-t">What is the Separator regularizer actually
+doing?</span><span class="tip-sub">When its penalty vanishes — pruning, or collapse?</span></span></a><a class="tnode st-supported verified is-leaf tip-c tip-up" href="flat_forensics_report/" style="left:292px;top:248px;--tree:#7a4a2f" data-id="flat_forensics_report" data-thread="collapse" data-title="The flat winning ticket under the
+microscope" aria-label="The flat winning ticket under the
+microscope"><span class="hit"></span><span class="tnode-label lbl-dn">Flat ticket, dissected</span><span class="tip"><span class="tip-h"><span class="tip-th">collapse</span><span class="tip-st st-supported">supported</span></span><span class="tip-t">The flat winning ticket under the
 microscope</span><span class="tip-sub">What <code>nr.dchn-euc-sq</code> actually does on
 <code>flat_modular</code>: a forensic study of one winning run, with
-targeted controls</span></span></a><a class="tnode st-refuted verified is-seed tip-r tip-up" href="axdn_forensics_report/" style="left:432px;top:328px;--tree:#455a64" aria-label="The axon–dendrite wiring prior
+targeted controls</span></span></a><a class="tnode st-refuted verified active is-seed tip-c tip-up" href="axdn_forensics_report/" style="left:412px;top:248px;--tree:#455a64" data-id="axdn_forensics_report" data-thread="wiring" data-title="The axon–dendrite wiring prior
 (nr.axdn-euc-abs) on
-flat_modular"><span class="hit"></span><span class="tnode-label lbl-up">The axon–dendrite wiring prior
+flat_modular" aria-label="The axon–dendrite wiring prior
 (nr.axdn-euc-abs) on
-flat_modular</span><span class="tip"><span class="tip-h"><span class="tip-th">wiring</span><span class="tip-st st-refuted">refuted</span></span><span class="tip-t">The axon–dendrite wiring prior
+flat_modular"><span class="hit"></span><span class="tnode-label lbl-up">Axon–dendrite prior</span><span class="tip"><span class="tip-h"><span class="tip-th">wiring</span><span class="tip-st st-refuted">refuted</span></span><span class="tip-t">The axon–dendrite wiring prior
 (nr.axdn-euc-abs) on
-flat_modular</span></span></a><a class="tnode st-supported verified is-leaf tip-r tip-up" href="sign_orthant_note/" style="left:432px;top:460px;--tree:#455a64" aria-label="Fan-in, then fan-out: the density prior’s two-act
-dynamics on axon positions"><span class="hit"></span><span class="tnode-label lbl-dn">Fan-in, then fan-out: the density prior’s two-act
-dynamics on axon positions</span><span class="tip"><span class="tip-h"><span class="tip-th">wiring</span><span class="tip-st st-supported">supported</span></span><span class="tip-t">Fan-in, then fan-out: the density prior’s two-act
-dynamics on axon positions</span></span></a><a class="tnode apex tip-c tip-dn" href="index.html" style="left:212px;top:64px;--tree:var(--violet)" aria-label="project overview and research goal"><span class="hit"></span><span class="tnode-label lbl-up apex-label">overview</span><span class="tip"><span class="tip-t">Project overview &amp; research goal</span></span></a></div></div><div class="treeview tree-all"><div class="tree-canvas" style="width:1040px;height:668px"><svg class="tree-svg" viewBox="0 0 1040 668" aria-hidden="true"><path d="M520.0 64.0C520.0 130.0 256.0 130.0 256.0 196.0" fill="none" stroke="#4b2e63" stroke-width="2.2" stroke-opacity=".55" stroke-linecap="round" vector-effect="non-scaling-stroke"/><path d="M256.0 196.0C256.0 262.0 80.0 262.0 80.0 328.0" fill="none" stroke="#4b2e63" stroke-width="2.2" stroke-opacity=".55" stroke-linecap="round" vector-effect="non-scaling-stroke"/><path d="M256.0 196.0C256.0 394.0 256.0 394.0 256.0 592.0" fill="none" stroke="#4b2e63" stroke-width="2.2" stroke-opacity=".55" stroke-linecap="round" vector-effect="non-scaling-stroke"/><path d="M256.0 196.0C256.0 394.0 432.0 394.0 432.0 592.0" fill="none" stroke="#4b2e63" stroke-width="2.2" stroke-opacity=".55" stroke-linecap="round" vector-effect="non-scaling-stroke"/><path d="M80.0 328.0C80.0 394.0 80.0 394.0 80.0 460.0" fill="none" stroke="#2f6d6a" stroke-width="2.2" stroke-opacity=".55" stroke-linecap="round" vector-effect="non-scaling-stroke"/><path d="M80.0 460.0C80.0 526.0 80.0 526.0 80.0 592.0" fill="none" stroke="#2f6d6a" stroke-width="2.2" stroke-opacity=".55" stroke-linecap="round" vector-effect="non-scaling-stroke"/><path d="M784.0 328.0C784.0 460.0 608.0 460.0 608.0 592.0" fill="none" stroke="#2f6d6a" stroke-width="2.2" stroke-opacity=".55" stroke-linecap="round" vector-effect="non-scaling-stroke"/><path d="M520.0 64.0C520.0 196.0 784.0 196.0 784.0 328.0" fill="none" stroke="#7a4a2f" stroke-width="2.2" stroke-opacity=".55" stroke-linecap="round" vector-effect="non-scaling-stroke"/><path d="M784.0 328.0C784.0 394.0 784.0 394.0 784.0 460.0" fill="none" stroke="#7a4a2f" stroke-width="2.2" stroke-opacity=".55" stroke-linecap="round" vector-effect="non-scaling-stroke"/><path d="M784.0 460.0C784.0 526.0 784.0 526.0 784.0 592.0" fill="none" stroke="#7a4a2f" stroke-width="2.2" stroke-opacity=".55" stroke-linecap="round" vector-effect="non-scaling-stroke"/><path d="M784.0 328.0C784.0 394.0 960.0 394.0 960.0 460.0" fill="none" stroke="#455a64" stroke-width="2.2" stroke-opacity=".55" stroke-linecap="round" vector-effect="non-scaling-stroke"/><path d="M960.0 460.0C960.0 526.0 960.0 526.0 960.0 592.0" fill="none" stroke="#455a64" stroke-width="2.2" stroke-opacity=".55" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg><a class="tnode st-supported verified is-seed tip-l tip-dn" href="neurep_mlp_encoding/" style="left:256px;top:196px;--tree:#4b2e63" aria-label="An Exact MLP Encoding of Computation Graphs"><span class="hit"></span><span class="tnode-label lbl-up">An Exact MLP Encoding of Computation Graphs</span><span class="tip"><span class="tip-h"><span class="tip-th">theory</span><span class="tip-st st-supported">supported</span></span><span class="tip-t">An Exact MLP Encoding of Computation Graphs</span></span></a><a class="tnode st-wip provisional tip-l tip-dn" href="theory/" style="left:80px;top:328px;--tree:#4b2e63" aria-label="When does a neuron representation make a network modular?"><span class="hit"></span><span class="tnode-label lbl-up">When does a neuron representation make a network modular?</span><span class="tip"><span class="tip-h"><span class="tip-th">theory</span><span class="tip-st st-wip">wip</span></span><span class="tip-t">When does a neuron representation make a network modular?</span><span class="tip-sub">A gradient-path, degeneracy, and localizability account — and why
-our learned codes don’t</span></span></a><a class="tnode st-wip provisional is-leaf tip-l tip-up" href="encoding_regularizer/" style="left:256px;top:592px;--tree:#4b2e63" aria-label="A regularizer for the exact MLP
-encoding"><span class="hit"></span><span class="tnode-label lbl-dn">A regularizer for the exact MLP
-encoding</span><span class="tip"><span class="tip-h"><span class="tip-th">theory</span><span class="tip-st st-wip">wip</span></span><span class="tip-t">A regularizer for the exact MLP
+flat_modular</span></span></a><a class="tnode st-supported verified is-leaf tip-c tip-up" href="sign_orthant_note/" style="left:412px;top:348px;--tree:#455a64" data-id="sign_orthant_note" data-thread="wiring" data-title="Fan-in, then fan-out: the density prior’s two-act
+dynamics on axon positions" aria-label="Fan-in, then fan-out: the density prior’s two-act
+dynamics on axon positions"><span class="hit"></span><span class="tnode-label lbl-dn">Fan-in, then fan-out</span><span class="tip"><span class="tip-h"><span class="tip-th">wiring</span><span class="tip-st st-supported">supported</span></span><span class="tip-t">Fan-in, then fan-out: the density prior’s two-act
+dynamics on axon positions</span></span></a><a class="tnode st-reference verified active is-seed is-leaf tip-r tip-dn" href="metrics_reference/" style="left:532px;top:148px;--tree:#5a4a73" data-id="metrics_reference" data-thread="reference" data-title="A shared reference for the studies&#x27; metrics" aria-label="A shared reference for the studies&#x27; metrics"><span class="hit"></span><span class="tnode-label lbl-dn">Metrics reference</span><span class="tip"><span class="tip-h"><span class="tip-th">reference</span><span class="tip-st st-reference">reference</span></span><span class="tip-t">A shared reference for the studies&#x27; metrics</span><span class="tip-sub">Intuition and formulae for the statistics, clustering, and structure metrics the reports share.</span></span></a><a class="tnode apex tip-c tip-dn" href="index.html" style="left:292px;top:48px;--tree:var(--violet)" data-id="__apex__" aria-label="project overview and research goal"><span class="hit"></span><span class="tnode-label lbl-up apex-label">overview</span><span class="tip"><span class="tip-t">Project overview &amp; research goal</span></span></a></div><script type="application/json" class="tree-data" data-set="stable">{"children":{"explicit_communication":[],"collapse_review":["explicit_communication","flat_forensics_report","axdn_forensics_report"],"axdn_forensics_report":["sign_orthant_note"],"sign_orthant_note":[],"emergent_modularity_report":[],"neurep_mlp_encoding":["emergent_modularity_report"],"metrics_reference":[],"flat_forensics_report":[],"__apex__":["neurep_mlp_encoding","collapse_review","metrics_reference"]},"parent":{"neurep_mlp_encoding":"__apex__","emergent_modularity_report":"neurep_mlp_encoding","explicit_communication":"collapse_review","collapse_review":"__apex__","flat_forensics_report":"collapse_review","axdn_forensics_report":"collapse_review","sign_orthant_note":"axdn_forensics_report","metrics_reference":"__apex__","__apex__":null},"thread":{"neurep_mlp_encoding":"theory","emergent_modularity_report":"theory","explicit_communication":"representation","collapse_review":"collapse","flat_forensics_report":"collapse","axdn_forensics_report":"wiring","sign_orthant_note":"wiring","metrics_reference":"reference"},"tint":{"theory":"#4b2e63","representation":"#2f6d6a","collapse":"#7a4a2f","wiring":"#455a64","reference":"#5a4a73"},"tnames":{"theory":"Encoding & modularity theory","representation":"Learned representations & modularity","collapse":"neuron representation collapse","wiring":"Axon\u2013dendrite wiring prior","reference":"Reference"},"apex":"__apex__","const":{"PADX":52,"PADTOP":48,"PADBOT":52,"COLPX":120,"ROWPX":100}}</script></div><div class="treeview tree-all" data-set="all"><div class="tree-canvas" style="width:824px;height:500px"><svg class="tree-svg" viewBox="0 0 824 500" aria-hidden="true"><path d="M492.0 48.0C492.0 98.0 172.0 98.0 172.0 148.0" fill="none" stroke="#4b2e63" stroke-width="2.2" stroke-opacity=".55" stroke-linecap="round" vector-effect="non-scaling-stroke" data-from="__apex__" data-to="neurep_mlp_encoding"/><path d="M172.0 148.0C172.0 198.0 52.0 198.0 52.0 248.0" fill="none" stroke="#4b2e63" stroke-width="2.2" stroke-opacity=".55" stroke-linecap="round" vector-effect="non-scaling-stroke" data-from="neurep_mlp_encoding" data-to="theory"/><path d="M172.0 148.0C172.0 198.0 172.0 198.0 172.0 248.0" fill="none" stroke="#4b2e63" stroke-width="2.2" stroke-opacity=".55" stroke-linecap="round" vector-effect="non-scaling-stroke" data-from="neurep_mlp_encoding" data-to="encoding_regularizer"/><path d="M172.0 148.0C172.0 198.0 292.0 198.0 292.0 248.0" fill="none" stroke="#4b2e63" stroke-width="2.2" stroke-opacity=".55" stroke-linecap="round" vector-effect="non-scaling-stroke" data-from="neurep_mlp_encoding" data-to="emergent_modularity_report"/><path d="M52.0 248.0C52.0 298.0 52.0 298.0 52.0 348.0" fill="none" stroke="#2f6d6a" stroke-width="2.2" stroke-opacity=".55" stroke-linecap="round" vector-effect="non-scaling-stroke" data-from="theory" data-to="experiment_representation"/><path d="M52.0 348.0C52.0 398.0 52.0 398.0 52.0 448.0" fill="none" stroke="#2f6d6a" stroke-width="2.2" stroke-opacity=".55" stroke-linecap="round" vector-effect="non-scaling-stroke" data-from="experiment_representation" data-to="experiment_conditions"/><path d="M532.0 148.0C532.0 198.0 412.0 198.0 412.0 248.0" fill="none" stroke="#2f6d6a" stroke-width="2.2" stroke-opacity=".55" stroke-linecap="round" vector-effect="non-scaling-stroke" data-from="collapse_review" data-to="explicit_communication"/><path d="M492.0 48.0C492.0 98.0 532.0 98.0 532.0 148.0" fill="none" stroke="#7a4a2f" stroke-width="2.2" stroke-opacity=".55" stroke-linecap="round" vector-effect="non-scaling-stroke" data-from="__apex__" data-to="collapse_review"/><path d="M532.0 148.0C532.0 198.0 532.0 198.0 532.0 248.0" fill="none" stroke="#7a4a2f" stroke-width="2.2" stroke-opacity=".55" stroke-linecap="round" vector-effect="non-scaling-stroke" data-from="collapse_review" data-to="flat_forensics_report"/><path d="M532.0 248.0C532.0 298.0 532.0 298.0 532.0 348.0" fill="none" stroke="#7a4a2f" stroke-width="2.2" stroke-opacity=".55" stroke-linecap="round" vector-effect="non-scaling-stroke" data-from="flat_forensics_report" data-to="collapse_mechanism"/><path d="M532.0 148.0C532.0 198.0 652.0 198.0 652.0 248.0" fill="none" stroke="#455a64" stroke-width="2.2" stroke-opacity=".55" stroke-linecap="round" vector-effect="non-scaling-stroke" data-from="collapse_review" data-to="axdn_forensics_report"/><path d="M652.0 248.0C652.0 298.0 652.0 298.0 652.0 348.0" fill="none" stroke="#455a64" stroke-width="2.2" stroke-opacity=".55" stroke-linecap="round" vector-effect="non-scaling-stroke" data-from="axdn_forensics_report" data-to="sign_orthant_note"/><path d="M492.0 48.0C492.0 98.0 772.0 98.0 772.0 148.0" fill="none" stroke="#5a4a73" stroke-width="2.2" stroke-opacity=".55" stroke-linecap="round" vector-effect="non-scaling-stroke" data-from="__apex__" data-to="metrics_reference"/><path d="M492.0 48.0C492.0 98.0 172.0 98.0 172.0 148.0" fill="none" stroke="transparent" stroke-width="15" class="edge-hit" vector-effect="non-scaling-stroke" data-from="__apex__" data-to="neurep_mlp_encoding"/><path d="M172.0 148.0C172.0 198.0 52.0 198.0 52.0 248.0" fill="none" stroke="transparent" stroke-width="15" class="edge-hit" vector-effect="non-scaling-stroke" data-from="neurep_mlp_encoding" data-to="theory"/><path d="M172.0 148.0C172.0 198.0 172.0 198.0 172.0 248.0" fill="none" stroke="transparent" stroke-width="15" class="edge-hit" vector-effect="non-scaling-stroke" data-from="neurep_mlp_encoding" data-to="encoding_regularizer"/><path d="M172.0 148.0C172.0 198.0 292.0 198.0 292.0 248.0" fill="none" stroke="transparent" stroke-width="15" class="edge-hit" vector-effect="non-scaling-stroke" data-from="neurep_mlp_encoding" data-to="emergent_modularity_report"/><path d="M52.0 248.0C52.0 298.0 52.0 298.0 52.0 348.0" fill="none" stroke="transparent" stroke-width="15" class="edge-hit" vector-effect="non-scaling-stroke" data-from="theory" data-to="experiment_representation"/><path d="M52.0 348.0C52.0 398.0 52.0 398.0 52.0 448.0" fill="none" stroke="transparent" stroke-width="15" class="edge-hit" vector-effect="non-scaling-stroke" data-from="experiment_representation" data-to="experiment_conditions"/><path d="M532.0 148.0C532.0 198.0 412.0 198.0 412.0 248.0" fill="none" stroke="transparent" stroke-width="15" class="edge-hit" vector-effect="non-scaling-stroke" data-from="collapse_review" data-to="explicit_communication"/><path d="M492.0 48.0C492.0 98.0 532.0 98.0 532.0 148.0" fill="none" stroke="transparent" stroke-width="15" class="edge-hit" vector-effect="non-scaling-stroke" data-from="__apex__" data-to="collapse_review"/><path d="M532.0 148.0C532.0 198.0 532.0 198.0 532.0 248.0" fill="none" stroke="transparent" stroke-width="15" class="edge-hit" vector-effect="non-scaling-stroke" data-from="collapse_review" data-to="flat_forensics_report"/><path d="M532.0 248.0C532.0 298.0 532.0 298.0 532.0 348.0" fill="none" stroke="transparent" stroke-width="15" class="edge-hit" vector-effect="non-scaling-stroke" data-from="flat_forensics_report" data-to="collapse_mechanism"/><path d="M532.0 148.0C532.0 198.0 652.0 198.0 652.0 248.0" fill="none" stroke="transparent" stroke-width="15" class="edge-hit" vector-effect="non-scaling-stroke" data-from="collapse_review" data-to="axdn_forensics_report"/><path d="M652.0 248.0C652.0 298.0 652.0 298.0 652.0 348.0" fill="none" stroke="transparent" stroke-width="15" class="edge-hit" vector-effect="non-scaling-stroke" data-from="axdn_forensics_report" data-to="sign_orthant_note"/><path d="M492.0 48.0C492.0 98.0 772.0 98.0 772.0 148.0" fill="none" stroke="transparent" stroke-width="15" class="edge-hit" vector-effect="non-scaling-stroke" data-from="__apex__" data-to="metrics_reference"/></svg><a class="tnode st-supported verified is-seed tip-l tip-dn" href="neurep_mlp_encoding/" style="left:172px;top:148px;--tree:#4b2e63" data-id="neurep_mlp_encoding" data-thread="theory" data-title="An Exact MLP Encoding of Computation Graphs" aria-label="An Exact MLP Encoding of Computation Graphs"><span class="hit"></span><span class="tnode-label lbl-up">Exact MLP encoding</span><span class="tip"><span class="tip-h"><span class="tip-th">theory</span><span class="tip-st st-supported">supported</span></span><span class="tip-t">An Exact MLP Encoding of Computation Graphs</span></span></a><a class="tnode st-wip provisional tip-l tip-dn" href="theory/" style="left:52px;top:248px;--tree:#4b2e63" data-id="theory" data-thread="theory" data-title="When does a neuron representation make a network modular?" aria-label="When does a neuron representation make a network modular?"><span class="hit"></span><span class="tnode-label lbl-up">When codes make modularity</span><span class="tip"><span class="tip-h"><span class="tip-th">theory</span><span class="tip-st st-wip">wip</span></span><span class="tip-t">When does a neuron representation make a network modular?</span><span class="tip-sub">A gradient-path, degeneracy, and localizability account — and why
+our learned codes don’t</span></span></a><a class="tnode st-wip provisional is-leaf tip-l tip-dn" href="encoding_regularizer/" style="left:172px;top:248px;--tree:#4b2e63" data-id="encoding_regularizer" data-thread="theory" data-title="A regularizer for the exact MLP
+encoding" aria-label="A regularizer for the exact MLP
+encoding"><span class="hit"></span><span class="tnode-label lbl-dn">Encoding regularizer</span><span class="tip"><span class="tip-h"><span class="tip-th">theory</span><span class="tip-st st-wip">wip</span></span><span class="tip-t">A regularizer for the exact MLP
 encoding</span><span class="tip-sub">The note’s refined code, made trainable: an <em>anchored</em>
 containment prior whose minimizer is <span
 class="math inline">\(\mathcal{E}_{\mathrm{MLP}}(G^\star)\)</span>, and
-which recovers the blocks a free code cannot</span></span></a><a class="tnode st-supported verified is-leaf tip-c tip-up" href="emergent_modularity_report/" style="left:432px;top:592px;--tree:#4b2e63" aria-label="Confinement, not endpoint sparsity, buys sample efficiency"><span class="hit"></span><span class="tnode-label lbl-dn">Confinement, not endpoint sparsity, buys sample efficiency</span><span class="tip"><span class="tip-h"><span class="tip-th">theory</span><span class="tip-st st-supported">supported</span></span><span class="tip-t">Confinement, not endpoint sparsity, buys sample efficiency</span></span></a><a class="tnode st-wip provisional is-seed tip-l tip-up" href="experiment_representation/" style="left:80px;top:460px;--tree:#2f6d6a" aria-label="A learned neuron representation does not make weights
-modular"><span class="hit"></span><span class="tnode-label lbl-up">A learned neuron representation does not make weights
-modular</span><span class="tip"><span class="tip-h"><span class="tip-th">representation</span><span class="tip-st st-wip">wip</span></span><span class="tip-t">A learned neuron representation does not make weights
+which recovers the blocks a free code cannot</span></span></a><a class="tnode st-supported verified active is-leaf tip-c tip-dn" href="emergent_modularity_report/" style="left:292px;top:248px;--tree:#4b2e63" data-id="emergent_modularity_report" data-thread="theory" data-title="Confinement, not endpoint sparsity, buys sample efficiency" aria-label="Confinement, not endpoint sparsity, buys sample efficiency"><span class="hit"></span><span class="tnode-label lbl-dn">Confinement buys efficiency</span><span class="tip"><span class="tip-h"><span class="tip-th">theory</span><span class="tip-st st-supported">supported</span></span><span class="tip-t">Confinement, not endpoint sparsity, buys sample efficiency</span></span></a><a class="tnode st-wip provisional is-seed tip-l tip-up" href="experiment_representation/" style="left:52px;top:348px;--tree:#2f6d6a" data-id="experiment_representation" data-thread="representation" data-title="A learned neuron representation does not make weights
+modular" aria-label="A learned neuron representation does not make weights
+modular"><span class="hit"></span><span class="tnode-label lbl-up">Learned code ≠ modular</span><span class="tip"><span class="tip-h"><span class="tip-th">representation</span><span class="tip-st st-wip">wip</span></span><span class="tip-t">A learned neuron representation does not make weights
 modular</span><span class="tip-sub">On the additive bench a plain <span
 class="math inline">\(\ell_1\)</span> penalty aligns weights to the
 task’s factors better than any of our representation regularizers —
-which collapse</span></span></a><a class="tnode st-wip provisional is-leaf tip-l tip-up" href="experiment_conditions/" style="left:80px;top:592px;--tree:#2f6d6a" aria-label="When can a representation make weights
-modular?"><span class="hit"></span><span class="tnode-label lbl-dn">When can a representation make weights
-modular?</span><span class="tip"><span class="tip-h"><span class="tip-th">representation</span><span class="tip-st st-wip">wip</span></span><span class="tip-t">When can a representation make weights
+which collapse</span></span></a><a class="tnode st-wip provisional is-leaf tip-l tip-up" href="experiment_conditions/" style="left:52px;top:448px;--tree:#2f6d6a" data-id="experiment_conditions" data-thread="representation" data-title="When can a representation make weights
+modular?" aria-label="When can a representation make weights
+modular?"><span class="hit"></span><span class="tnode-label lbl-dn">Conditions for modularity</span><span class="tip"><span class="tip-h"><span class="tip-th">representation</span><span class="tip-st st-wip">wip</span></span><span class="tip-t">When can a representation make weights
 modular?</span><span class="tip-sub">Coupling strength, axis orientation, and the rotation barrier —
-mapping the boundary of recoverable task-aligned modularity</span></span></a><a class="tnode st-wip provisional is-leaf tip-c tip-up" href="explicit_communication/" style="left:608px;top:592px;--tree:#2f6d6a" aria-label="Does the communication matrix carry module structure?"><span class="hit"></span><span class="tnode-label lbl-dn">Does the communication matrix carry module structure?</span><span class="tip"><span class="tip-h"><span class="tip-th">representation</span><span class="tip-st st-wip">wip</span></span><span class="tip-t">Does the communication matrix carry module structure?</span><span class="tip-sub">Can a measured score \(A\) beat the \(\lvert W\rvert\) proxy it would replace?</span><span class="tip-x">also builds on The flat winning ticket under the
-microscope</span></span></a><a class="tnode st-supported verified is-seed tip-r tip-dn" href="collapse_review/" style="left:784px;top:328px;--tree:#7a4a2f" aria-label="What is the Separator regularizer actually
-doing?"><span class="hit"></span><span class="tnode-label lbl-up">What is the Separator regularizer actually
-doing?</span><span class="tip"><span class="tip-h"><span class="tip-th">collapse</span><span class="tip-st st-supported">supported</span></span><span class="tip-t">What is the Separator regularizer actually
-doing?</span><span class="tip-sub">When its penalty vanishes — pruning, or collapse?</span></span></a><a class="tnode st-supported verified tip-r tip-up" href="flat_forensics_report/" style="left:784px;top:460px;--tree:#7a4a2f" aria-label="The flat winning ticket under the
-microscope"><span class="hit"></span><span class="tnode-label lbl-up">The flat winning ticket under the
-microscope</span><span class="tip"><span class="tip-h"><span class="tip-th">collapse</span><span class="tip-st st-supported">supported</span></span><span class="tip-t">The flat winning ticket under the
+mapping the boundary of recoverable task-aligned modularity</span></span></a><a class="tnode st-supported verified active is-leaf tip-c tip-dn" href="explicit_communication/" style="left:412px;top:248px;--tree:#2f6d6a" data-id="explicit_communication" data-thread="representation" data-title="A measured-communication prior for neuron-aligned modules" aria-label="A measured-communication prior for neuron-aligned modules"><span class="hit"></span><span class="tnode-label lbl-dn">Communication-priced code prior</span><span class="tip"><span class="tip-h"><span class="tip-th">representation</span><span class="tip-st st-supported">supported</span></span><span class="tip-t">A measured-communication prior for neuron-aligned modules</span><span class="tip-sub">Does the communication matrix \(A\) carry the module structure a code prior needs — and what does training that prior do to the network?</span><span class="tip-x">also builds on The flat winning ticket under the
+microscope</span></span></a><a class="tnode st-supported verified is-seed tip-c tip-dn" href="collapse_review/" style="left:532px;top:148px;--tree:#7a4a2f" data-id="collapse_review" data-thread="collapse" data-title="What is the Separator regularizer actually
+doing?" aria-label="What is the Separator regularizer actually
+doing?"><span class="hit"></span><span class="tnode-label lbl-up">What Separator does</span><span class="tip"><span class="tip-h"><span class="tip-th">collapse</span><span class="tip-st st-supported">supported</span></span><span class="tip-t">What is the Separator regularizer actually
+doing?</span><span class="tip-sub">When its penalty vanishes — pruning, or collapse?</span></span></a><a class="tnode st-supported verified tip-c tip-dn" href="flat_forensics_report/" style="left:532px;top:248px;--tree:#7a4a2f" data-id="flat_forensics_report" data-thread="collapse" data-title="The flat winning ticket under the
+microscope" aria-label="The flat winning ticket under the
+microscope"><span class="hit"></span><span class="tnode-label lbl-up">Flat ticket, dissected</span><span class="tip"><span class="tip-h"><span class="tip-th">collapse</span><span class="tip-st st-supported">supported</span></span><span class="tip-t">The flat winning ticket under the
 microscope</span><span class="tip-sub">What <code>nr.dchn-euc-sq</code> actually does on
 <code>flat_modular</code>: a forensic study of one winning run, with
-targeted controls</span></span></a><a class="tnode st-wip provisional is-leaf tip-r tip-up" href="collapse_mechanism/" style="left:784px;top:592px;--tree:#7a4a2f" aria-label="The mechanism behind Separator’s
-collapse"><span class="hit"></span><span class="tnode-label lbl-dn">The mechanism behind Separator’s
-collapse</span><span class="tip"><span class="tip-h"><span class="tip-th">collapse</span><span class="tip-st st-wip">wip</span></span><span class="tip-t">The mechanism behind Separator’s
+targeted controls</span></span></a><a class="tnode st-wip provisional is-leaf tip-c tip-up" href="collapse_mechanism/" style="left:532px;top:348px;--tree:#7a4a2f" data-id="collapse_mechanism" data-thread="collapse" data-title="The mechanism behind Separator’s
+collapse" aria-label="The mechanism behind Separator’s
+collapse"><span class="hit"></span><span class="tnode-label lbl-dn">Why Separator collapses</span><span class="tip"><span class="tip-h"><span class="tip-th">collapse</span><span class="tip-st st-wip">wip</span></span><span class="tip-t">The mechanism behind Separator’s
 collapse</span><span class="tip-sub">A pruning–collapse race: timing, not collapse itself, decides the
-damage</span></span></a><a class="tnode st-refuted verified is-seed tip-r tip-up" href="axdn_forensics_report/" style="left:960px;top:460px;--tree:#455a64" aria-label="The axon–dendrite wiring prior
+damage</span></span></a><a class="tnode st-refuted verified active is-seed tip-r tip-dn" href="axdn_forensics_report/" style="left:652px;top:248px;--tree:#455a64" data-id="axdn_forensics_report" data-thread="wiring" data-title="The axon–dendrite wiring prior
 (nr.axdn-euc-abs) on
-flat_modular"><span class="hit"></span><span class="tnode-label lbl-up">The axon–dendrite wiring prior
+flat_modular" aria-label="The axon–dendrite wiring prior
 (nr.axdn-euc-abs) on
-flat_modular</span><span class="tip"><span class="tip-h"><span class="tip-th">wiring</span><span class="tip-st st-refuted">refuted</span></span><span class="tip-t">The axon–dendrite wiring prior
+flat_modular"><span class="hit"></span><span class="tnode-label lbl-up">Axon–dendrite prior</span><span class="tip"><span class="tip-h"><span class="tip-th">wiring</span><span class="tip-st st-refuted">refuted</span></span><span class="tip-t">The axon–dendrite wiring prior
 (nr.axdn-euc-abs) on
-flat_modular</span></span></a><a class="tnode st-supported verified is-leaf tip-r tip-up" href="sign_orthant_note/" style="left:960px;top:592px;--tree:#455a64" aria-label="Fan-in, then fan-out: the density prior’s two-act
-dynamics on axon positions"><span class="hit"></span><span class="tnode-label lbl-dn">Fan-in, then fan-out: the density prior’s two-act
-dynamics on axon positions</span><span class="tip"><span class="tip-h"><span class="tip-th">wiring</span><span class="tip-st st-supported">supported</span></span><span class="tip-t">Fan-in, then fan-out: the density prior’s two-act
-dynamics on axon positions</span></span></a><a class="tnode apex tip-c tip-dn" href="index.html" style="left:520px;top:64px;--tree:var(--violet)" aria-label="project overview and research goal"><span class="hit"></span><span class="tnode-label lbl-up apex-label">overview</span><span class="tip"><span class="tip-t">Project overview &amp; research goal</span></span></a></div></div></div><div class="view view-table"><section id="thread-theory" class="band"><h2 class="band-title">Encoding &amp; modularity theory</h2><div class="cards"><a class="card" href="neurep_mlp_encoding/"><span class="card-dot"></span><h3 class="card-title">An Exact MLP Encoding of Computation Graphs</h3><p><span class="status supported">supported</span></p></a><a class="card is-wip" href="theory/"><span class="card-dot"></span><h3 class="card-title">When does a neuron representation make a network
+flat_modular</span></span></a><a class="tnode st-supported verified is-leaf tip-r tip-up" href="sign_orthant_note/" style="left:652px;top:348px;--tree:#455a64" data-id="sign_orthant_note" data-thread="wiring" data-title="Fan-in, then fan-out: the density prior’s two-act
+dynamics on axon positions" aria-label="Fan-in, then fan-out: the density prior’s two-act
+dynamics on axon positions"><span class="hit"></span><span class="tnode-label lbl-dn">Fan-in, then fan-out</span><span class="tip"><span class="tip-h"><span class="tip-th">wiring</span><span class="tip-st st-supported">supported</span></span><span class="tip-t">Fan-in, then fan-out: the density prior’s two-act
+dynamics on axon positions</span></span></a><a class="tnode st-reference verified active is-seed is-leaf tip-r tip-dn" href="metrics_reference/" style="left:772px;top:148px;--tree:#5a4a73" data-id="metrics_reference" data-thread="reference" data-title="A shared reference for the studies&#x27; metrics" aria-label="A shared reference for the studies&#x27; metrics"><span class="hit"></span><span class="tnode-label lbl-dn">Metrics reference</span><span class="tip"><span class="tip-h"><span class="tip-th">reference</span><span class="tip-st st-reference">reference</span></span><span class="tip-t">A shared reference for the studies&#x27; metrics</span><span class="tip-sub">Intuition and formulae for the statistics, clustering, and structure metrics the reports share.</span></span></a><a class="tnode apex tip-c tip-dn" href="index.html" style="left:492px;top:48px;--tree:var(--violet)" data-id="__apex__" aria-label="project overview and research goal"><span class="hit"></span><span class="tnode-label lbl-up apex-label">overview</span><span class="tip"><span class="tip-t">Project overview &amp; research goal</span></span></a></div><script type="application/json" class="tree-data" data-set="all">{"children":{"explicit_communication":[],"collapse_review":["explicit_communication","flat_forensics_report","axdn_forensics_report"],"axdn_forensics_report":["sign_orthant_note"],"sign_orthant_note":[],"emergent_modularity_report":[],"neurep_mlp_encoding":["theory","encoding_regularizer","emergent_modularity_report"],"experiment_representation":["experiment_conditions"],"experiment_conditions":[],"theory":["experiment_representation"],"encoding_regularizer":[],"collapse_mechanism":[],"metrics_reference":[],"flat_forensics_report":["collapse_mechanism"],"__apex__":["neurep_mlp_encoding","collapse_review","metrics_reference"]},"parent":{"neurep_mlp_encoding":"__apex__","theory":"neurep_mlp_encoding","encoding_regularizer":"neurep_mlp_encoding","emergent_modularity_report":"neurep_mlp_encoding","experiment_representation":"theory","experiment_conditions":"experiment_representation","explicit_communication":"collapse_review","collapse_review":"__apex__","flat_forensics_report":"collapse_review","collapse_mechanism":"flat_forensics_report","axdn_forensics_report":"collapse_review","sign_orthant_note":"axdn_forensics_report","metrics_reference":"__apex__","__apex__":null},"thread":{"neurep_mlp_encoding":"theory","theory":"theory","encoding_regularizer":"theory","emergent_modularity_report":"theory","experiment_representation":"representation","experiment_conditions":"representation","explicit_communication":"representation","collapse_review":"collapse","flat_forensics_report":"collapse","collapse_mechanism":"collapse","axdn_forensics_report":"wiring","sign_orthant_note":"wiring","metrics_reference":"reference"},"tint":{"theory":"#4b2e63","representation":"#2f6d6a","collapse":"#7a4a2f","wiring":"#455a64","reference":"#5a4a73"},"tnames":{"theory":"Encoding & modularity theory","representation":"Learned representations & modularity","collapse":"neuron representation collapse","wiring":"Axon\u2013dendrite wiring prior","reference":"Reference"},"apex":"__apex__","const":{"PADX":52,"PADTOP":48,"PADBOT":52,"COLPX":120,"ROWPX":100}}</script></div></div><div class="view view-table"><section id="thread-theory" class="band"><h2 class="band-title">Encoding &amp; modularity theory</h2><p class="band-blurb">What is provable about exact MLP encodings, modularity, and when a neuron code helps.</p><div class="cards"><a class="card" href="neurep_mlp_encoding/"><span class="card-dot"></span><h3 class="card-title">An Exact MLP Encoding of Computation Graphs</h3><p><span class="status supported">supported</span></p></a><a class="card is-wip" href="theory/"><span class="card-dot"></span><h3 class="card-title">When does a neuron representation make a network
 modular?</h3><p class="card-sum">A gradient-path, degeneracy, and localizability account — and why
 our learned codes don’t</p><p><span class="status wip">wip</span></p></a><a class="card is-wip" href="encoding_regularizer/"><span class="card-dot"></span><h3 class="card-title">A regularizer for the exact MLP
 encoding</h3><p class="card-sum">The note’s refined code, made trainable: an <em>anchored</em>
 containment prior whose minimizer is <span
 class="math inline">\(\mathcal{E}_{\mathrm{MLP}}(G^\star)\)</span>, and
-which recovers the blocks a free code cannot</p><p><span class="status wip">wip</span></p></a><a class="card" href="emergent_modularity_report/"><span class="card-dot"></span><h3 class="card-title">Confinement, not endpoint sparsity, buys sample efficiency</h3><p><span class="status supported">supported</span></p></a></div></section><section id="thread-representation" class="band is-wip"><h2 class="band-title">Learned representations &amp; modularity</h2><div class="cards"><a class="card is-wip" href="experiment_representation/"><span class="card-dot"></span><h3 class="card-title">A learned neuron representation does not make weights
+which recovers the blocks a free code cannot</p><p><span class="status wip">wip</span></p></a><a class="card is-active" href="emergent_modularity_report/"><span class="card-dot"></span><h3 class="card-title">Confinement, not endpoint sparsity, buys sample efficiency</h3><p><span class="status supported">supported</span></p></a></div></section><section id="thread-representation" class="band"><h2 class="band-title">Learned representations &amp; modularity</h2><p class="band-blurb">Do learned per-neuron codes actually make the weights modular — and when can they?</p><div class="cards"><a class="card is-wip" href="experiment_representation/"><span class="card-dot"></span><h3 class="card-title">A learned neuron representation does not make weights
 modular</h3><p class="card-sum">On the additive bench a plain <span
 class="math inline">\(\ell_1\)</span> penalty aligns weights to the
 task’s factors better than any of our representation regularizers —
 which collapse</p><p><span class="status wip">wip</span></p></a><a class="card is-wip" href="experiment_conditions/"><span class="card-dot"></span><h3 class="card-title">When <em>can</em> a representation make weights
 modular?</h3><p class="card-sum">Coupling strength, axis orientation, and the rotation barrier —
-mapping the boundary of recoverable task-aligned modularity</p><p><span class="status wip">wip</span></p></a><a class="card is-wip" href="explicit_communication/"><span class="card-dot"></span><h3 class="card-title">Does the communication matrix carry module structure?</h3><p class="card-sum">Can a measured score \(A\) beat the \(\lvert W\rvert\) proxy it would replace?</p><p><span class="status wip">wip</span></p></a></div></section><section id="thread-collapse" class="band"><h2 class="band-title">neuron representation collapse</h2><div class="cards"><a class="card" href="collapse_review/"><span class="card-dot"></span><h3 class="card-title">What is the Separator regularizer actually
+mapping the boundary of recoverable task-aligned modularity</p><p><span class="status wip">wip</span></p></a><a class="card is-active" href="explicit_communication/"><span class="card-dot"></span><h3 class="card-title">A measured-communication prior for neuron-aligned modules</h3><p class="card-sum">Does the communication matrix \(A\) carry the module structure a code prior needs — and what does training that prior do to the network?</p><p><span class="status supported">supported</span></p></a></div></section><section id="thread-collapse" class="band"><h2 class="band-title">neuron representation collapse</h2><p class="band-blurb">What the penalty-only Separator code actually does, and why/when it collapses.</p><div class="cards"><a class="card" href="collapse_review/"><span class="card-dot"></span><h3 class="card-title">What is the Separator regularizer actually
 doing?</h3><p class="card-sum">When its penalty vanishes — pruning, or collapse?</p><p><span class="status supported">supported</span></p></a><a class="card" href="flat_forensics_report/"><span class="card-dot"></span><h3 class="card-title">The flat winning ticket under the
 microscope</h3><p class="card-sum">What <code>nr.dchn-euc-sq</code> actually does on
 <code>flat_modular</code>: a forensic study of one winning run, with
 targeted controls</p><p><span class="status supported">supported</span></p></a><a class="card is-wip" href="collapse_mechanism/"><span class="card-dot"></span><h3 class="card-title">The mechanism behind Separator’s
 collapse</h3><p class="card-sum">A pruning–collapse race: timing, not collapse itself, decides the
-damage</p><p><span class="status wip">wip</span></p></a></div></section><section id="thread-wiring" class="band"><h2 class="band-title">Axon–dendrite wiring prior</h2><div class="cards"><a class="card" href="axdn_forensics_report/"><span class="card-dot"></span><h3 class="card-title">The axon–dendrite wiring prior
+damage</p><p><span class="status wip">wip</span></p></a></div></section><section id="thread-wiring" class="band"><h2 class="band-title">Axon–dendrite wiring prior</h2><p class="band-blurb">A structural wiring prior on flat_modular, and its two-act fan-in/fan-out dynamics.</p><div class="cards"><a class="card is-active" href="axdn_forensics_report/"><span class="card-dot"></span><h3 class="card-title">The axon–dendrite wiring prior
 (<code>nr.axdn-euc-abs</code>) on
 <code>flat_modular</code></h3><p><span class="status refuted">refuted</span></p></a><a class="card" href="sign_orthant_note/"><span class="card-dot"></span><h3 class="card-title">Fan-in, then fan-out: the density prior’s two-act
-dynamics on axon positions</h3><p><span class="status supported">supported</span></p></a></div></section></div></div></main>
+dynamics on axon positions</h3><p><span class="status supported">supported</span></p></a></div></section><section id="thread-reference" class="band"><h2 class="band-title">Reference</h2><p class="band-blurb">Shared definitions the studies refer back to — metrics, protocol, and notation in one place.</p><div class="cards"><a class="card is-active" href="metrics_reference/"><span class="card-dot"></span><h3 class="card-title">A shared reference for the studies' metrics</h3><p class="card-sum">Intuition and formulae for the statistics, clustering, and structure metrics the reports share.</p><p><span class="status reference">reference</span></p></a></div></section></div></div></main><script>
+(function(){
+  function curve(x1,y1,x2,y2){var my=(y1+y2)/2;return 'M'+x1+' '+y1+'C'+x1+' '+my+' '+x2+' '+my+' '+x2+' '+y2;}
+  document.querySelectorAll('.treeview').forEach(function(view){
+    var dataEl=view.querySelector('.tree-data'); if(!dataEl) return;
+    var data; try{data=JSON.parse(dataEl.textContent);}catch(e){return;}
+    var canvas=view.querySelector('.tree-canvas'), svg=view.querySelector('.tree-svg');
+    if(!canvas||!svg) return;
+    view.classList.add('js-on');   // hand the hover card over to the floating fan-popup
+    var parent=data.parent||{}, thread=data.thread||{}, tint=data.tint||{}, tnames=data.tnames||{}, C=data.const;
+    var nodes=[].slice.call(view.querySelectorAll('.tnode'));
+    var byId={}; nodes.forEach(function(n){ if(n.dataset.id) byId[n.dataset.id]=n; });
+    // remember full-view geometry so a focus can be undone exactly
+    var orig={}; nodes.forEach(function(n){ orig[n.dataset.id]={l:n.style.left,t:n.style.top}; });
+    var origW=canvas.style.width, origH=canvas.style.height, origVB=svg.getAttribute('viewBox'), origSVG=svg.innerHTML;
+    var pendingTid=null, focused=false, focusTid=null;
+
+    function vis(){ return [].slice.call(svg.querySelectorAll('path:not(.edge-hit)')); }
+    function clearMarks(){ nodes.forEach(function(n){ n.classList.remove('is-hl','is-dim','is-sel'); });
+      vis().forEach(function(p){ p.classList.remove('is-hl','is-dim','is-sel'); }); }
+    function cx(n){ return parseFloat(n.style.left)||0; }
+    function cy(n){ return parseFloat(n.style.top)||0; }
+
+    // ---- node briefing: the inline tip's rich content lifted into a floating fan-popup,
+    //      CENTRED over the node, with a hover-intent delay + a transparent fan
+    //      (.tree-pop::before) so the cursor can glide onto it. The inline .tip is the
+    //      JS-off fallback (hidden once .js-on is set). ----
+    var npop=document.createElement('div'); npop.className='tree-pop node-pop'; npop.style.display='none';
+    canvas.appendChild(npop);
+    var nTimer=null;
+    function hideNode(){ npop.style.display='none'; }
+    function cancelNode(){ if(nTimer){ clearTimeout(nTimer); nTimer=null; } }
+    function scheduleNode(){ cancelNode(); nTimer=setTimeout(hideNode, 240); }
+    npop.addEventListener('mouseenter', cancelNode);
+    npop.addEventListener('mouseleave', scheduleNode);
+    // the card (and its fan, which overlays the node) is itself a link to the report, so a
+    // click on the popup — or on the node beneath the fan — opens the note.
+    npop.addEventListener('click', function(e){ e.stopPropagation(); if(npop._href) window.location.href=npop._href; });
+    function showForNode(n){
+      var tip=n.querySelector('.tip'); if(!tip) return;
+      cancelNode();
+      npop._node=n; npop._href=n.getAttribute('href');
+      npop.innerHTML=tip.innerHTML+'<span class="np-open">open &rarr;</span>';
+      npop.style.setProperty('--tree', tint[thread[n.dataset.id]] || 'var(--violet)');
+      npop.style.left=cx(n)+'px'; npop.style.top=(cy(n)+13)+'px';   // centred under the node
+      npop.style.display='';
+    }
+
+    // ---- Focus popup: ONE button, raised only when a limb is CLICKED (never on hover);
+    //      centred on the limb's midpoint. Dismissed by clicking empty canvas / another
+    //      limb / the button itself. ----
+    var pop=document.createElement('div'); pop.className='tree-pop edge-pop'; pop.style.display='none';
+    pop.innerHTML='<button type="button" class="pop-focus">Focus</button>';
+    canvas.appendChild(pop);
+    function hidePop(){ pop.style.display='none'; }
+
+    // focus bar (shown only while a cluster is isolated)
+    var bar=document.createElement('div'); bar.className='tree-focusbar'; bar.style.display='none';
+    bar.innerHTML='<span class="fb-label"></span><button type="button" class="fb-exit">← all studies</button>';
+    view.insertBefore(bar, view.firstChild);
+    bar.querySelector('.fb-exit').addEventListener('click', function(){ exitFocus(false); });
+
+    function members(tid){ var m={}; nodes.forEach(function(n){ if(thread[n.dataset.id]===tid) m[n.dataset.id]=1; }); return m; }
+    function highlight(tid, clickedTo){
+      clearMarks();
+      nodes.forEach(function(n){ n.classList.add(thread[n.dataset.id]===tid?'is-hl':'is-dim'); });
+      vis().forEach(function(p){ var inn=thread[p.dataset.from]===tid&&thread[p.dataset.to]===tid;
+        p.classList.add(inn?'is-hl':'is-dim');
+        if(p.dataset.to===clickedTo){ p.classList.remove('is-dim'); p.classList.add('is-sel'); } });
+    }
+    function showForEdge(h){
+      if(focused) return;
+      var tid=thread[h.dataset.to]; if(!tid) return; pendingTid=tid;
+      hideNode();                       // don't stack the briefing under the Focus button
+      highlight(tid, h.dataset.to);
+      var a=byId[h.dataset.from], b=byId[h.dataset.to];
+      if(a&&b){ pop.style.left=((cx(a)+cx(b))/2)+'px'; pop.style.top=((cy(a)+cy(b))/2+13)+'px'; }  // centred on the limb
+      pop.querySelector('.pop-focus').textContent='Focus: '+(tnames[tid]||tid);
+      pop.style.display='';
+    }
+    function focusCluster(tid, fromHash){
+      if(focused && focusTid===tid) return;
+      var M=members(tid), ch={}, roots=[];
+      Object.keys(M).forEach(function(id){ ch[id]=[]; });
+      Object.keys(M).forEach(function(id){ var p=parent[id]; if(p&&M[p]) ch[p].push(id); else roots.push(id); });
+      function ox(id){ return parseFloat(orig[id].l)||0; }
+      roots.sort(function(a,b){ return ox(a)-ox(b); });
+      Object.keys(ch).forEach(function(k){ ch[k].sort(function(a,b){ return ox(a)-ox(b); }); });
+      var depth={}, x={}, col=0;
+      function dd(id,d){ depth[id]=d; ch[id].forEach(function(c){ dd(c,d+1); }); }
+      function asg(id){ if(!ch[id].length){ x[id]=col++; } else { ch[id].forEach(asg); var s=0; ch[id].forEach(function(c){ s+=x[c]; }); x[id]=s/ch[id].length; } }
+      roots.forEach(function(r){ dd(r,0); asg(r); });
+      var maxd=0; for(var k in depth){ if(depth[k]>maxd) maxd=depth[k]; }
+      var ncols=Math.max(col-1,1), W=2*C.PADX+ncols*C.COLPX, H=C.PADTOP+maxd*C.ROWPX+C.PADBOT;
+      function X(id){ return C.PADX+x[id]*C.COLPX; } function Y(id){ return C.PADTOP+depth[id]*C.ROWPX; }
+      cancelNode(); hideNode(); clearMarks(); hidePop();
+      nodes.forEach(function(n){ var id=n.dataset.id;
+        if(M[id]){ n.style.display=''; n.style.left=X(id)+'px'; n.style.top=Y(id)+'px'; n.classList.add('is-hl'); }
+        else { n.style.display='none'; } });
+      var d='', stroke=tint[tid]||'#6f685f';
+      for(var id in M){ var p=parent[id]; if(p&&M[p]){
+        d+='<path d="'+curve(X(p),Y(p),X(id),Y(id))+'" fill="none" stroke="'+stroke+'" stroke-width="2.4" '
+          +'stroke-linecap="round" vector-effect="non-scaling-stroke" class="is-hl"/>'; } }
+      svg.setAttribute('viewBox','0 0 '+W+' '+H); svg.innerHTML=d;
+      canvas.style.width=W+'px'; canvas.style.height=H+'px';
+      bar.querySelector('.fb-label').textContent='Focused cluster: '+(tnames[tid]||tid);
+      bar.style.display=''; view.classList.add('is-focused'); focused=true; focusTid=tid;
+      if(!fromHash && view.dataset.set==='stable'){ try{ location.hash='focus='+tid; }catch(e){} }
+    }
+    function exitFocus(fromHash){
+      nodes.forEach(function(n){ var id=n.dataset.id; n.style.display=''; n.style.left=orig[id].l; n.style.top=orig[id].t; });
+      svg.setAttribute('viewBox',origVB); svg.innerHTML=origSVG;
+      canvas.style.width=origW; canvas.style.height=origH;
+      clearMarks(); hideNode(); hidePop(); bar.style.display='none'; view.classList.remove('is-focused');
+      focused=false; focusTid=null; pendingTid=null; bindEdges();
+      if(!fromHash && view.dataset.set==='stable'){ try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){ location.hash=''; } }
+    }
+
+    function bindEdges(){
+      [].slice.call(svg.querySelectorAll('.edge-hit')).forEach(function(h){
+        h.addEventListener('click', function(e){ e.stopPropagation(); showForEdge(h); });
+      });
+    }
+    bindEdges();
+    nodes.forEach(function(n){
+      n.addEventListener('mouseenter', function(){ if(pop.style.display==='none') showForNode(n); });
+      n.addEventListener('mouseleave', scheduleNode);
+      n.addEventListener('focus', function(){ if(pop.style.display==='none') showForNode(n); });
+      n.addEventListener('blur', scheduleNode);
+    });
+    pop.querySelector('.pop-focus').addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); if(pendingTid) focusCluster(pendingTid, false); });
+    canvas.addEventListener('click', function(e){ if(focused) return; if(e.target===canvas||e.target===svg){ clearMarks(); hideNode(); hidePop(); pendingTid=null; } });
+    // preempt a sticky fan: as the cursor nears a DIFFERENT node (even one occluded by the
+    // current card or its fan), hand the briefing to that node.
+    canvas.addEventListener('mousemove', function(e){
+      if(focused || pop.style.display!=='none') return;
+      var r=canvas.getBoundingClientRect(), mx=e.clientX-r.left, my=e.clientY-r.top, best=null, bd=1e9;
+      nodes.forEach(function(n){ if(n.style.display==='none') return;
+        var dx=mx-cx(n), dy=my-cy(n), d=dx*dx+dy*dy; if(d<bd){ bd=d; best=n; } });
+      if(best && bd<=26*26 && npop._node!==best) showForNode(best);
+    });
+
+    // deep-linking: the default (stable) tree obeys #focus=<thread> on load + back/forward
+    if(view.dataset.set==='stable'){
+      var applyHash=function(){ var m=(location.hash||'').match(/focus=([\w-]+)/), tid=m?m[1]:null;
+        if(tid){ if(nodes.some(function(n){ return thread[n.dataset.id]===tid; })) focusCluster(tid, true); }
+        else if(focused){ exitFocus(true); } };
+      window.addEventListener('hashchange', applyHash);
+      applyHash();
+    }
+  });
+})();
+</script>
 </body>
 </html>

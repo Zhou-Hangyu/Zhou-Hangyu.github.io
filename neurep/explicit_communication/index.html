@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow"><title>Does the communication matrix carry module structure? — neurep</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"><script>window.MathJax={tex:{tags:'ams',inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]'],['$$','$$']]},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']},chtml:{displayAlign:'center'}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><style>/* ========================================================================== *
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow"><title>A measured-communication prior for neuron-aligned modules — neurep</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"><script>window.MathJax={tex:{tags:'ams',inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]'],['$$','$$']]},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']},chtml:{displayAlign:'center'}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><style>/* ========================================================================== *
  *  research-site theme — the single source of truth for the visual language.
  *  The builder INLINES this file into every generated page's <head>, so each
  *  report renders standalone (open the .html directly) and is depth-proof.
@@ -18,9 +18,10 @@
   --line:rgba(22,22,26,.12);
   --code-bg:rgba(75,46,99,.09);
   --code-fg:#3a2348;
-  --ok:#2f6b3a;          /* status: supported */
+  --ok:#1f7a55;          /* status: supported — a clean deep emerald (the old forest green read muddy) */
   --bad:#9a3b2f;         /* status: refuted */
-  --wip:#8a6d1f;         /* status: wip/draft */
+  --wip:#8a6d1f;         /* status: wip/draft (parked) */
+  --active:#c2701c;      /* status: active — the live frontier (warm amber, set apart from the muted wip) */
   --disp:'Manrope',-apple-system,'Segoe UI',Roboto,sans-serif;  /* display/UI */
   --serif:Georgia,'Iowan Old Style','Times New Roman',serif;     /* body */
 }
@@ -58,6 +59,8 @@ a:hover{text-decoration:underline;text-underline-offset:2px}
 .band-title{font:700 .82rem/1 var(--disp);text-transform:uppercase;letter-spacing:.18em;color:var(--mut);
   margin:0 0 1.1rem;display:flex;align-items:center;gap:.6rem;border:0;padding-bottom:0}
 .band-title::before{content:"";width:24px;height:2px;background:var(--violet);display:inline-block}
+/* one line under each thread title saying what that branch is for (the blurb) */
+.band-blurb{margin:-.7rem 0 1.2rem;max-width:62ch;color:var(--mut);font:400 .96rem/1.5 var(--serif)}
 .overview{font:400 1.06rem/1.6 var(--serif);color:var(--ink);max-width:60ch;margin:0 0 1.4rem}
 .maplist{margin:.2rem 0 1rem;padding-left:1.2rem;color:var(--mut);font:400 1rem/1.7 var(--serif)}
 .maplist a{color:var(--ink)}
@@ -70,6 +73,13 @@ a:hover{text-decoration:underline;text-underline-offset:2px}
   background:radial-gradient(circle at 35% 30%,#5a3a73,var(--violet-dp))}
 .card-title{margin:.1rem 2rem .35rem 0;font:600 1.06rem/1.32 var(--disp);letter-spacing:-.01em}
 .card-sum{margin:0;color:var(--mut);font:400 .92rem/1.45 var(--serif)}
+/* a live-frontier card: warm left accent + a breathing dot, so it reads as "in motion" */
+.card.is-active{border-left:3px solid var(--active)}
+.card.is-active .card-dot{background:radial-gradient(circle at 35% 30%,
+  color-mix(in srgb,var(--active) 60%,#fff),var(--active));animation:dotpulse 2.4s ease-in-out infinite}
+@keyframes dotpulse{
+  0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--active) 38%,transparent)}
+  50%    {box-shadow:0 0 0 6px color-mix(in srgb,var(--active) 0%,transparent)}}
 
 /* ---- study page ---- */
 .study{max-width:46rem;margin:0 auto;padding:2.2rem clamp(1rem,4vw,1.4rem) 5rem}
@@ -139,6 +149,8 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
 .status.supported{color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}
 .status.refuted{color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,transparent)}
 .status.wip,.status.draft{color:var(--wip);background:color-mix(in srgb,var(--wip) 12%,transparent)}
+.status.active{color:var(--active);background:color-mix(in srgb,var(--active) 14%,transparent)}
+.status.reference{color:var(--violet);background:color-mix(in srgb,var(--violet) 12%,transparent)}
 .repro{display:inline-flex;align-items:center;gap:.4rem;font:500 .82rem/1 var(--disp)}
 .repro code{background:var(--code-bg);color:var(--code-fg)}
 .repro .git{opacity:.65}
@@ -202,10 +214,23 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
   box-shadow:0 0 0 3px color-mix(in srgb,var(--dot,var(--mut)) 17%,transparent);   /* one ring for every node */
   transition:transform .12s ease}
 .tnode.verified{border-style:solid}                                    /* proof-read */
-.tnode.provisional{border-style:dashed;background:color-mix(in srgb,var(--dot) 26%,var(--bg))}  /* wip */
+.tnode.provisional{border-style:dashed;background:color-mix(in srgb,var(--dot) 26%,var(--bg))}  /* parked wip */
+/* an ACTIVE node restores the live-frontier look — amber fill + a dashed amber ring — set
+   apart from every verdict hue. This OVERRIDES the verdict colour on the tree dot itself;
+   --dot stays the verdict so the node's briefing card + the table pill keep the true colour.
+   (active is ORTHOGONAL to status — see _default_visible.) */
+.tnode.active{border-color:var(--active);border-style:dashed;
+  background:color-mix(in srgb,var(--active) 28%,var(--bg));
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--active) 18%,transparent);
+  animation:apulse 2.4s ease-in-out infinite}
+@keyframes apulse{
+  0%,100%{box-shadow:0 0 0 3px color-mix(in srgb,var(--active) 42%,transparent)}
+  50%    {box-shadow:0 0 0 9px color-mix(in srgb,var(--active) 6%,transparent)}}
 .st-supported{--dot:var(--ok)}
 .st-refuted{--dot:var(--bad)}
 .st-wip,.st-draft{--dot:var(--wip)}
+.st-active{--dot:var(--active)}                                        /* the live frontier */
+.st-reference{--dot:var(--violet)}                                     /* shared reference (not a verdict) */
 .tnode .hit{position:absolute;inset:-10px;border-radius:50%}
 .tnode:hover,.tnode:focus-visible{transform:translate(-50%,-50%) scale(1.22);z-index:30;outline:none}
 /* apex = the root of the forest; a neutral hollow origin that links to the landing/overview */
@@ -215,8 +240,8 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
 .apex-label{color:var(--violet);text-transform:uppercase;letter-spacing:.1em;font-weight:700}
 
 /* always-on small title beside each node (below leaves, above the rest) */
-.tnode-label{position:absolute;left:50%;transform:translateX(-50%);width:max-content;max-width:152px;
-  text-align:center;font:500 10.5px/1.28 var(--disp);color:var(--ink);letter-spacing:-.004em;
+.tnode-label{position:absolute;left:50%;transform:translateX(-50%);width:max-content;max-width:108px;
+  text-align:center;font:600 10px/1.25 var(--disp);color:var(--ink);letter-spacing:-.004em;
   pointer-events:none;text-shadow:0 0 3px var(--bg),0 0 3px var(--bg),0 0 6px var(--bg)}
 .tnode-label.lbl-dn{top:calc(100% + 5px)}
 .tnode-label.lbl-up{bottom:calc(100% + 5px)}
@@ -240,6 +265,64 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
 .tip-sub{display:block;margin-top:.32rem;font:400 .82rem/1.42 var(--serif);color:var(--mut)}
 .tip-x{display:block;margin-top:.35rem;font:500 .72rem/1.35 var(--disp);color:var(--mut)}
 
+/* ---- interactivity: click a node to highlight its subtree, then Focus to isolate it ---- */
+.tree-hint{margin:.2rem 0 1rem;color:var(--mut);font:400 .9rem/1.5 var(--serif)}
+.tree-hint b{color:var(--ink);font-weight:700}
+.treeview .tnode{transition:transform .12s ease,opacity .16s ease}
+.tree-svg path{transition:opacity .16s ease,stroke-opacity .16s ease}
+/* dimmed = not in the selected/focused subtree; highlighted = in it */
+.tnode.is-dim{opacity:.16;animation:none}
+.tnode.is-dim .tnode-label{opacity:.5}
+.tree-svg path.is-dim{stroke-opacity:.06}
+.tree-svg path.is-hl{stroke-opacity:.95;stroke-width:2.6}
+.tree-svg path.is-sel{stroke-opacity:1;stroke-width:3.2}
+/* fat transparent twin over each limb -> an easy click target even though the svg ignores pointers */
+.tree-svg .edge-hit{pointer-events:stroke;cursor:pointer}
+/* the clicked node itself: a firm halo, no pulse */
+.tnode.is-sel{animation:none;box-shadow:0 0 0 3px var(--bg),0 0 0 6px var(--dot,var(--violet));
+  transform:translate(-50%,-50%) scale(1.18);z-index:25}
+
+/* action popup (Focus / Open report) anchored under the clicked node */
+.tree-pop{position:absolute;transform:translate(-50%,0);z-index:50;display:inline-flex;align-items:center;gap:.3rem;
+  background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:.32rem;white-space:nowrap;
+  box-shadow:0 16px 38px -20px rgba(22,22,26,.72)}
+/* the FAN: a transparent wedge above the popup, bridging up to the limb so the cursor can
+   glide from limb to button without leaving an active hover zone */
+.tree-pop::before{content:"";position:absolute;left:-26px;right:-26px;bottom:100%;height:30px}
+/* a little caret pointing up toward the limb */
+.tree-pop::after{content:"";position:absolute;left:50%;bottom:100%;transform:translateX(-50%);margin-bottom:-1px;
+  border:6px solid transparent;border-bottom-color:var(--panel)}
+.pop-focus{font:700 .68rem/1 var(--disp);text-transform:uppercase;letter-spacing:.06em;color:#fff;
+  background:var(--violet);border:0;border-radius:8px;padding:.42rem .6rem;cursor:pointer;transition:background .12s ease}
+.pop-focus:hover{background:var(--violet-dp)}
+.pop-open{font:700 .68rem/1 var(--disp);text-transform:uppercase;letter-spacing:.06em;color:var(--violet);padding:.42rem .5rem}
+.pop-open:hover{text-decoration:none;color:var(--violet-dp)}
+/* when the JS layer is live, the rich hover card is the floating fan-popup (.node-pop) —
+   so the inline CSS tooltip is hidden (it stays the JS-off fallback). */
+.treeview.js-on .tip{display:none}
+/* the node briefing: same fan-popup chrome (caret + fan + shadow), but a left-aligned,
+   multi-line block instead of a button row, centred over the node. */
+.node-pop{display:block;text-align:left;white-space:normal;max-width:264px;
+  padding:.62rem .78rem;border-left:3px solid var(--tree,var(--violet));cursor:pointer;
+  transition:box-shadow .12s ease,transform .12s ease}
+.node-pop:hover{box-shadow:0 24px 52px -22px rgba(22,22,26,.82);transform:translate(-50%,-1px)}
+/* the "click to open" affordance appended to the briefing card */
+.np-open{display:block;margin-top:.55rem;color:var(--violet);
+  font:700 .62rem/1 var(--disp);text-transform:uppercase;letter-spacing:.09em}
+
+/* focus bar — shown only while a branch is isolated */
+.tree-focusbar{display:flex;align-items:center;gap:.7rem;margin:0 0 .4rem;padding:.5rem .85rem;
+  background:color-mix(in srgb,var(--violet) 8%,var(--panel));border:1px solid var(--line);border-radius:11px}
+.fb-label{color:var(--mut);font:700 .72rem/1 var(--disp);text-transform:uppercase;letter-spacing:.09em}
+.fb-exit{margin-left:auto;font:700 .72rem/1 var(--disp);text-transform:uppercase;letter-spacing:.06em;cursor:pointer;
+  color:var(--violet);background:none;border:1px solid var(--line);border-radius:8px;padding:.38rem .65rem;transition:.12s ease}
+.fb-exit:hover{background:var(--violet);color:#fff;border-color:var(--violet)}
+
+/* honour reduced-motion: the live-frontier signal degrades to a static ring */
+@media (prefers-reduced-motion:reduce){
+  .tnode.active,.card.is-active .card-dot{animation:none}
+}
+
 @media (max-width:600px){
   .nav{flex-wrap:wrap;gap:.5rem} .tabs{order:3;width:100%} body{font-size:17px}
   .studies-page{padding-left:.6rem;padding-right:.6rem}
@@ -247,294 +330,155 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
 </style>
 </head>
 <body>
-<header class="nav"><a class="brand" href="../index.html"><span>neurep</span></a></header><main class="study"><header class="study-head"><h1>Does the communication matrix carry module structure?</h1><p class=sub>Can a measured score \(A\) beat the \(\lvert W\rvert\) proxy it would replace?</p><div class="rule"></div></header><div class="context"><span class="crumb"><a href="../studies.html#thread-representation">Learned representations &amp; modularity</a></span><span class="status wip">wip</span><span class="dep">builds on: <a href="../collapse_review/">What is the Separator regularizer actually
+<header class="nav"><a class="brand" href="../index.html"><span>neurep</span></a></header><main class="study"><header class="study-head"><h1>A measured-communication prior for neuron-aligned modules</h1><p class=sub>Does the communication matrix \(A\) carry the module structure a code prior needs — and what does training that prior do to the network?</p><div class="rule"></div></header><div class="context"><span class="crumb"><a href="../studies.html#thread-representation">Learned representations &amp; modularity</a></span><span class="status supported">supported</span><span class="dep">builds on: <a href="../collapse_review/">What is the Separator regularizer actually
 doing?</a>, <a href="../flat_forensics_report/">The flat winning ticket under the
 microscope</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou-Hangyu/neurep/commit/2fcdfa8"><code>2fcdfa8</code></a> <span class="git">· feature/runstore-pipeline</span></span></div><article>
 
-  <div class="tldr"><p><strong>TL;DR.</strong> Before building a regularizer that prices each
-  connection by a <em>measured</em> neuron-to-neuron communication score \(A_{ij}\) (replacing
-  the static weight-magnitude proxy \(\lvert W_{ij}\rvert\)), we pre-registered a gate testing
-  whether \(A\) actually carries module structure. On planted nets, \(A\) recovers disjoint
-  modules perfectly (<strong>H1 met</strong>, ARI \(=1.0\)) and — the decisive test — does
-  <strong>not</strong> transitively merge two pipelined modules (one's output feeds the next) across a strong reusability
-  bottleneck (<strong>H2 pass</strong>: \(G{+}1\) communities recovered, root never absorbed in
-  10/10 seeds). <strong>But \(A\) never beats \(\lvert W\rvert\)</strong> (<strong>H3 fail</strong>:
-  pooled \(\Delta\text{ARI}=-0.01\), not significant) — and in the realistic regime the modules
-  are <em>rotated</em>, not neuron-aligned (<strong>H4 branch (b)</strong> on both tasks).
-  <strong>Decision: do not build the \(A\)-based regularizer as a replacement for
-  \(\lvert W\rvert\); the blocking hypothesis is H3.</strong> The communication matrix is real and
-  well-behaved, but it furnishes no advantage over the proxy already in use.</p></div>
+  <div class="tldr"><p><strong>TL;DR.</strong> We price a per-neuron code prior by a <em>measured</em> communication
+  score \(A\) instead of weight magnitude. \(A\) carries the module structure the prior needs — on planted networks it
+  recovers disjoint modules and keeps two pipelined modules separate. Trained end-to-end, the prior
+  <strong>de-rotates</strong> the hidden representation into neuron-aligned modules (axis-mass \(0.24\!\to\!0.44\)) where
+  no weight penalty can, while matching a strong structured baseline on accuracy. Build it on the M1 (flow) score, and
+  judge it by the alignment it buys rather than the accuracy it shaves.</p></div>
 
-  <h2>1. Motivation</h2>
-  <p><strong>The problem.</strong> In the current NeuRep objective the per-neuron codes \(\phi_i\)
-  receive no task gradient, and each connection is priced by its weight magnitude \(\rho(W_{ij})\) —
-  a static, data-free proxy for how much two neurons belong together. The companion forensics
+  <h2>1. The method</h2>
+  <p><strong>The problem.</strong> In the current NeuRep objective the per-neuron codes \(\phi_i\) receive no task
+  gradient, and each connection is priced by its weight magnitude \(\rho(W_{ij})=\lvert W_{ij}\rvert\) — a static,
+  data-free proxy for how much two neurons belong together. The companion forensics
   (<a class="xref" href="../experiment_representation/">learned codes don't make weights modular</a>,
-  <a class="xref" href="../flat_forensics_report/">the flat winning ticket under the microscope</a>) show the
-  consequence: the codes collapse or act only as a capacity-pruning bias, and the task's real
-  modules sit in <em>rotated</em> subspaces that mix many neurons.</p>
-  <p><strong>The proposed fix.</strong> The redesign (C. Dovrolis) drops weight-magnitude pricing
-  entirely: a measured, data-driven communication score \(A_{ij}\) instead shapes the network through
-  <em>two</em> regularizers added to the task loss \(\mathcal{L}_{\text{task}}\) (mean-squared error,
-  for the regression tasks here) — an <em>edge-suppression</em> (prune) term and a
-  contrastive <em>module-detection</em> term:</p>
+  <a class="xref" href="../flat_forensics_report/">the flat winning ticket under the microscope</a>) show the task's real modules
+  sit in <em>rotated</em> subspaces that mix many neurons, so a per-neuron code looks, a priori, like the wrong object.</p>
+
+  <p><strong>The prior.</strong> Replace the data-free price with a <em>measured</em> communication score \(A\), and let
+  the codes pay for connections in proportion to how far apart they sit: connected, communicating neurons are pulled
+  together, weakly-communicating ones pushed apart. With code distance \(d_{ij}=\lVert\phi_i-\phi_j\rVert\) and margin
+  \(m\),</p>
   \[\begin{equation}\label{eq:total}
-    \mathcal{L}_{\text{total}} = \mathcal{L}_{\text{task}}(W) \;+\; \lambda_{\text{sup}}\,\mathcal{R}_{\text{sup}} \;+\; \lambda_{\text{mod}}\,\mathcal{R}_{\text{mod}},
+    \mathcal{L}_{\text{total}} = \mathcal{L}_{\text{task}}(W)\;+\;\lambda\,\mathcal{R}_{\text{code}},
   \end{equation}\]
+  \[\begin{equation}\label{eq:code}
+    \mathcal{R}_{\text{code}} = \sum_{\ell}\sum_{i,j}\Big[\,\widehat A^{(\ell)}_{ij}\,d_{ij}\;+\;c\,\max\!\big(0,\,m-d_{ij}\big)\Big],
+    \qquad \widehat A^{(\ell)} = A^{(\ell)}\big/\,\overline{A^{(\ell)}}.
+  \end{equation}\]
+  <p>Here \(\widehat A^{(\ell)}=A^{(\ell)}/\overline{A^{(\ell)}}\) is the layer-mean-normalized score, and \(A\) is not
+  detached: the attraction term \(\widehat A(W)\,d_{ij}\) couples \(W\) and \(\phi\), so the codes price the connections
+  and the gradient flows back into the weights — without that coupling the codes would only describe the wiring, never
+  reshape it. The constant \(c\) sets the attract/repel threshold (a pair attracts when \(\widehat A \gt c\), repels when
+  \(\widehat A \lt c\)), and the layer-mean normalization keeps the typical entry \(O(1)\) so a single \(c\) holds across
+  layers. The original proposal also carried an edge-suppression term
+  \(\sum_{\ell,i,j}\big(1-A^{(\ell)}_{ij}\big)\lvert W^{(\ell)}_{ij}\rvert\) to prune weak connections; with \(A\)
+  un-detached the attraction term already drives \(\lvert W\rvert\) down on far-code, weakly-communicating pairs, so we
+  fold that role in and keep the two terms above.</p>
+
+  <p><strong>Three candidate communication scores.</strong> \(A_{ij}\) measures sender \(j\,(\ell)\to\) receiver
+  \(i\,(\ell{+}1)\) communication; three instantiations, in increasing strength:</p>
   \[\begin{align}
-    \mathcal{R}_{\text{sup}} &= \tfrac{1}{L}\sum_{\ell}\sum_{i,j}\big(1-\widetilde A^{(\ell)}_{ij}\big)\,\lvert W^{(\ell)}_{ij}\rvert, \label{eq:sup}\\[2pt]
-    \mathcal{R}_{\text{mod}} &= \sum_{\ell}\sum_{i,j}\Big[\,\widetilde A^{(\ell)}_{ij}\,d_{ij} \;+\; \big(1-\widetilde A^{(\ell)}_{ij}\big)\,\max\!\big(0,\,m-d_{ij}\big)\Big],\quad d_{ij}=\lVert\phi_i-\phi_j\rVert. \label{eq:mod}
+    \textbf{(M1) activation-weighted flow:}\quad & A^{(\ell)}_{ij}=\mathbb{E}_x\big|\,W^{(\ell)}_{ij}\,a^{(\ell)}_j\,\big|, \label{eq:m1}\\[2pt]
+    \textbf{(M2) co-activation:}\quad & A^{(\ell)}_{ij}=\big|\mathrm{corr}_x\!\big(a^{(\ell)}_j,\,a^{(\ell+1)}_i\big)\big|, \label{eq:m2}\\[2pt]
+    \textbf{(M3) output-Jacobian sensitivity:}\quad & A^{(\ell)}_{ij}=\mathbb{E}_x\Big|\,\tfrac{\partial \hat y}{\partial z^{(\ell+1)}_i}\,W^{(\ell)}_{ij}\,a^{(\ell)}_j\,\Big|. \label{eq:m3}
   \end{align}\]
-  <p>Here \(\widetilde A^{(\ell)}_{ij}\in[0,1]\) is the detached, within-layer-normalized score, and it
-  enters <em>both</em> terms only as a constant. \(\mathcal{R}_{\text{sup}}\) prunes
-  weakly-communicating weights — it keeps the high-\(A\) edges and shrinks the rest, a measured
-  replacement for the static \(\lvert W\rvert\) price. \(\mathcal{R}_{\text{mod}}\) organizes the
-  per-neuron codes \(\phi\) (with distance \(d_{ij}=\lVert\phi_i-\phi_j\rVert\) and margin \(m\)): its
-  first term <em>attracts</em> strongly-communicating pairs, its second <em>repels</em>
-  weakly-communicating pairs up to the margin, so the trivial collapse (\(d_{ij}\equiv0\)) leaves the
-  repulsion positive and is no longer optimal — modules fall out as clusters of mutually-close codes.
-  The intuition throughout: neurons that consistently participate in the same computation should end
-  up close.</p>
-  <p><strong>The risk.</strong> Strong communication is not the same as shared module
-  membership: in a hierarchy one module <em>consumes the output of</em> another, so a hierarchical
-  task <em>must</em> contain strong inter-module (pipeline) edges. The repulsion in
-  \eqref{eq:mod} is weighted by \((1-\widetilde A_{ij})\), so it puts <em>no</em> separating force
-  on the high-\(A\) interface edges between two pipelined modules. Whether they stay separable then
-  depends entirely on whether \(A\) has community structure — dense within a module, sparse
-  between. <strong>If \(A\) lacks that structure, no \(A\)-based regularizer can recover the
-  hierarchy.</strong> Hence we validate \(A\) first.</p>
+  <p>M3 uses the <em>output</em> Jacobian, not the loss gradient (which vanishes as the model fits). The bounded score
+  M2 \(=\lvert\mathrm{corr}\rvert\in[0,1]\) is used in its complementary form \(\widehat A\,d_{ij}+(1-A)\max(0,m-d_{ij})\)
+  — unnormalized, with a built-in threshold at correlation \(0.5\) — since the \((1-A)\) complement only makes sense on
+  \([0,1]\). The rest of the report asks, in order: does \(A\) carry the structure the prior needs (§2), and what does
+  training the prior do (§3)?</p>
 
-  <h2>2. Measuring communication</h2>
-  <p>To price connections by communication we must first <em>measure</em> it. On each trained net we
-  compute three candidate scores from the effective weights and the in-distribution activations
-  \(a^{(\ell)}\) (sender \(j\) post-activation, receiver \(i\)):</p>
-  \[\begin{align}
-    \textbf{(M1)}\ & A^{(\ell)}_{ij}=\mathbb{E}_x\big|\,W^{(\ell)}_{ij}\,a^{(\ell)}_j\,\big|, \label{eq:m1}\\
-    \textbf{(M2)}\ & A^{(\ell)}_{ij}=\big|\mathrm{corr}_x\!\big(a^{(\ell)}_j,\,a^{(\ell+1)}_i\big)\big|, \label{eq:m2}\\
-    \textbf{(M3)}\ & A^{(\ell)}_{ij}=\mathbb{E}_x\Big|\,\tfrac{\partial \hat y}{\partial z^{(\ell+1)}_i}\cdot W^{(\ell)}_{ij}\cdot a^{(\ell)}_j\,\Big|. \label{eq:m3}
-  \end{align}\]
-  <p>M1 is raw activation-weighted flow; M2 is how correlated a sender and receiver fire; M3 weights
-  each edge by how much the network's <em>output</em> actually depends on it, using the output
-  Jacobian \(\partial\hat y/\partial z_i\) (not the loss gradient, which vanishes at convergence).
-  Two controls bracket every score: \(A=\lvert W\rvert\) (the current proxy — the bar to beat) and a
-  per-layer <em>shuffle</em> (negative control); a non-gating <em>ceiling</em> sets \(A=\) the planted
-  0/1 mask, confirming the detector works when \(A\) is perfect.</p>
-
-  <h2>3. Experimental design</h2>
-  <div class="repro"><p><strong>Reproducibility (R2).</strong>
-  <strong>Replication:</strong> 10 seeds per setting; each seed redraws the random teachers
-  (S1/S2) or the task instance + init (S3), so results are over the random task family, not one
-  instance. <strong>Training:</strong> every net — planted S1/S2 and realistic S3 alike — minimizes
-  <strong>mean-squared-error (MSE) loss</strong> on the standardized targets, with GELU activations
-  and AdamW (weight-decay 0), learning rate
-  \(3\times10^{-3}\), batch 200, eval every 500 steps, patience 20, best-validation-checkpoint
-  selection, cap 6000 steps (the nets are tiny and converge by ~2–3k, so the chosen checkpoint is
-  unaffected by the cap). <strong>Fit gates</strong> (a net's
-  scores are read only if it fit): planted test \(R^2\!\ge\!0.90\); S3 first-order Sobol
-  sum \(\ge\!0.30\). All 10/10 planted seeds and 20/20 S3 records passed
-  (S1 \(R^2{=}0.998\), S2 \(R^2{=}0.970\), S3 Sobol \(0.96\!-\!0.99\)).
-  <strong>Statistics:</strong> bars are the mean over seeds with per-seed points overlaid;
-  error bars on \(\Delta\)ARI are \(\pm\)1 s.e.m.; H3 uses the paired Wilcoxon signed-rank test
-  with Cohen's \(d_z\). <strong>Code:</strong> apparatus validated by 10 unit tests
-  (masks isolate modules; the score reader equals <code>model(x)</code>; the M3 Jacobian equals
-  M1 on the output layer; the planted-mask ceiling recovers blocks; shuffling collapses recovery).
-  </p></div>
-
-  <h3>3.1 Settings</h3>
-  <p>The two <em>planted</em> nets are <strong>masked MLPs</strong>: every layer's weight carries a
-  fixed \(0/1\) mask and the forward uses the effective weight \(W\odot\text{mask}\) (masked entries
-  are held at exactly \(0\), re-zeroed after each step), so the module of every neuron and every
-  inter-module edge is fixed by construction and is read directly by the scores. Each module's
-  sub-function is a fixed random 2-layer <em>teacher</em> MLP (\(\text{in}\to12\to1\), tanh —
-  deliberately distinct from the student's GELU); inputs are \(\mathcal{N}(0,1)\) and every target
-  column is standardized to unit variance (so the MSE is balanced across outputs). We use \(G{=}4\)
-  modules, \(f{=}4\) input dims each, leaf width \(h{=}12\), and root width \(h_{\text{root}}{=}24\);
-  S3 is the unmasked kernel MLP.</p>
-  <div class="tablewrap"><table>
-    <thead><tr><th></th><th>Topology (layer widths)</th><th>Masks</th><th>Inter-module edges</th><th>Neurons</th><th>Modules</th></tr></thead>
-    <tbody>
-      <tr><td><strong>S1</strong></td><td>\(16\to48\to48\to4\)</td><td>block-diagonal at every layer</td><td>none</td><td>116</td><td>4</td></tr>
-      <tr><td><strong>S2</strong></td><td>\(16\to48\to4\to24\to1\)</td><td>block-diagonal, except leaf-scalar\(\to\)root-hidden which is <em>full</em></td><td>96 (\(4{\times}24\))</td><td>93</td><td>5</td></tr>
-      <tr><td><strong>S3</strong></td><td>\(24\to64\to64\to1\)</td><td>none (dense)</td><td>dense (unmasked)</td><td>153</td><td>4</td></tr>
-    </tbody>
-  </table></div>
+  <h2>2. Validation — does \(A\) carry the module signal?</h2>
+  <p>Before training anything, we check the premise: does a measured \(A\), read off a trained network, actually contain
+  its module structure — and does it keep two <em>pipelined</em> modules apart? We use two <em>planted</em> masked MLPs
+  in which every neuron's module and every inter-module edge is known by construction, each trained on its task so the
+  activations and Jacobians are realistic. On each we compute \(A\), build the symmetrized neuron graph, detect
+  communities (known-\(k\) spectral), and score recovery against the planted labels (ARI). Two controls bracket the read:
+  a <em>ceiling</em> (\(A\) taken from the planted mask) and a <em>shuffle</em> negative control.</p>
   <ul>
-    <li><strong>S1 — disjoint modules (necessary condition).</strong> \(G\) independent sub-nets on
-    disjoint input groups, with \(G\) <em>separate</em> outputs and no inter-module edges anywhere —
-    the hidden blocks and the output layer are all block-diagonal, so output \(g\) reads only block
-    \(g\). Each module computes \(y_g=T_g(x_g)\): \(G\) independent regressions. Ground truth: the
-    \(G\) blocks.</li>
-    <li><strong>S2 — hierarchy with a reusability bottleneck (decisive).</strong> \(G\) leaf sub-nets
-    (block-diagonal input→leaf-hidden→one scalar \(s_g\) each) feed a shared root sub-net through a
-    <em>full</em> leaf-scalar→root-hidden layer — that \(4{\times}24\) block is the <em>only</em>
-    inter-module wiring. The target is \(y=R\big(T_1(x_1),\dots,T_G(x_G)\big)\), a root teacher on the
-    \(G\) leaf scalars. Ground truth: \(\{\text{leaf}_1,\dots,\text{leaf}_G,\text{root}\}\)
-    (\(G{+}1\) modules). The S1\(\to\)S2 contrast isolates exactly the transitive-merging risk of §1.</li>
-    <li><strong>S3 — realistic.</strong> The standard \(24\to64\to64\to1\) GELU MLP, plain
-    (unregularized) training, on <code>flat_modular</code> (w=4, ν=16) and <code>hier_tree</code>
-    (w=4, d=3, ν=16) — 24-dim inputs (8 signal + 16 nuisance), \(n_{\text{train}}=2048\). No hidden
-    ground truth; the input neurons carry their factor-group labels
-    (\(\{0,1\},\{2,3\},\{4,5\},\{6,7\}\)), and we add the three rotation-aware subspace probes
-    (defined in §3.2; adapted from <a class="xref" href="../flat_forensics_report/">flat_forensics</a>).</li>
+    <li><strong>\(A\) recovers disjoint modules (S1).</strong> With \(G=4\) disjoint sub-nets, every score recovers the
+    modules essentially perfectly — ARI \(\approx 1.0\), matching the ceiling and \(\gg\) the shuffle control
+    (\(\approx 0.01\)). The signal is unambiguously present (Fig. 1, left).</li>
+    <li><strong>\(A\) does not merge pipelined modules (S2).</strong> The decisive risk: when one module's output feeds
+    the next through a strong reusability bottleneck, a naive "pull together everything that communicates" would
+    transitively fuse the whole pipeline. It does not — across the leaf\(\to\)root bottleneck \(A\) recovers ARI
+    \(\approx 0.88\!-\!0.90\) (\(\approx\) ceiling), the choose-\(k\) count lands at \(G{+}1=5\) communities, and the
+    shared root is <strong>never absorbed</strong> into a leaf (merge\(^-\) in 10/10 seeds, every score; Fig. 1, right).</li>
   </ul>
-
-  <h3>3.2 Detection and metrics</h3>
-  <p>We stack the per-layer \(\widetilde A\) (within-layer max-normalized) into one symmetrized
-  neuron graph and detect communities: known-\(k\) spectral for S1/S2 (isolating "does \(A\) carry
-  the signal" from "can clustering find \(k\)") and modularity (Louvain, chooses \(k\)) for S3.
-  Recovery is scored by the <strong>Adjusted Rand Index</strong> (ARI; \(1\) = perfect agreement
-  with the ground-truth partition, \(0\) = chance) and NMI; we also report the recovered community
-  count, the <strong>block contrast</strong>
-  \(B(A)=\overline{A}_{\text{within}}/\overline{A}_{\text{between}}\) (mean within-module over mean
-  between-module edge weight; \(\ge1\) means dense-within / sparse-between), the S2
-  <strong>merge indicator</strong> (\(1\) if the root is absorbed into a leaf community, \(0\) if it
-  keeps its own), and, for S3, the <strong>input-group ARI</strong> (do the input neurons cluster by
-  their factor group?).</p>
-  <p>For S3 we add three rotation-aware subspace probes that test whether a module lives in a
-  <em>rotated</em> hidden subspace rather than on individual neurons: <strong>axis_mass</strong>
-  (mean squared largest single-neuron loading of a module's estimated hidden subspace — \(1\) =
-  neuron-aligned, \(\approx\!1/\text{width}\) = fully spread), <strong>patch_r2</strong> (the causal
-  \(R^2\) with which patching <em>only</em> a module's rotated subspace reproduces the teacher's
-  output response to resampling that module's inputs — high means the rotated subspace carries the
-  module), and <strong>lane_diag</strong> (the fraction of a module's layer-1 subspace energy that
-  flows into its own layer-2 subspace).</p>
-
-  <h2>4. The validation gate</h2>
-  <p>The gate poses two questions. A <strong>capability</strong> question — can a communication score
-  see modules at all, and keep two pipelined ones apart? (H1, H2.) And an <strong>advantage</strong>
-  question — does a measured score actually beat the \(\lvert W\rvert\) proxy we already use, and are
-  per-neuron codes even the right object? (H3, H4.) Every threshold was fixed in advance.</p>
-  <div class="tablewrap"><table>
-    <thead><tr><th>Gate</th><th>Hypothesis</th><th>Setting</th><th>Pass criterion</th></tr></thead>
-    <tbody>
-      <tr><td><strong>Capability</strong></td><td>H1 — necessary condition</td><td>S1</td>
-        <td>strongest score recovers the disjoint modules with ARI \(\ge0.80\), above both controls</td></tr>
-      <tr><td><strong>Capability</strong></td><td>H2 — no transitive merging</td><td>S2</td>
-        <td>ARI \(\ge0.60\); choose-\(k\) count \(=G{+}1\); merge indicator \(=0\) (root keeps its own community)</td></tr>
-      <tr><td><strong>Advantage</strong></td><td>H3 — value over the proxy</td><td>S1–S2</td>
-        <td>best measured score beats \(A=\lvert W\rvert\) by \(\Delta\)ARI \(\ge0.15\) (paired over seeds)</td></tr>
-      <tr><td><strong>Advantage</strong></td><td>H4 — representation class <em>(non-gating)</em></td><td>S3</td>
-        <td>(a) input-group ARI \(\ge0.50\) ⇒ per-neuron codes viable; (b) ARI \(<0.50\) but the
-        rotation-aware probes beat the \(\lvert W\rvert\) baseline ⇒ rotated codes; (c) neither</td></tr>
-    </tbody>
-  </table></div>
-  <p><strong>Decision rule.</strong> Build the three-term objective \(\mathcal{L}_{\text{total}}\)
-  (Eqs. \eqref{eq:total}–\eqref{eq:mod}) <em>only if</em> some single score satisfies H1 <em>and</em>
-  H2 <em>and</em> H3; H4 then sets the representation class. H1–H3 are confirmatory and gating; H4 is
-  non-gating.</p>
-  <p class="remark"><strong>H3 is the kill switch.</strong> It is the blocking hypothesis: if a
-  measured \(A\) fails to outperform the \(\lvert W\rvert\) proxy by a clear margin, there is no
-  reason to replace the proxy and the redesign is effectively closed — however well H1 and H2 go.</p>
-
-  <h3>4.1 Capability <span class="status supported">H1, H2 pass</span></h3>
-  <p><strong>H1 — disjoint modules (S1).</strong> Every measured score recovers the planted modules
-  <em>perfectly</em> — ARI \(=1.000\), NMI \(=1.000\) — far above the shuffle control (ARI
-  \(=0.013\)) and matching the planted-mask ceiling (Fig. 1, left). The necessary condition is
-  comfortably met; one caveat is already visible — \(\lvert W\rvert\) is <em>also</em> perfect here,
-  a foreshadowing of H3.</p>
-  <p><strong>H2 — the reusability bottleneck (S2).</strong> The decisive test, and the score passes
-  it. Across the leaf\(\to\)root bottleneck the scores recover modules with ARI \(0.88\!-\!0.91\)
-  (well above the \(0.60\) bar); the choose-\(k\) detector finds exactly \(G{+}1=5\) communities in
-  10/10 seeds (M1, M2); and <strong>the root keeps its own community in 10/10 seeds for every
-  score</strong> (merge indicator \(=0\)) — it is never absorbed into a leaf. The feared transitive
-  merging simply does not happen: within-module density (block contrast \(B\approx6\!-\!9\))
-  dominates the single high-\(A\) interface, so detection holds the root apart even though the
-  contrastive term, alone, would not (Figs. 1–2).</p>
   <figure>
-    <img class="fig" src="fig/fig_recovery.png" alt="ARI per score for S1 and S2"/>
-    <figcaption><strong>Figure 1.</strong> Module recovery (ARI, 10 seeds; points = seeds).
-    <em>Left (S1, H1):</em> every score and \(\lvert W\rvert\) recover the disjoint modules
-    perfectly; shuffle collapses to \(\approx0\). <em>Right (S2, H2):</em> all scores clear the
-    \(0.60\) bar, but \(\lvert W\rvert\) (0.912) edges out the measured scores (M1 0.887, M2 0.893,
-    M3 0.883).</figcaption>
-  </figure>
-  <figure>
-    <img class="fig" src="fig/fig_s2_structure.png" alt="S2 recovered community count and merge indicator"/>
-    <figcaption><strong>Figure 2.</strong> S2 decisive test. <em>Left:</em> the choose-\(k\)
-    detector recovers \(G{+}1=5\) communities. <em>Right:</em> the root keeps its own community
-    (no transitive merging) in every seed for every score.</figcaption>
+    <img class="fig" src="fig/fig_v2_validation.png" alt="A recovers planted modules (S1) and keeps pipelined modules separate (S2)"/>
+    <figcaption><strong>Figure 1.</strong> The measured communication \(A\) carries module structure. <em>Left (S1):</em>
+    all three scores recover disjoint modules at the ceiling, far above the shuffle control. <em>Right (S2):</em> across a
+    reusability bottleneck \(A\) recovers the leaves and the shared root as \(G{+}1\) communities and never merges the
+    pipeline. The premise holds — \(A\) has the information the prior needs.</figcaption>
   </figure>
 
-  <h3>4.2 Advantage <span class="status refuted">H3 fail</span></h3>
-  <p><strong>H3 — value over the \(\lvert W\rvert\) proxy.</strong> The kill switch fires: no measured
-  score beats \(\lvert W\rvert\). Pooling S1+S2, the paired advantage is slightly <em>negative</em>
-  and not significant for every score:</p>
-  <div class="tablewrap"><table>
-    <thead><tr><th>score</th><th>S1 ΔARI</th><th>S2 ΔARI</th><th>pooled ΔARI</th><th>Wilcoxon \(p\)</th><th>\(d_z\)</th><th>H3 (≥ +0.15, sig.)</th></tr></thead>
-    <tbody>
-      <tr><td>M1 (flow)</td><td>0.000</td><td>−0.025</td><td>−0.012</td><td>0.107</td><td>−0.38</td><td>✗</td></tr>
-      <tr><td>M2 (co-activation)</td><td>0.000</td><td>−0.018</td><td>−0.009</td><td>0.089</td><td>−0.35</td><td>✗</td></tr>
-      <tr><td>M3 (output-Jacobian)</td><td>0.000</td><td>−0.029</td><td>−0.014</td><td>0.138</td><td>−0.32</td><td>✗</td></tr>
-    </tbody>
-  </table></div>
-  <p>The planted-net result is partly confounded: masking makes \(\lvert W\rvert\) equal the
-  ground-truth wiring <em>by construction</em>, so it is a near-perfect proxy there and nothing can
-  beat it. The fair test is the realistic regime (S3, input-group ARI): there the best measured
-  score (M2) does edge ahead of \(\lvert W\rvert\) — by \(+0.163\) on flat_modular and \(+0.056\)
-  on hier_tree — but neither gap is significant (\(p=0.105,\,0.68\)) and both absolute ARIs sit
-  well below \(0.50\). Either way, <strong>the measured communication score delivers no decisive
-  advantage over the weight-magnitude proxy already in use (Fig. 3).</strong></p>
+  <h2>3. Training the prior</h2>
+  <p>With the signal validated, we train \(\mathcal{L}_{\text{total}}\) (Eqs. \eqref{eq:total}–\eqref{eq:code})
+  end-to-end and ask what it buys over the best simple regularizer. The realistic setting is a
+  \(24\!\to\!64\!\to\!64\!\to\!1\) GELU MLP on two tasks — <code>flat_modular</code> (one layer of factor groups) and
+  <code>hier_tree</code> (a depth-3 hierarchy). Baselines, all val-tuned on a matched six-point grid: NoReg, \(\ell_1\),
+  \(\ell_2\), and a <em>structured</em> group-lasso (groups = each neuron's fan-in; it prunes whole neurons — the apt
+  competitor for a method claiming neuron-level structure). Ten seeds; realistic tasks swept over
+  \(n\in\{512,1024,2048\}\); each score paired (per seed) against the best-of-\(\{\ell_1,\ell_2,\text{group-lasso}\}\) by
+  mean test MSE (Wilcoxon + Cohen's \(d_z\)); 560 runs, dispatched to PACE.</p>
+
+  <p><strong>The headline: it de-rotates the network, and nothing else does.</strong> The prior's distinctive effect is
+  structural. M1 raises <em>axis-mass</em> (the fraction of hidden variance lying on neuron axes; \(1=\)fully aligned)
+  from \(\approx0.24\!-\!0.30\) for the best penalty to \(\approx0.39\!-\!0.47\) — large and significant at <em>every</em>
+  sample size on <code>flat_modular</code> (\(d_z\) up to \(3.6\), \(p=.002\)) and significant on <code>hier_tree</code>
+  at \(n=2048\) (\(+0.06\), \(p=.02\)). Neither \(\ell_1\), \(\ell_2\), nor group-lasso shifts axis-mass off the NoReg
+  value (Fig. 2). This is precisely the property the forensics said was missing: the modules <em>are</em> rotated, but a
+  prior whose codes are allowed to act on the weights (the un-detached coupling) actively rotates the network
+  <em>toward</em> neuron alignment. The per-neuron code is no longer the wrong object — the prior makes it the right
+  one.</p>
   <figure>
-    <img class="fig" src="fig/fig_value_over_proxy.png" alt="Delta ARI of measured scores over |W|"/>
-    <figcaption><strong>Figure 3.</strong> Value over the proxy, \(\Delta\text{ARI}=\)(measured
-    \(-\,\lvert W\rvert\)). Planted S1/S2 deltas are \(\le 0\); the realistic S3 deltas are positive
-    but their error bars (\(\pm\)s.e.m.) cross zero and fall short of the \(+0.15\) bar.</figcaption>
+    <img class="fig" src="fig/fig_v2_derotation.png" alt="axis_mass by condition on the realistic tasks"/>
+    <figcaption><strong>Figure 2.</strong> De-rotation. Only the communication-priced code objective (M1, then M3) lifts
+    axis-alignment above the baselines — including the structured group-lasso. Weight-magnitude penalties leave the
+    representation as rotated as NoReg.</figcaption>
   </figure>
 
-  <p><strong>The prune term fares no better.</strong> The other half of the objective is
-  \(\mathcal{R}_{\text{sup}}\), the edge-suppression/prune term. A prune-then-detect pass —
-  magnitude-prune the smallest weights, then re-detect (the Neural-Sculpting "prune, then detect"
-  order \(\mathcal{R}_{\text{sup}}\) is meant to exploit) — leaves S1 perfect but <em>lowers</em> S2
-  recovery (M3 \(0.88\!\to\!0.73\)): it keeps the high-magnitude bottleneck edges and drops weak
-  within-module ones, so pruning-first sharpens nothing relevant. Neither term of
-  \(\mathcal{L}_{\text{total}}\) earns its keep over the existing \(\lvert W\rvert\) approach.</p>
-
-  <p><strong>H4 — representation class (non-gating).</strong> On both S3 tasks the input-group ARI is
-  weak and high-variance (best score: 0.36 flat, 0.24
-  hier; both below the \(0.50\) branch-(a) bar), while the rotation-aware <code>patch_r2</code>
-  reliably recovers the modules from <em>rotated</em> subspaces (0.92 flat; 0.47 mean / 0.59 median
-  hier) far above the neuron-level view and the rotation-blind control, with low
-  <code>axis_mass</code> (\(\approx0.23\), i.e. not single-neuron-aligned). Both tasks therefore
-  land in <strong>branch (b): structure is real but rotated</strong> (Fig. 4) — per-neuron codes are the
-  wrong object; only rotation-aware codes could carry it. This corroborates
-  <a class="xref" href="../flat_forensics_report/">the flat-forensics rotated-modules finding</a>. H4 is
-  non-gating (it would set the representation class only if the gate passed).</p>
+  <p><strong>Accuracy: competitive, not a free lunch.</strong> Group-lasso is the strongest baseline in every cell
+  (\(\gg\ell_1\)). Against it, the prior still wins on the clean task <code>flat_modular</code> at \(n=512\) (M1
+  \(0.218\) vs \(0.288\), \(p=.014\)) and \(n=1024\) (M1 \(0.089\) vs \(0.134\), \(p=.002\), \(d_z=-1.27\)), but the
+  margin <em>narrows to a tie as the task saturates</em> (\(n=2048\)) and on the harder <code>hier_tree</code> once it
+  leaves its degenerate regime. So on raw accuracy the prior is on par with — occasionally better than — the best
+  structured penalty (Fig. 3); the result to bank is the de-rotation, not the MSE.</p>
   <figure>
-    <img class="fig" src="fig/fig_s3.png" alt="S3 input-group ARI and probes for flat_modular and hier_tree"/>
-    <figcaption><strong>Figure 4.</strong> S3 realistic regime. Input-group ARI (neuron-level /
-    \(\lvert W\rvert\) view) stays below the \(0.50\) bar, while the rotation-aware probes
-    (annotated) show real but rotated module structure ⇒ branch (b).</figcaption>
+    <img class="fig" src="fig/fig_v2_mse.png" alt="test MSE by condition for the four tasks"/>
+    <figcaption><strong>Figure 3.</strong> Held-out MSE by condition (dots = seeds). Group-lasso (pink) is the toughest
+    simple baseline; M1/M3 beat it on <code>flat_modular</code> and tie on the planted nets and the saturated/harder
+    regimes. M2 (green) is consistently worst.</figcaption>
   </figure>
 
-  <h2>5. Verdict</h2>
-  <div class="tldr"><p><strong>Decision (rule of §4: proceed iff some single score satisfies
-  H1 ∧ H2 ∧ H3).</strong> H1 met, H2 pass, <strong>H3 fail</strong> ⇒
-  <strong>do not build</strong> the \(A\)-based objective \(\mathcal{L}_{\text{total}}\) (neither the
-  \(\mathcal{R}_{\text{sup}}\) prune term nor the \(\mathcal{R}_{\text{mod}}\) code term). Blocking hypothesis: <strong>H3</strong>.
-  Two findings are genuinely encouraging for the concept — a measured \(A\) <em>does</em> carry
-  module structure (H1) and <em>does not</em> transitively merge pipelined modules (H2, the risk
-  that motivated the gate). But the premise of the redesign — that a measured communication score
-  beats the static \(\lvert W\rvert\) proxy — is <strong>unsupported</strong>: across planted and
-  realistic regimes, M1/M2/M3 tie or marginally trail \(\lvert W\rvert\). And H4 indicates the
-  modules are rotated, so per-neuron codes are likely the wrong object regardless.</p></div>
-  <p>The action fixed in advance for an H3 failure is to reconsider the premise. The constructive reading: if
-  a code regularizer is pursued, the lever is the <em>representation class</em> (rotation-aware
-  codes, H4 branch b), not swapping \(\lvert W\rvert\) for a measured \(A\) — that swap is not
-  justified by this evidence.</p>
+  <p><strong>Sample size and which score.</strong> The sweep (Fig. 4) shows <code>hier_tree</code> is degenerate at
+  \(n=512\) (every method worse than the mean predictor) and becomes well-posed by \(n\approx1024\); the M1/M3 curves
+  sit at or below group-lasso throughout. Among scores the ordering is <strong>M1 \(\gt\) M3 \(\gg\) M2</strong>: M1 (flow)
+  is the clear pick, M3 (Jacobian) follows, and M2 (co-activation) actually <em>loses</em> to group-lasso and never
+  de-rotates — the weakest score, here a clear failure rather than a near-miss.</p>
+  <figure>
+    <img class="fig" src="fig/fig_v2_nsweep.png" alt="test MSE versus n_train"/>
+    <figcaption><strong>Figure 4.</strong> Sample-size sweep vs group-lasso. The M1/M3 advantage is largest on
+    <code>flat_modular</code> and shrinks toward a tie as data grows; <code>hier_tree</code> only leaves the degenerate
+    regime (dashed = mean predictor) by \(n\approx1024\).</figcaption>
+  </figure>
 
-  <h2>6. Caveats</h2>
+  <div class="tldr"><p><strong>What to build.</strong> A measured-communication code prior — \(A\) un-detached,
+  layer-mean-normalized, constant-\(c\) repulsion — on the <strong>M1 (flow)</strong> score. \(A\) demonstrably carries
+  the module structure the prior needs (it recovers planted modules and resists pipeline merging), and trained
+  end-to-end the prior <em>de-rotates</em> the network into neuron-aligned modules where no weight penalty can. Evaluate
+  it by de-rotation / modularity, treating parity on raw accuracy with a strong structured baseline as the floor, not
+  the headline.</p></div>
+
+  <h2>4. Caveats</h2>
   <ul>
-    <li><strong>Confound (flagged, not hidden):</strong> on planted nets \(\lvert W\rvert\) equals
-    the ground-truth mask by construction, so H3-on-planted is biased toward \(\lvert W\rvert\).
-    The S3 supplement is the fair test and still shows no significant advantage.</li>
-    <li><strong>Directional prediction not supported (non-gating):</strong> the plan predicted
-    \(M3>M2>M1\) and that M2 (co-activation) would show the most S2 merging. We see M1\(\approx\)M2
-    \(\approx\)M3 on S2 ARI, <em>zero</em> merging for all scores, and the highest block contrast
-    for M3 — the ordering and the merging prediction do not hold.</li>
-    <li><strong>Scope:</strong> planted nets are small (\(\le\)~120 neurons) with smooth tanh
-    teachers; hier_tree (d=3) is the hardest to fit (higher MSE) and its <code>patch_r2</code>
-    control is heavy-tailed (we report the median). The gate's decision rests on H3, which is robust
-    across both planted settings and the realistic supplement.</li>
+    <li><strong>The win is structural, not an accuracy claim.</strong> The prior's MSE edge over the <em>best</em> simple
+    regularizer (group-lasso) is modest and evaporates as the task saturates or hardens; the robust, replicated result is
+    <em>de-rotation</em>, whose value presumes axis-alignment is the goal (it is, for this program).</li>
+    <li><strong>Un-detaching \(A\) is load-bearing.</strong> A detached \(A\) makes the codes a read-out that never
+    reshapes the weights, and the de-rotation vanishes; the \(\phi\!\to\!W\) gradient path is what does the work.</li>
+    <li><strong>Scope.</strong> Exploratory: small synthetic nets, smooth tanh teachers, one code architecture, two
+    realistic tasks. <code>hier_tree</code> is degenerate below \(n\approx1024\). A direction confirmed, not a method
+    shipped.</li>
+    <li><strong>Baseline matters (a methodological note).</strong> Against \(\ell_1\) alone the prior looked like a
+    \(\sim\)38% accuracy win; adding \(\ell_2\) and the structured group-lasso cut that to the modest, regime-dependent
+    edge reported here. The toughest honest baseline is group-lasso, and that is the comparison drawn throughout.</li>
   </ul>
 
 </article></main>
