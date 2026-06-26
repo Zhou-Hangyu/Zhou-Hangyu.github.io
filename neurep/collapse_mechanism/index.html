@@ -259,12 +259,12 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
 .tip-r .tip{left:auto;right:0;transform:none}
 .tnode:hover .tip,.tnode:focus-visible .tip,.tnode:focus-within .tip{opacity:1;visibility:visible}
 .tip-h{display:flex;align-items:center;gap:.5rem;margin-bottom:.3rem}
-.tip-th{font:700 .58rem/1 var(--disp);text-transform:uppercase;letter-spacing:.11em;color:var(--tree)}
 .tip-st{font:600 .56rem/1 var(--disp);text-transform:uppercase;letter-spacing:.07em;
   color:var(--dot,var(--mut));padding:.22em .45em;border:1px solid var(--line);border-radius:.5em}
 .tip-t{display:block;font:600 .92rem/1.3 var(--disp);color:var(--ink);letter-spacing:-.01em}
-.tip-sub{display:block;margin-top:.32rem;font:400 .82rem/1.42 var(--serif);color:var(--mut)}
-.tip-x{display:block;margin-top:.35rem;font:500 .72rem/1.35 var(--disp);color:var(--mut)}
+/* the gist line (a short one-line finding, or the question) — shown IN FULL, never truncated;
+   notes are kept short (R11) so the card stays compact without clamping */
+.tip-sub{display:block;margin-top:.34rem;font:400 .82rem/1.42 var(--serif);color:var(--mut)}
 
 /* ---- interactivity: click a node to highlight its subtree, then Focus to isolate it ---- */
 .tree-hint{margin:.2rem 0 1rem;color:var(--mut);font:400 .9rem/1.5 var(--serif)}
@@ -303,13 +303,15 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
 .treeview.js-on .tip{display:none}
 /* the node briefing: same fan-popup chrome (caret + fan + shadow), but a left-aligned,
    multi-line block instead of a button row, centred over the node. */
-.node-pop{display:block;text-align:left;white-space:normal;max-width:264px;
-  padding:.62rem .78rem;border-left:3px solid var(--tree,var(--violet));cursor:pointer;
-  transition:box-shadow .12s ease,transform .12s ease}
-.node-pop:hover{box-shadow:0 24px 52px -22px rgba(22,22,26,.82);transform:translate(-50%,-1px)}
-/* the "click to open" affordance appended to the briefing card */
-.np-open{display:block;margin-top:.55rem;color:var(--violet);
-  font:700 .62rem/1 var(--disp);text-transform:uppercase;letter-spacing:.09em}
+/* fixed width so every card is identical regardless of content; no hover transform, so the
+   card never "springs back" as the cursor leaves (it just shows/hides). The thread tint is the
+   card's TOP edge (the tree grows top-to-bottom); the whole card is a link (cursor:pointer
+   says so), so there is no explicit "open" affordance. */
+.node-pop{display:block;text-align:left;white-space:normal;width:250px;
+  padding:.66rem .8rem .7rem;border-top:3px solid var(--tree,var(--violet));cursor:pointer}
+/* the node card has NO caret — the wedge fought the tinted top edge, so it's dropped; the card
+   simply sits just under the node (proximity + the fan hover-bridge carry the connection) */
+.node-pop::after{display:none}
 
 /* focus bar — shown only while a branch is isolated */
 .tree-focusbar{display:flex;align-items:center;gap:.7rem;margin:0 0 .4rem;padding:.5rem .85rem;

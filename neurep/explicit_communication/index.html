@@ -258,12 +258,12 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
 .tip-r .tip{left:auto;right:0;transform:none}
 .tnode:hover .tip,.tnode:focus-visible .tip,.tnode:focus-within .tip{opacity:1;visibility:visible}
 .tip-h{display:flex;align-items:center;gap:.5rem;margin-bottom:.3rem}
-.tip-th{font:700 .58rem/1 var(--disp);text-transform:uppercase;letter-spacing:.11em;color:var(--tree)}
 .tip-st{font:600 .56rem/1 var(--disp);text-transform:uppercase;letter-spacing:.07em;
   color:var(--dot,var(--mut));padding:.22em .45em;border:1px solid var(--line);border-radius:.5em}
 .tip-t{display:block;font:600 .92rem/1.3 var(--disp);color:var(--ink);letter-spacing:-.01em}
-.tip-sub{display:block;margin-top:.32rem;font:400 .82rem/1.42 var(--serif);color:var(--mut)}
-.tip-x{display:block;margin-top:.35rem;font:500 .72rem/1.35 var(--disp);color:var(--mut)}
+/* the gist line (a short one-line finding, or the question) — shown IN FULL, never truncated;
+   notes are kept short (R11) so the card stays compact without clamping */
+.tip-sub{display:block;margin-top:.34rem;font:400 .82rem/1.42 var(--serif);color:var(--mut)}
 
 /* ---- interactivity: click a node to highlight its subtree, then Focus to isolate it ---- */
 .tree-hint{margin:.2rem 0 1rem;color:var(--mut);font:400 .9rem/1.5 var(--serif)}
@@ -302,13 +302,15 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
 .treeview.js-on .tip{display:none}
 /* the node briefing: same fan-popup chrome (caret + fan + shadow), but a left-aligned,
    multi-line block instead of a button row, centred over the node. */
-.node-pop{display:block;text-align:left;white-space:normal;max-width:264px;
-  padding:.62rem .78rem;border-left:3px solid var(--tree,var(--violet));cursor:pointer;
-  transition:box-shadow .12s ease,transform .12s ease}
-.node-pop:hover{box-shadow:0 24px 52px -22px rgba(22,22,26,.82);transform:translate(-50%,-1px)}
-/* the "click to open" affordance appended to the briefing card */
-.np-open{display:block;margin-top:.55rem;color:var(--violet);
-  font:700 .62rem/1 var(--disp);text-transform:uppercase;letter-spacing:.09em}
+/* fixed width so every card is identical regardless of content; no hover transform, so the
+   card never "springs back" as the cursor leaves (it just shows/hides). The thread tint is the
+   card's TOP edge (the tree grows top-to-bottom); the whole card is a link (cursor:pointer
+   says so), so there is no explicit "open" affordance. */
+.node-pop{display:block;text-align:left;white-space:normal;width:250px;
+  padding:.66rem .8rem .7rem;border-top:3px solid var(--tree,var(--violet));cursor:pointer}
+/* the node card has NO caret — the wedge fought the tinted top edge, so it's dropped; the card
+   simply sits just under the node (proximity + the fan hover-bridge carry the connection) */
+.node-pop::after{display:none}
 
 /* focus bar — shown only while a branch is isolated */
 .tree-focusbar{display:flex;align-items:center;gap:.7rem;margin:0 0 .4rem;padding:.5rem .85rem;
@@ -360,10 +362,12 @@ microscope</a></span><span class="repro">reproduce: <a href="https://github.com/
     \mathcal{R}_{\text{code}} = \sum_{\ell}\sum_{i,j}\Big[\,\widehat A^{(\ell)}_{ij}\,d_{ij}\;+\;c\,\max\!\big(0,\,m-d_{ij}\big)\Big],
     \qquad \widehat A^{(\ell)} = A^{(\ell)}\big/\,\overline{A^{(\ell)}}.
   \end{equation}\]
-  <p>Here \(\widehat A^{(\ell)}=A^{(\ell)}/\overline{A^{(\ell)}}\) is the layer-mean-normalized score, and \(A\) is not
-  detached: the attraction term \(\widehat A(W)\,d_{ij}\) couples \(W\) and \(\phi\), so the codes price the connections
-  and the gradient flows back into the weights — without that coupling the codes would only describe the wiring, never
-  reshape it. The constant \(c\) sets the attract/repel threshold (a pair attracts when \(\widehat A \gt c\), repels when
+  <p>Here \(\overline{A^{(\ell)}}\) is the mean of \(A^{(\ell)}\) over all sender–receiver pairs in the layer (a single scalar), so the layer-mean-normalized score \(\widehat A^{(\ell)}=A^{(\ell)}/\overline{A^{(\ell)}}\) has mean 1. \(A\) is not
+  detached — it is read off the live network's weights and activations (Eqs. \eqref{eq:m1}–\eqref{eq:m3}; for M1 and M3 it
+  carries an explicit \(\lvert W^{(\ell)}_{ij}\rvert\) factor), so the attraction term \(\widehat A^{(\ell)}_{ij}\,d_{ij}\)
+  is a product of a weight-derived score and a code distance. It couples \(W\) and \(\phi\): the codes price the
+  connections and the gradient flows back into the weights — without that coupling the codes would only describe the
+  wiring, never reshape it. The constant \(c\) sets the attract/repel threshold (a pair attracts when \(\widehat A \gt c\), repels when
   \(\widehat A \lt c\)), and the layer-mean normalization keeps the typical entry \(O(1)\) so a single \(c\) holds across
   layers. The original proposal also carried an edge-suppression term
   \(\sum_{\ell,i,j}\big(1-A^{(\ell)}_{ij}\big)\lvert W^{(\ell)}_{ij}\rvert\) to prune weak connections; with \(A\)
@@ -397,15 +401,18 @@ microscope</a></span><span class="repro">reproduce: <a href="https://github.com/
     <li><strong>\(A\) does not merge pipelined modules (S2).</strong> The decisive risk: when one module's output feeds
     the next through a strong reusability bottleneck, a naive "pull together everything that communicates" would
     transitively fuse the whole pipeline. It does not — across the leaf\(\to\)root bottleneck \(A\) recovers ARI
-    \(\approx 0.88\!-\!0.90\) (\(\approx\) ceiling), the choose-\(k\) count lands at \(G{+}1=5\) communities, and the
-    shared root is <strong>never absorbed</strong> into a leaf (merge\(^-\) in 10/10 seeds, every score; Fig. 1, right).</li>
+    \(\approx 0.88\!-\!0.90\) (\(\approx\) ceiling, well clear of the \(\approx 0.28\) shuffle floor, which sits above
+    S1's because the layered graph alone carries some structure), the choose-\(k\) count lands at \(G{+}1=5\) communities,
+    and the shared root <strong>keeps its own community</strong> in 10/10 seeds for every score — never absorbed into a
+    leaf (Fig. 1, right).</li>
   </ul>
   <figure>
     <img class="fig" src="fig/fig_v2_validation.png" alt="A recovers planted modules (S1) and keeps pipelined modules separate (S2)"/>
     <figcaption><strong>Figure 1.</strong> The measured communication \(A\) carries module structure. <em>Left (S1):</em>
     all three scores recover disjoint modules at the ceiling, far above the shuffle control. <em>Right (S2):</em> across a
-    reusability bottleneck \(A\) recovers the leaves and the shared root as \(G{+}1\) communities and never merges the
-    pipeline. The premise holds — \(A\) has the information the prior needs.</figcaption>
+    reusability bottleneck \(A\) recovers the leaves and the shared root as \(G{+}1\) communities (\(\approx\) ceiling,
+    well above the shuffle floor) and never merges the pipeline. The premise holds — \(A\) has the information the prior
+    needs.</figcaption>
   </figure>
 
   <h2>3. Training the prior</h2>
@@ -419,19 +426,29 @@ microscope</a></span><span class="repro">reproduce: <a href="https://github.com/
   mean test MSE (Wilcoxon + Cohen's \(d_z\)); 560 runs, dispatched to PACE.</p>
 
   <p><strong>The headline: it de-rotates the network, and nothing else does.</strong> The prior's distinctive effect is
-  structural. M1 raises <em>axis-mass</em> (the fraction of hidden variance lying on neuron axes; \(1=\)fully aligned)
-  from \(\approx0.24\!-\!0.30\) for the best penalty to \(\approx0.39\!-\!0.47\) — large and significant at <em>every</em>
-  sample size on <code>flat_modular</code> (\(d_z\) up to \(3.6\), \(p=.002\)) and significant on <code>hier_tree</code>
-  at \(n=2048\) (\(+0.06\), \(p=.02\)). Neither \(\ell_1\), \(\ell_2\), nor group-lasso shifts axis-mass off the NoReg
-  value (Fig. 2). This is precisely the property the forensics said was missing: the modules <em>are</em> rotated, but a
-  prior whose codes are allowed to act on the weights (the un-detached coupling) actively rotates the network
-  <em>toward</em> neuron alignment. The per-neuron code is no longer the wrong object — the prior makes it the right
-  one.</p>
+  structural. We read it with <em>axis-mass</em> — the fraction of a module's hidden-activation subspace that lies on
+  single neuron axes (\(1=\)fully aligned) — where a module's subspace is recovered by resampling its input factor-group
+  and taking the top principal directions of the first-hidden-layer displacement. On <code>flat_modular</code>, where each
+  module <em>is</em> a disjoint input group computed in that first layer, M1 raises axis-mass to \(\approx0.39\!-\!0.47\),
+  against \(\approx0.28\!-\!0.32\) for the best weight penalty (group-lasso) and \(\approx0.23\) for NoReg — large and
+  significant at <em>every</em> sample size (\(d_z\) up to \(3.6\), \(p=.002\)). Neither \(\ell_1\), \(\ell_2\), nor
+  group-lasso shifts axis-mass off the NoReg value (Fig. 2). This is precisely the property the forensics said was
+  missing: the modules <em>are</em> rotated, but a prior whose codes act on the weights (the un-detached coupling)
+  rotates the network <em>toward</em> neuron alignment. The per-neuron code is no longer the wrong object — the prior
+  makes it the right one.</p>
+
+  <p>The de-rotation claim rests on <code>flat_modular</code> by design of the probe. On <code>hier_tree</code> M1 still
+  lifts axis-mass (\(+0.06\) at \(n=2048\), \(p=.02\)), but the read there is only partial: resampling raw input groups
+  and reading the first hidden layer sees the <em>leaf</em> modules, whereas the task's distinctive structure is the
+  hierarchical combination of those leaves — deeper than the first layer, and something a
+  \(24\!\to\!64\!\to\!64\!\to\!1\) net has no separate layer to expose cleanly. So <code>hier_tree</code> serves here as
+  a fit / sample-efficiency test, not a second de-rotation result.</p>
   <figure>
     <img class="fig" src="fig/fig_v2_derotation.png" alt="axis_mass by condition on the realistic tasks"/>
     <figcaption><strong>Figure 2.</strong> De-rotation. Only the communication-priced code objective (M1, then M3) lifts
-    axis-alignment above the baselines — including the structured group-lasso. Weight-magnitude penalties leave the
-    representation as rotated as NoReg.</figcaption>
+    axis-alignment above the baselines — including the structured group-lasso; weight-magnitude penalties leave the
+    representation as rotated as NoReg. The probe reads modules as input factor-groups at the first hidden layer, so the
+    <code>hier_tree</code> panel is a leaf-level read (see text).</figcaption>
   </figure>
 
   <p><strong>Accuracy: competitive, not a free lunch.</strong> Group-lasso is the strongest baseline in every cell
@@ -454,17 +471,11 @@ microscope</a></span><span class="repro">reproduce: <a href="https://github.com/
   de-rotates — the weakest score, here a clear failure rather than a near-miss.</p>
   <figure>
     <img class="fig" src="fig/fig_v2_nsweep.png" alt="test MSE versus n_train"/>
-    <figcaption><strong>Figure 4.</strong> Sample-size sweep vs group-lasso. The M1/M3 advantage is largest on
-    <code>flat_modular</code> and shrinks toward a tie as data grows; <code>hier_tree</code> only leaves the degenerate
-    regime (dashed = mean predictor) by \(n\approx1024\).</figcaption>
+    <figcaption><strong>Figure 4.</strong> Sample-size sweep against all baselines. On <code>flat_modular</code>,
+    \(\ell_1\) and \(\ell_2\) track NoReg and group-lasso sits between them and the prior; the M1/M3 advantage is largest
+    at small \(n\) and shrinks toward a tie as data grows. <code>hier_tree</code> only leaves the degenerate regime
+    (dashed = mean predictor) by \(n\approx1024\).</figcaption>
   </figure>
-
-  <div class="tldr"><p><strong>What to build.</strong> A measured-communication code prior — \(A\) un-detached,
-  layer-mean-normalized, constant-\(c\) repulsion — on the <strong>M1 (flow)</strong> score. \(A\) demonstrably carries
-  the module structure the prior needs (it recovers planted modules and resists pipeline merging), and trained
-  end-to-end the prior <em>de-rotates</em> the network into neuron-aligned modules where no weight penalty can. Evaluate
-  it by de-rotation / modularity, treating parity on raw accuracy with a strong structured baseline as the floor, not
-  the headline.</p></div>
 
   <h2>4. Caveats</h2>
   <ul>
@@ -474,11 +485,9 @@ microscope</a></span><span class="repro">reproduce: <a href="https://github.com/
     <li><strong>Un-detaching \(A\) is load-bearing.</strong> A detached \(A\) makes the codes a read-out that never
     reshapes the weights, and the de-rotation vanishes; the \(\phi\!\to\!W\) gradient path is what does the work.</li>
     <li><strong>Scope.</strong> Exploratory: small synthetic nets, smooth tanh teachers, one code architecture, two
-    realistic tasks. <code>hier_tree</code> is degenerate below \(n\approx1024\). A direction confirmed, not a method
-    shipped.</li>
-    <li><strong>Baseline matters (a methodological note).</strong> Against \(\ell_1\) alone the prior looked like a
-    \(\sim\)38% accuracy win; adding \(\ell_2\) and the structured group-lasso cut that to the modest, regime-dependent
-    edge reported here. The toughest honest baseline is group-lasso, and that is the comparison drawn throughout.</li>
+    realistic tasks. <code>hier_tree</code> is degenerate below \(n\approx1024\), and the geometry probe reads modules as
+    input factor-groups at the first hidden layer — so on <code>hier_tree</code> it sees only the leaf modules, not the
+    deeper hierarchical combiners. A direction confirmed, not a method shipped.</li>
   </ul>
 
 </article></main>
