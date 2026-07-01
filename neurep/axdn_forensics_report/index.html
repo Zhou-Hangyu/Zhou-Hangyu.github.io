@@ -278,11 +278,28 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
 .tree-svg path.is-dim{stroke-opacity:.06}
 .tree-svg path.is-hl{stroke-opacity:.95;stroke-width:2.6}
 .tree-svg path.is-sel{stroke-opacity:1;stroke-width:3.2}
+/* secondary "builds-on" cross-links: a node's dependencies BEYOND its primary (spanning-tree)
+   parent. Dashed + faint by default so the solid backbone stays the dominant read; the presentation
+   attrs (stroke-opacity/dasharray on the <path>) set that resting look, and these CSS states win
+   over them on demand. is-trace (a hovered node's incoming bundle) solidifies + brightens them. */
+.tree-svg path.edge-2.is-dim{stroke-opacity:.04}
+.tree-svg path.is-trace{stroke-opacity:.92;stroke-width:2.4;stroke-dasharray:none}
+/* a focused cluster also surfaces the EXTERNAL inputs its members build on: muted "satellite" dots
+   in a band above the cluster, joined by a finely-dotted feed-line tinted by the SOURCE thread.
+   They are context, not cluster members — dimmed + italic-labelled, and brighten on hover (still a
+   live link to their report). */
+.tree-svg path.edge-ext{stroke-dasharray:1 5}
+.treeview.is-focused .tnode.is-ghost{opacity:.5;animation:none;z-index:1}
+.treeview.is-focused .tnode.is-ghost:hover,.treeview.is-focused .tnode.is-ghost:focus-visible{opacity:1;z-index:30}
+.treeview.is-focused .tnode.is-ghost .tnode-label{font-style:italic;color:var(--mut);font-weight:600}
 /* fat transparent twin over each limb -> an easy click target even though the svg ignores pointers */
 .tree-svg .edge-hit{pointer-events:stroke;cursor:pointer}
 /* the clicked node itself: a firm halo, no pulse */
 .tnode.is-sel{animation:none;box-shadow:0 0 0 3px var(--bg),0 0 0 6px var(--dot,var(--violet));
   transform:translate(-50%,-50%) scale(1.18);z-index:25}
+/* an antecedent dot of the hovered node (a study it builds on): a soft thread-tint ring, so the
+   reader can SEE every parent a multi-parent node pulls from while its edges are traced */
+.tnode.is-trace{box-shadow:0 0 0 3px var(--bg),0 0 0 5.5px color-mix(in srgb,var(--tree,var(--violet)) 60%,transparent);z-index:20}
 
 /* action popup (Focus / Open report) anchored under the clicked node */
 .tree-pop{position:absolute;transform:translate(-50%,0);z-index:50;display:inline-flex;align-items:center;gap:.3rem;

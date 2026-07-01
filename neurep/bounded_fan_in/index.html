@@ -1,0 +1,718 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow"><title>Bounded fan-in from the network — neurep</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"><script>window.MathJax={tex:{tags:'ams',inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]'],['$$','$$']]},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']},chtml:{displayAlign:'center'}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><style>/* ========================================================================== *
+ *  research-site theme — the single source of truth for the visual language.
+ *  The builder INLINES this file into every generated page's <head>, so each
+ *  report renders standalone (open the .html directly) and is depth-proof.
+ *  Re-theme by editing the :root tokens below, then rebuild.
+ *  Visual language: warm cream ground, charcoal+violet ink, Manrope display.
+ * ========================================================================== */
+:root{
+  --bg:#e7e2d9;          /* warm cream ground */
+  --panel:#efeae0;       /* slightly lifted card/panel */
+  --ink:#16161a;         /* near-black text / wordmark */
+  --mut:#6f685f;         /* muted brown-grey */
+  --violet:#4b2e63;      /* primary accent */
+  --violet-dp:#2b1d3d;   /* deep accent */
+  --line:rgba(22,22,26,.12);
+  --code-bg:rgba(75,46,99,.09);
+  --code-fg:#3a2348;
+  --ok:#1f7a55;          /* status: supported — a clean deep emerald (the old forest green read muddy) */
+  --bad:#9a3b2f;         /* status: refuted */
+  --wip:#8a6d1f;         /* status: wip/draft (parked) */
+  --active:#c2701c;      /* status: active — the live frontier (warm amber, set apart from the muted wip) */
+  --disp:'Manrope',-apple-system,'Segoe UI',Roboto,sans-serif;  /* display/UI */
+  --serif:Georgia,'Iowan Old Style','Times New Roman',serif;     /* body */
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:18px/1.66 var(--serif);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+a{color:var(--violet);text-decoration:none}
+a:hover{text-decoration:underline;text-underline-offset:2px}
+
+/* ---- header (wordmark + tabs), shared by every page ---- */
+.nav{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;
+  gap:1rem;padding:.7rem clamp(1rem,4vw,3rem);
+  background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:saturate(140%) blur(8px)}
+.brand{display:inline-flex;align-items:center;gap:.5rem;color:var(--ink);font:800 1.18rem/1 var(--disp);
+  letter-spacing:-.03em}
+.brand:hover{text-decoration:none}
+.tabs{display:flex;gap:clamp(.7rem,2.4vw,1.9rem);font:500 .96rem/1 var(--disp)}
+.tabs .tab{color:var(--mut);padding:.2rem 0;border-bottom:2px solid transparent;letter-spacing:.01em}
+.tabs .tab:hover{color:var(--ink);text-decoration:none}
+.tabs .tab.active{color:var(--ink);border-bottom-color:var(--violet)}
+
+/* ---- landing hero ---- */
+.hero{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;min-height:min(72vh,640px);padding:3rem 1rem 2rem;overflow:hidden}
+.heroink{position:absolute;inset:-6% -2%;width:104%;height:112%;z-index:0;pointer-events:none}
+.bigmark{position:relative;z-index:1;margin:0;color:var(--ink);
+  font:800 clamp(4rem,17vw,12rem)/.9 var(--disp);letter-spacing:-.045em}
+.tagline{position:relative;z-index:1;margin:clamp(2.2rem,5vw,3.3rem) 0 0;max-width:none;color:var(--mut);
+  font:400 clamp(.95rem,2vw,1.18rem)/1.5 var(--disp);letter-spacing:.01em}
+
+/* ---- landing bands + cards ---- */
+.band{max-width:60rem;margin:0 auto;padding:2.6rem clamp(1rem,4vw,2rem) .6rem;scroll-margin-top:5rem}
+.band-title{font:700 .82rem/1 var(--disp);text-transform:uppercase;letter-spacing:.18em;color:var(--mut);
+  margin:0 0 1.1rem;display:flex;align-items:center;gap:.6rem;border:0;padding-bottom:0}
+.band-title::before{content:"";width:24px;height:2px;background:var(--violet);display:inline-block}
+/* one line under each thread title saying what that branch is for (the blurb) */
+.band-blurb{margin:-.7rem 0 1.2rem;max-width:62ch;color:var(--mut);font:400 .96rem/1.5 var(--serif)}
+.overview{font:400 1.06rem/1.6 var(--serif);color:var(--ink);max-width:60ch;margin:0 0 1.4rem}
+.maplist{margin:.2rem 0 1rem;padding-left:1.2rem;color:var(--mut);font:400 1rem/1.7 var(--serif)}
+.maplist a{color:var(--ink)}
+.cards{display:grid;gap:.9rem;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr))}
+.card{position:relative;display:block;background:var(--panel);border:1px solid var(--line);
+  border-radius:14px;padding:1.05rem 1.1rem 1.15rem;color:var(--ink);transition:transform .14s ease,box-shadow .14s ease,border-color .14s}
+.card:hover{text-decoration:none;transform:translateY(-3px);border-color:color-mix(in srgb,var(--violet) 33%,transparent);
+  box-shadow:0 10px 26px -16px rgba(43,29,61,.55)}
+.card-dot{position:absolute;top:1.15rem;right:1.1rem;width:9px;height:9px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#5a3a73,var(--violet-dp))}
+.card-title{margin:.1rem 2rem .35rem 0;font:600 1.06rem/1.32 var(--disp);letter-spacing:-.01em}
+.card-sum{margin:0;color:var(--mut);font:400 .92rem/1.45 var(--serif)}
+/* a live-frontier card: warm left accent + a breathing dot, so it reads as "in motion" */
+.card.is-active{border-left:3px solid var(--active)}
+.card.is-active .card-dot{background:radial-gradient(circle at 35% 30%,
+  color-mix(in srgb,var(--active) 60%,#fff),var(--active));animation:dotpulse 2.4s ease-in-out infinite}
+@keyframes dotpulse{
+  0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--active) 38%,transparent)}
+  50%    {box-shadow:0 0 0 6px color-mix(in srgb,var(--active) 0%,transparent)}}
+
+/* ---- study page ---- */
+.study{max-width:46rem;margin:0 auto;padding:2.2rem clamp(1rem,4vw,1.4rem) 5rem}
+.study-head h1{margin:0;font:800 clamp(1.7rem,4.6vw,2.3rem)/1.12 var(--disp);letter-spacing:-.025em}
+.study-head .sub{margin:.7rem 0 0;color:var(--mut);font:italic 400 1.12rem/1.45 var(--serif)}
+.study-head .rule{height:3px;width:84px;margin:1.3rem 0 .4rem;border-radius:3px;
+  background:linear-gradient(90deg,var(--violet),var(--violet-dp) 55%,transparent)}
+article{font-size:18px}
+article :first-child{margin-top:0}
+h1,h2,h3,h4{font-family:var(--disp);line-height:1.22;letter-spacing:-.015em}
+h2{font-size:1.4rem;margin:2.3rem 0 .5rem;padding-bottom:.25rem;border-bottom:1px solid var(--line)}
+h3{font-size:1.1rem;margin:1.6rem 0 .3rem}
+p{margin:.75rem 0}
+strong{font-weight:700}
+ul,ol{padding-left:1.3rem} li{margin:.25rem 0}
+hr{border:0;border-top:1px solid var(--line);margin:2rem 0}
+
+/* code: technical identifiers, de-emphasised on cream (never a link) */
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.84em;
+  background:var(--code-bg);color:var(--code-fg);padding:.1em .34em;border-radius:.32em;word-break:break-word}
+
+/* figures */
+figure{margin:1.8rem 0;text-align:center;scroll-margin-top:5rem}
+img.fig{max-width:min(100%,640px);height:auto;display:block;margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:.5em;padding:.4rem}
+.study article img:not(.fig){max-width:100%;height:auto}   /* safety net: no image ever exceeds the line width, even if .fig is forgotten */
+figcaption{font:400 14px/1.55 var(--disp);color:var(--mut);text-align:left;margin:.6rem auto 0;max-width:640px}
+.fignum{color:var(--ink);font-weight:700}
+
+/* equation refs + anchors (KaTeX legacy + MathJax) */
+.xref{font-weight:600;text-decoration:none}
+.eqa{position:relative;top:-4.4rem;visibility:hidden}
+.katex-display{overflow-x:auto;overflow-y:hidden;padding:.25rem 0}
+mjx-container[display="true"]{overflow-x:auto;overflow-y:hidden;padding:.15rem 0}
+mjx-container{outline:none}
+
+/* propositions / proofs (pandoc amsthm) */
+.theorem,.proposition,.lemma,.corollary,.definition,.remark{
+  background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--violet);
+  border-radius:.5em;padding:.7rem 1rem;margin:1.3rem 0;scroll-margin-top:5rem}
+.theorem strong:first-child,.proposition strong:first-child,.lemma strong:first-child,
+.corollary strong:first-child,.definition strong:first-child{
+  font-family:var(--disp);color:var(--violet-dp)}
+.proof{margin:1rem 0 1.4rem;padding-left:1rem;border-left:2px solid var(--line);color:#3c3833;font-size:.97em}
+.proof::after{content:"\220E";display:block;text-align:right;color:var(--mut)}
+
+/* tables (booktabs feel) */
+.tablewrap{overflow-x:auto;margin:1.5rem 0}
+table{border-collapse:collapse;margin:0 auto;font:400 .92rem/1.4 var(--disp)}
+th,td{padding:.4rem .8rem;text-align:left}
+thead th{border-top:2px solid var(--ink);border-bottom:1px solid var(--ink);font-weight:700}
+tbody tr:last-child td{border-bottom:2px solid var(--ink)}
+caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);margin-top:.5rem;text-align:left}
+
+/* TL;DR / boxed callout */
+.tldr{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--violet);
+  border-radius:.5em;padding:.85rem 1.05rem;margin:0 0 1.6rem;font-size:.98rem}
+
+/* ---- study context: thread breadcrumb + builds-on + reproduce badge ---- */
+.context{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem .9rem;margin:.2rem 0 1.4rem;
+  font:500 .9rem/1.4 var(--disp);color:var(--mut)}
+.context a{color:var(--ink)}
+.context .crumb{display:inline-flex;align-items:center;gap:.4rem}
+.context .crumb::before{content:"";width:14px;height:2px;background:var(--violet);display:inline-block}
+.context .dep{color:var(--mut)}
+.status{display:inline-block;font:600 .72rem/1 var(--disp);text-transform:uppercase;letter-spacing:.08em;
+  padding:.22em .5em;border-radius:.4em;border:1px solid var(--line)}
+.status.supported{color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}
+.status.refuted{color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,transparent)}
+.status.wip,.status.draft{color:var(--wip);background:color-mix(in srgb,var(--wip) 12%,transparent)}
+.status.active{color:var(--active);background:color-mix(in srgb,var(--active) 14%,transparent)}
+.status.reference{color:var(--violet);background:color-mix(in srgb,var(--violet) 12%,transparent)}
+.repro{display:inline-flex;align-items:center;gap:.4rem;font:500 .82rem/1 var(--disp)}
+.repro code{background:var(--code-bg);color:var(--code-fg)}
+.repro .git{opacity:.65}
+
+/* ====== landing ============================================================ */
+.landing{max-width:60rem;margin:0 auto;padding:1rem clamp(1rem,4vw,2rem) 5rem}
+.text-link{display:inline-flex;align-items:center;gap:.45rem;margin-top:1.4rem;color:var(--violet);
+  font:600 1.02rem/1 var(--disp);letter-spacing:.01em}
+.text-link span{transition:transform .14s ease}
+.text-link:hover{text-decoration:none}
+.text-link:hover span{transform:translateX(4px)}
+
+/* ====== studies: controls (pure-CSS view + show-WIP toggles) =============== */
+.studies-page{max-width:64rem;margin:0 auto;padding:1.6rem clamp(1rem,4vw,2rem) 4rem}
+.studies-goal{max-width:66ch;margin:.1rem 0 1.7rem;color:var(--ink);font:400 1.05rem/1.62 var(--serif)}
+.studies-goal strong{font-weight:700}
+.sv-input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.studies-bar{display:flex;flex-wrap:wrap;align-items:center;gap:1.1rem;margin:.2rem 0 1.8rem}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--panel)}
+.seg-opt{padding:.42rem .95rem;font:600 .8rem/1 var(--disp);text-transform:uppercase;letter-spacing:.08em;
+  color:var(--mut);cursor:pointer;transition:background .14s ease,color .14s ease}
+.seg-opt+.seg-opt{border-left:1px solid var(--line)}
+.seg-opt:hover{color:var(--ink)}
+#sv-tree:checked~.studies-bar label[for=sv-tree],
+#sv-table:checked~.studies-bar label[for=sv-table]{background:var(--violet);color:#fff}
+.wip-chk{display:inline-flex;align-items:center;gap:.5rem;cursor:pointer;color:var(--mut);
+  font:600 .8rem/1 var(--disp);text-transform:uppercase;letter-spacing:.06em}
+.wip-box{width:34px;height:18px;border-radius:10px;background:var(--line);position:relative;
+  transition:background .15s ease;flex:0 0 auto}
+.wip-box::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;
+  background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.3);transition:transform .15s ease}
+#sv-wip:checked~.studies-bar .wip-box{background:var(--violet)}
+#sv-wip:checked~.studies-bar .wip-box::after{transform:translateX(16px)}
+#sv-tree:focus-visible~.studies-bar label[for=sv-tree],
+#sv-table:focus-visible~.studies-bar label[for=sv-table],
+#sv-wip:focus-visible~.studies-bar .wip-chk{outline:2px solid var(--violet);outline-offset:2px;border-radius:6px}
+
+/* view + WIP switching, driven by the hidden inputs */
+.studies-stage{position:relative}
+#sv-table:checked~.studies-stage .view-tree{display:none}
+#sv-tree:checked~.studies-stage .view-table{display:none}
+#sv-wip:not(:checked)~.studies-stage .tree-all{display:none}
+#sv-wip:checked~.studies-stage .tree-stable{display:none}
+#sv-wip:not(:checked)~.studies-stage .view-table .card.is-wip,
+#sv-wip:not(:checked)~.studies-stage .view-table .band.is-wip{display:none}
+
+/* ====== the downward dot-tree ============================================= *
+ *  Bare dots connected by smooth Bézier curves, growing downward. Every LEAF is
+ *  pulled to one bottom row (the "frontier"). A dot's FILL is its verdict and its
+ *  BORDER is solid (proof-read) or dashed (in progress); the thread-start dot is
+ *  haloed in the thread tint, which also colours that thread's curves. Hover a
+ *  dot to reveal its briefing.
+ * ========================================================================== */
+.treeview{padding:.5rem 0 1.5rem}
+.tree-canvas{position:relative;margin:0 auto}
+.tree-svg{position:absolute;inset:0;display:block;pointer-events:none}
+.tree-empty{color:var(--mut);font:400 1rem/1.5 var(--serif);text-align:center;padding:3rem 0}
+
+.tnode{position:absolute;transform:translate(-50%,-50%);width:16px;height:16px;border-radius:50%;
+  background:var(--dot,var(--mut));border:2px solid var(--dot,var(--mut));z-index:2;cursor:pointer;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--dot,var(--mut)) 17%,transparent);   /* one ring for every node */
+  transition:transform .12s ease}
+.tnode.verified{border-style:solid}                                    /* proof-read */
+.tnode.provisional{border-style:dashed;background:color-mix(in srgb,var(--dot) 26%,var(--bg))}  /* parked wip */
+/* an ACTIVE node restores the live-frontier look — amber fill + a dashed amber ring — set
+   apart from every verdict hue. This OVERRIDES the verdict colour on the tree dot itself;
+   --dot stays the verdict so the node's briefing card + the table pill keep the true colour.
+   (active is ORTHOGONAL to status — see _default_visible.) */
+.tnode.active{border-color:var(--active);border-style:dashed;
+  background:color-mix(in srgb,var(--active) 28%,var(--bg));
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--active) 18%,transparent);
+  animation:apulse 2.4s ease-in-out infinite}
+@keyframes apulse{
+  0%,100%{box-shadow:0 0 0 3px color-mix(in srgb,var(--active) 42%,transparent)}
+  50%    {box-shadow:0 0 0 9px color-mix(in srgb,var(--active) 6%,transparent)}}
+.st-supported{--dot:var(--ok)}
+.st-refuted{--dot:var(--bad)}
+.st-wip,.st-draft{--dot:var(--wip)}
+.st-active{--dot:var(--active)}                                        /* the live frontier */
+.st-reference{--dot:var(--violet)}                                     /* shared reference (not a verdict) */
+.tnode .hit{position:absolute;inset:-10px;border-radius:50%}
+.tnode:hover,.tnode:focus-visible{transform:translate(-50%,-50%) scale(1.22);z-index:30;outline:none}
+/* apex = the root of the forest; a neutral hollow origin that links to the landing/overview */
+.tnode.apex{width:13px;height:13px;background:var(--bg);border:2px solid var(--mut);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--mut) 13%,transparent)}
+.tnode.apex:hover{border-color:var(--violet)}
+.apex-label{color:var(--violet);text-transform:uppercase;letter-spacing:.1em;font-weight:700}
+
+/* always-on small title beside each node (below leaves, above the rest) */
+.tnode-label{position:absolute;left:50%;transform:translateX(-50%);width:max-content;max-width:108px;
+  text-align:center;font:600 10px/1.25 var(--disp);color:var(--ink);letter-spacing:-.004em;
+  pointer-events:none;text-shadow:0 0 3px var(--bg),0 0 3px var(--bg),0 0 6px var(--bg)}
+.tnode-label.lbl-dn{top:calc(100% + 5px)}
+.tnode-label.lbl-up{bottom:calc(100% + 5px)}
+.tnode.provisional .tnode-label{color:var(--mut)}      /* WIP titles read lighter */
+
+/* hover tooltip (the dot's content) */
+.tip{position:absolute;left:50%;top:25px;transform:translateX(-50%);width:max-content;max-width:248px;
+  text-align:left;background:var(--panel);border:1px solid var(--line);
+  border-left:3px solid var(--tree,var(--violet));border-radius:10px;padding:.6rem .75rem;
+  box-shadow:0 18px 44px -22px rgba(22,22,26,.72);opacity:0;visibility:hidden;
+  transition:opacity .13s ease;pointer-events:none;z-index:40}
+.tip-up .tip{top:auto;bottom:25px}
+.tip-l .tip{left:0;transform:none}
+.tip-r .tip{left:auto;right:0;transform:none}
+.tnode:hover .tip,.tnode:focus-visible .tip,.tnode:focus-within .tip{opacity:1;visibility:visible}
+.tip-h{display:flex;align-items:center;gap:.5rem;margin-bottom:.3rem}
+.tip-st{font:600 .56rem/1 var(--disp);text-transform:uppercase;letter-spacing:.07em;
+  color:var(--dot,var(--mut));padding:.22em .45em;border:1px solid var(--line);border-radius:.5em}
+.tip-t{display:block;font:600 .92rem/1.3 var(--disp);color:var(--ink);letter-spacing:-.01em}
+/* the gist line (a short one-line finding, or the question) — shown IN FULL, never truncated;
+   notes are kept short (R11) so the card stays compact without clamping */
+.tip-sub{display:block;margin-top:.34rem;font:400 .82rem/1.42 var(--serif);color:var(--mut)}
+
+/* ---- interactivity: click a node to highlight its subtree, then Focus to isolate it ---- */
+.tree-hint{margin:.2rem 0 1rem;color:var(--mut);font:400 .9rem/1.5 var(--serif)}
+.tree-hint b{color:var(--ink);font-weight:700}
+.treeview .tnode{transition:transform .12s ease,opacity .16s ease}
+.tree-svg path{transition:opacity .16s ease,stroke-opacity .16s ease}
+/* dimmed = not in the selected/focused subtree; highlighted = in it */
+.tnode.is-dim{opacity:.16;animation:none}
+.tnode.is-dim .tnode-label{opacity:.5}
+.tree-svg path.is-dim{stroke-opacity:.06}
+.tree-svg path.is-hl{stroke-opacity:.95;stroke-width:2.6}
+.tree-svg path.is-sel{stroke-opacity:1;stroke-width:3.2}
+/* secondary "builds-on" cross-links: a node's dependencies BEYOND its primary (spanning-tree)
+   parent. Dashed + faint by default so the solid backbone stays the dominant read; the presentation
+   attrs (stroke-opacity/dasharray on the <path>) set that resting look, and these CSS states win
+   over them on demand. is-trace (a hovered node's incoming bundle) solidifies + brightens them. */
+.tree-svg path.edge-2.is-dim{stroke-opacity:.04}
+.tree-svg path.is-trace{stroke-opacity:.92;stroke-width:2.4;stroke-dasharray:none}
+/* a focused cluster also surfaces the EXTERNAL inputs its members build on: muted "satellite" dots
+   in a band above the cluster, joined by a finely-dotted feed-line tinted by the SOURCE thread.
+   They are context, not cluster members — dimmed + italic-labelled, and brighten on hover (still a
+   live link to their report). */
+.tree-svg path.edge-ext{stroke-dasharray:1 5}
+.treeview.is-focused .tnode.is-ghost{opacity:.5;animation:none;z-index:1}
+.treeview.is-focused .tnode.is-ghost:hover,.treeview.is-focused .tnode.is-ghost:focus-visible{opacity:1;z-index:30}
+.treeview.is-focused .tnode.is-ghost .tnode-label{font-style:italic;color:var(--mut);font-weight:600}
+/* fat transparent twin over each limb -> an easy click target even though the svg ignores pointers */
+.tree-svg .edge-hit{pointer-events:stroke;cursor:pointer}
+/* the clicked node itself: a firm halo, no pulse */
+.tnode.is-sel{animation:none;box-shadow:0 0 0 3px var(--bg),0 0 0 6px var(--dot,var(--violet));
+  transform:translate(-50%,-50%) scale(1.18);z-index:25}
+/* an antecedent dot of the hovered node (a study it builds on): a soft thread-tint ring, so the
+   reader can SEE every parent a multi-parent node pulls from while its edges are traced */
+.tnode.is-trace{box-shadow:0 0 0 3px var(--bg),0 0 0 5.5px color-mix(in srgb,var(--tree,var(--violet)) 60%,transparent);z-index:20}
+
+/* action popup (Focus / Open report) anchored under the clicked node */
+.tree-pop{position:absolute;transform:translate(-50%,0);z-index:50;display:inline-flex;align-items:center;gap:.3rem;
+  background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:.32rem;white-space:nowrap;
+  box-shadow:0 16px 38px -20px rgba(22,22,26,.72)}
+/* the FAN: a transparent wedge above the popup, bridging up to the limb so the cursor can
+   glide from limb to button without leaving an active hover zone */
+.tree-pop::before{content:"";position:absolute;left:-26px;right:-26px;bottom:100%;height:30px}
+/* a little caret pointing up toward the limb */
+.tree-pop::after{content:"";position:absolute;left:50%;bottom:100%;transform:translateX(-50%);margin-bottom:-1px;
+  border:6px solid transparent;border-bottom-color:var(--panel)}
+.pop-focus{font:700 .68rem/1 var(--disp);text-transform:uppercase;letter-spacing:.06em;color:#fff;
+  background:var(--violet);border:0;border-radius:8px;padding:.42rem .6rem;cursor:pointer;transition:background .12s ease}
+.pop-focus:hover{background:var(--violet-dp)}
+.pop-open{font:700 .68rem/1 var(--disp);text-transform:uppercase;letter-spacing:.06em;color:var(--violet);padding:.42rem .5rem}
+.pop-open:hover{text-decoration:none;color:var(--violet-dp)}
+/* when the JS layer is live, the rich hover card is the floating fan-popup (.node-pop) —
+   so the inline CSS tooltip is hidden (it stays the JS-off fallback). */
+.treeview.js-on .tip{display:none}
+/* the node briefing: same fan-popup chrome (caret + fan + shadow), but a left-aligned,
+   multi-line block instead of a button row, centred over the node. */
+/* fixed width so every card is identical regardless of content; no hover transform, so the
+   card never "springs back" as the cursor leaves (it just shows/hides). The thread tint is the
+   card's TOP edge (the tree grows top-to-bottom); the whole card is a link (cursor:pointer
+   says so), so there is no explicit "open" affordance. */
+.node-pop{display:block;text-align:left;white-space:normal;width:250px;
+  padding:.66rem .8rem .7rem;border-top:3px solid var(--tree,var(--violet));cursor:pointer}
+/* the node card has NO caret — the wedge fought the tinted top edge, so it's dropped; the card
+   simply sits just under the node (proximity + the fan hover-bridge carry the connection) */
+.node-pop::after{display:none}
+
+/* focus bar — shown only while a branch is isolated */
+.tree-focusbar{display:flex;align-items:center;gap:.7rem;margin:0 0 .4rem;padding:.5rem .85rem;
+  background:color-mix(in srgb,var(--violet) 8%,var(--panel));border:1px solid var(--line);border-radius:11px}
+.fb-label{color:var(--mut);font:700 .72rem/1 var(--disp);text-transform:uppercase;letter-spacing:.09em}
+.fb-exit{margin-left:auto;font:700 .72rem/1 var(--disp);text-transform:uppercase;letter-spacing:.06em;cursor:pointer;
+  color:var(--violet);background:none;border:1px solid var(--line);border-radius:8px;padding:.38rem .65rem;transition:.12s ease}
+.fb-exit:hover{background:var(--violet);color:#fff;border-color:var(--violet)}
+
+/* honour reduced-motion: the live-frontier signal degrades to a static ring */
+@media (prefers-reduced-motion:reduce){
+  .tnode.active,.card.is-active .card-dot{animation:none}
+}
+
+@media (max-width:600px){
+  .nav{flex-wrap:wrap;gap:.5rem} .tabs{order:3;width:100%} body{font-size:17px}
+  .studies-page{padding-left:.6rem;padding-right:.6rem}
+}
+</style>
+</head>
+<body>
+<header class="nav"><a class="brand" href="../index.html"><span>neurep</span></a></header><main class="study"><header class="study-head"><h1>Bounded fan-in from the network</h1><p class=sub>A measurement obstruction, and a test of whether a fan-in surcharge beats weight decay.</p><div class="rule"></div></header><div class="context"><span class="crumb"><a href="../studies.html#thread-wiring">Axon–dendrite wiring prior</a></span><span class="status active">active</span><span class="dep">builds on: <a href="../axdn_forensics_report/">The axon–dendrite wiring prior
+(nr.axdn-euc-abs) on
+flat_modular</a>, <a href="../emergent_modularity_report/">Confinement, not endpoint sparsity, buys sample efficiency</a>, <a href="../sample_efficiency_foundations/">Sample efficiency comes from the function class, not the neuron basis</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou-Hangyu/neurep/commit/b2dfc4d75b8dae1d085eed738cc69cc556bd9f25"><code>b2dfc4d75b8dae1d085eed738cc69cc556bd9f25</code></a> <span class="git">· sef-foundations</span></span></div><article>
+
+  <div class="tldr"><p><strong>TL;DR.</strong> A computation graph with <em>bounded fan-in</em> —
+  every node reads few parents — should be cheaper to learn than its ambient width suggests.
+  We ask two things of a trained ReLU network. <strong>Can we measure how bounded-fan-in its
+  computation is, from its weights alone?</strong> No: any weight functional invariant to a
+  rotation of the input basis is a function of the output Gram \(WW^\top\), which cannot read
+  coordinate fan-in (Prop.&nbsp;1); the offline bench confirms no atomic readout is both
+  basis-agnostic and fan-in-calibrated. <strong>Does penalizing a fan-in-weighted complexity
+  beat ordinary weight decay</strong> on targets where fan-in is genuinely required? We test
+  <em>fan-in-weighted decay</em> — hidden-\(\ell_2\) carrying a multiplicative surcharge on each
+  row's effective parent count — against the nested null \(\alpha{=}0\) (which <em>is</em>
+  hidden-\(\ell_2\)) across an interaction-strength ladder that dials fan-in from 1 to 2, with a
+  structure-known oracle as the ceiling. <strong>The surcharge earns a small, robust win over weight
+  decay</strong> (\(\Delta\)AULC \(\approx -0.03\) to \(-0.05\), \(p\lt10^{-4}\), and it survives
+  extending the decay grid until the baseline's own optimum is interior) — <strong>but as a
+  nuisance-rejecting, fan-in-<em>lowering</em> regularizer, not a bounded-fan-in learner</strong>: its
+  advantage does not grow with fan-in necessity (it is smallest exactly where fan-in 2 is most
+  needed), learned fan-in falls toward \(1\) rather than rising to \(2\), the penalty swings
+  \(87\%\) under a function-preserving rescale, and the structure-known oracle keeps a large lead
+  (widest near \(\beta{=}.75\)). You cannot measure bounded fan-in basis-agnostically, and penalizing
+  a coordinate surcharge helps — for the wrong reason.</p></div>
+
+  <h2>1. Why bounded fan-in</h2>
+  <p>Many functions worth learning factor through a sparse computation graph: a moderate number
+  of intermediate quantities, each a function of only a <em>few</em> others, composed to depth.
+  A digit-sum reads pairs; a physical energy sums local interactions; a parser combines adjacent
+  constituents. The defining structural feature is <strong>bounded fan-in with unbounded
+  fan-out</strong>: each node \(v\) reads at most \(r\) parents, but any node may be <em>reused</em>
+  by arbitrarily many children. Fan-in is the rate-setting quantity. If a target is a composition
+  of gates each depending on \(r\) of \(d\) inputs, the statistical difficulty scales with \(r\)
+  — the hardest local piece — not with the ambient \(d\); a learner that confined each unit to
+  read \(r\) coordinates would pay the \(r\)-dimensional sample cost, not the \(d\)-dimensional
+  one. The sibling study <a class="xref" href="../emergent_modularity_report/">emergent_modularity</a> found
+  that confining a network to the <em>correct</em> low-fan-in structure is exactly what buys
+  sample efficiency and compositional generalization — but it priced confinement with an oracle
+  partition. The question here is whether a network can be pushed toward bounded fan-in using only
+  quantities <em>read off its own tensors</em> — no per-neuron representation, no oracle.</p>
+
+  <p>This study is the oracle-free arm of that program, and a derivative of
+  <a class="xref" href="../axdn_forensics_report/">axon&ndash;dendrite</a> (which delivered the fan-in/fan-out
+  asymmetry through a learned geometry that received no task gradient) and of
+  <a class="xref" href="../sample_efficiency_foundations/">sample_efficiency_foundations</a> (whose thesis —
+  the rate-setting effective fan-in is a rotation-invariant property of the function class — becomes
+  the invariance axiom below).</p>
+
+  <h2>2. Two questions</h2>
+  <p>"Use bounded fan-in" splits into two separable problems, with opposite outcomes. The first is
+  <strong>measurement</strong>: is there a smooth scalar \(F(W)\) that reads "this network computes
+  with low effective fan-in," ideally in the NOTEARS spirit (a differentiable functional, not a
+  combinatorial count) and ideally <em>agnostic to the hidden dictionary</em> — giving the same
+  reading whether the network represents its features axis-aligned or in some rotated/overcomplete
+  basis. The second is <strong>regularization</strong>: does <em>penalizing</em> a fan-in-flavored
+  complexity during training buy sample efficiency that the symmetric baselines (no
+  regularization, \(\ell_1\), \(\ell_2\)) cannot, on targets that genuinely have bounded-fan-in
+  structure? The measurement question has a clean negative answer; the regularization question is
+  the one the campaign settles.</p>
+
+  <h2>3. The measurement obstruction</h2>
+  <p>The atomic object is the <strong>row inverse participation ratio</strong> (IPR). For a receiving
+  unit \(u\) with incoming weight row \(W_{u,:}\), writing \(S_{uv}=W_{uv}^2\) for the edge
+  strengths,</p>
+  \[\begin{equation}\label{eq:ipr}
+    b_u \;=\; \frac{\bigl(\sum_v S_{uv}\bigr)^2}{\sum_v S_{uv}^2}
+        \;=\; \frac{\lVert W_{u,:}\rVert_2^4}{\lVert W_{u,:}\rVert_4^4}\;\in[1,\,m_{\rm in}],
+  \end{equation}\]
+  <p>(\(m_{\rm in}\) is the incoming dimension of the row) the <em>effective number of parents</em>
+  \(u\) reads: \(b_u{=}1\) for a one-hot row, \(b_u{=}k\)
+  for \(k\) equal weights. It is scale-free, \(b_u(cW_{u,:}){=}b_u(W_{u,:})\), so it reports a row's
+  <em>shape</em>, not its size. Read in the neuron basis, \(b_u\) is calibrated to coordinate
+  fan-in. The trouble is the basis. The rate-setting fan-in we care about is a property of the
+  function; a network free to choose its hidden dictionary can compute the same function with dense
+  rows in a rotated basis. A useful measure should be blind to that choice — and that is exactly
+  what coordinate fan-in cannot be.</p>
+
+  <p class="proposition"><strong>Proposition 1 (no basis-agnostic fan-in measure).</strong> Let
+  \(F\) be a scalar functional of a weight matrix \(W\in\mathbb{R}^{m\times n}\) that is invariant
+  under right multiplication by every orthogonal \(Q\in O(n)\): \(F(WQ){=}F(W)\). Then \(F\) is a
+  function of the output Gram \(WW^\top\) (the maximal right-\(O(n)\)-invariant of \(W\)). But
+  coordinate row fan-in is <em>not</em> right-invariant: there exist \(W\) with every row
+  \(k\)-sparse and \(Q\in O(n)\) such that \(WQ\) has fully dense rows while
+  \((WQ)(WQ)^\top{=}WW^\top\). Hence no right-rotation-invariant \(W\)-only functional can equal
+  or calibrate to coordinate row fan-in across bases.</p>
+  <div class="proof"><em>Proof.</em> Right-\(O(n)\)-invariance makes \(F\) constant on each orbit
+  \(\{WQ:Q\in O(n)\}\); two matrices share an orbit iff they share \(WW^\top\) (polar
+  decomposition), so \(F\) factors through \(WW^\top\). Take \(W{=}I_n\) (rows \(1\)-sparse,
+  \(b_u{\equiv}1\)) and any dense orthogonal \(Q\) (e.g. a Hadamard/\(\sqrt n\)); then \(WQ{=}Q\)
+  has \(b_u{\equiv}n\) yet \((WQ)(WQ)^\top{=}I{=}WW^\top\). \(F\) cannot separate them. (Reading the
+  singular values alone, as a spectral participation ratio does, requires the stronger two-sided
+  invariance \(F(UWV){=}F(W)\) and so cannot see coordinate structure at all.)</div>
+
+  <p><strong>The bench confirms the dichotomy.</strong> An offline calibration test reads each
+  candidate measure on a planted \(k{=}3\) fan-in code and on a rotated copy of the <em>same</em>
+  function. The coordinate row-IPR \eqref{eq:ipr} reads \(2.92\) on the axis-aligned code (close to
+  the true \(3\)) but \(11.84\) once rotated — calibrated, but basis-committing. A spectral
+  participation ratio of the singular values reads \(10.96\) on both — basis-agnostic, but blind to
+  the parent count it is meant to report. No atomic readout is both. The honest measurement claim is
+  therefore a negative one: <strong>you cannot read dictionary-agnostic bounded-fan-in off the
+  weights</strong>; any concrete fan-in penalty must commit to the neuron basis and pay the
+  parameterization-dependence that commitment brings.</p>
+
+  <p><strong>What the basis-committed prior buys, on its own.</strong> Penalizing exactly that
+  scale-free coordinate measure — a gated mean of \(\log b_u\) over hidden rows (<code>efistruct</code>)
+  — against the representation-free baselines improves the <strong>AULC</strong> (area under the
+  test-error learning curve, lower is better; §6) over unregularized training and drives coordinate
+  fan-in toward \(1\).
+  But the gain does not survive a fair control: a <em>readout-matched</em> hidden-only \(\ell_2\)
+  (weight decay on the same layers, excluding the output unit) tied it (area-under-curve \(0.339\)
+  vs \(0.338\), paired \(p{=}0.76\) over 15 replicates), and the penalty moved \(10\)&ndash;\(17\%\)
+  under function-preserving ReLU rescalings — the gauge dependence Prop.&nbsp;1 anticipates. Reading
+  fan-in off \(\lvert W\rvert\) and penalizing it, by itself, bought nothing over weight decay. That
+  null is the starting point for the rest of this report: if a fan-in prior is to matter, it must be
+  shaped so its surcharge is not redundant with controlling weight magnitude, and tested where fan-in
+  is actually required.</p>
+
+  <h2>4. Fan-in-weighted decay</h2>
+  <p>The scale-freeness of \eqref{eq:ipr} is the defect: it says "keep each row spiky" but nothing
+  about keeping the computation small, so it can be satisfied by large spiky rows and leaves weight
+  magnitude — what weight decay already controls — untouched. The fix is to fold the fan-in reading
+  into the magnitude penalty as a multiplicative <strong>surcharge</strong> rather than a standalone
+  term. Writing \(T_u=\lVert W_{u,:}\rVert_2^2\) for a row's incoming energy and \(b_u\) for its
+  IPR \eqref{eq:ipr}, <strong>fan-in-weighted decay</strong> (<code>FWD</code>) is</p>
+  \[\begin{equation}\label{eq:fwd}
+    \Omega_{\rm FWD} \;=\; \sum_{\ell}\sum_{u} T_u^{\,\ell}\,\bigl(b_u^{\,\ell}\bigr)^{\alpha},
+    \qquad \alpha\ge 0,
+  \end{equation}\]
+  <p>summed over hidden rows of every fan-in linear (the readout is excluded throughout, so the
+  comparison is readout-matched). The exponent \(\alpha\) is the whole experiment. At
+  \(\alpha{=}0\), \((b_u)^0{\equiv}1\) and \(\Omega_{\rm FWD}=\sum_u T_u=\lVert W\rVert_{\rm hid}^2\)
+  — <strong>exactly hidden-only \(\ell_2\)</strong>. At \(\alpha\gt 0\), a high-fan-in row pays more
+  than a low-fan-in row of the <em>same</em> energy: for a row of \(k\) equal weights of magnitude
+  \(a\), \(T_u{=}ka^2\) and \(b_u{=}k\), so \(\Omega_u=a^2 k^{1+\alpha}\) — a row cannot grow wide
+  for free, the property raw IPR lacked. The null \(\alpha{=}0\) is thus <em>nested inside the
+  method</em>: the decisive question is whether \(\alpha\gt 0\) beats \(\alpha{=}0\), same penalty
+  family, same code path.</p>
+
+  <p><strong>Two variants probe what the surcharge should read.</strong> The activation-conditioned
+  form replaces structural energy with realized contribution, \(S_{uv}(x)=(W_{uv}h_v(x))^2\), and
+  averages over inputs (<code>actFWD</code>): it prices the fan-in a unit actually <em>uses</em>,
+  and the receiver-to-parent message \(W_{uv}h_v\) is invariant under a parent's ReLU rescale, so
+  its reading of a unit's fan-in as seen by its children is gauge-stable (though the unit's own
+  incoming energy is not — §7 measures the residual swing). A non-scale-free alternative replaces the
+  IPR entirely with a soft row cardinality \(c_u=\sum_v\log(1+W_{uv}^2/\tau^2)\) penalized as
+  \(\sum_u c_u^{\,p},\ p{\gt}1\) (<code>RLC</code>): \(\ell_2\)-like for small weights, log-growing
+  for large (so big one-hot rows are not free), with the row exponent making many active parents
+  super-additively expensive. All three are pure functionals of the network's own tensors. A fourth
+  reading — the Jacobian fan-in \(S_{uv}=\lvert\partial h_u/\partial h_v\rvert^2\) — collapses to the
+  structural form on a ReLU MLP, where \(J=\operatorname{diag}(\phi')W\), so it is folded into FWD
+  here and would diverge from it only on gated, normalized, or attention layers, which this study
+  does not use.</p>
+
+  <h2>5. The interaction benchmark</h2>
+  <p>Additive-dominated targets — \(\approx 84\%\) first-order (main-effect) mass — let a fan-in-1
+  learner nearly suffice, so a benchmark drawn from them never <em>requires</em> fan-in 2, and a
+  method that confines to fan-in 1 is taking a valid shortcut, not failing. The fix is a target
+  family whose fan-in necessity is a controlled dial. Each node is a function of \(k\le r\) parents built from a single random Gaussian
+  Fourier map \(\phi\), split by its exact functional-ANOVA decomposition (closed-form for
+  \(z\sim\mathcal N(0,I)\), since \(\mathbb E[\cos(\omega\!\cdot\!z+b)]=e^{-\lVert\omega\rVert^2/2}\cos b\))
+  into its additive part \(\phi_{\rm add}\) (the sum of one-dimensional main effects) and its
+  pure-interaction residual \(\phi_{\rm int}=\phi-\phi_{\rm add}\) (all \(\ge 2\)-way terms, zero
+  main effects), then mixed:</p>
+  \[\begin{equation}\label{eq:beta}
+    g_\beta(z) \;=\; \sqrt{1-\beta^2}\,\widehat\phi_{\rm add}(z)\;+\;\beta\,\widehat\phi_{\rm int}(z),
+    \qquad \beta\in[0,1],
+  \end{equation}\]
+  <p>with each part standardized to unit variance. Because the ANOVA parts are \(L^2\)-orthogonal,
+  \(\mathrm{Var}\,g_\beta{=}1\) for every \(\beta\) and the node's interaction (non-additive) Sobol
+  mass is exactly \(\beta^2\): \(\beta{=}0\) is additive (fan-in 1 suffices), \(\beta{=}1\) is pure
+  interaction (fan-in \(\ge 2\) necessary), and \(\beta\) in between is increasingly
+  interaction-dependent but still learnable. A one-parent node has no interaction and stays additive
+  regardless of \(\beta\). Composing these gates over the random graph
+  \(G(d_{\rm eff},\nu,N,r,\Delta,\kappa)\) — \(d_{\rm eff}\) signal inputs, \(N\) nodes in
+  \(\Delta\) tiers, fan-in \(\le r{=}2\), reuse bias \(\kappa\), \(\nu\) nuisance inputs never
+  read — gives a target whose measured
+  interaction mass climbs monotonically with \(\beta\) (verified: \(0.03\to0.94\) across the
+  ladder).</p>
+
+  <p>The headline ladder sweeps \(\beta\in\{0,.25,.5,.75,1\}\) at depth \(\Delta{=}2\) with
+  \(\nu{=}4\) nuisance inputs and reuse \(\kappa{=}1\). Two further axes test where a fan-in prior
+  should help most: a <strong>nuisance</strong> sweep \(\nu\in\{0,2,4,8\}\) at \(\beta{=}.75\) (more
+  irrelevant inputs ought to favor a prior that ignores parents) and a <strong>depth</strong> sweep
+  \(\Delta\in\{2,3\}\) (compositional reuse is where structure should pay over isotropic decay).</p>
+
+  <p><strong>The oracle ceiling.</strong> A structure-known network — one small MLP per node, wired
+  to <em>only</em> that node's true parents (bounded fan-in, nuisance-blind by construction),
+  composed in tier order with a learnable readout over terminals — bounds what knowing the graph
+  buys. If the oracle beats the dense baselines but the fan-in priors do not, the bottleneck is graph
+  <em>discovery</em> (the gap a prior could close); if the oracle does not separate, the cell is not
+  testing fan-in. A pre-flight confirmed the regime: the oracle's AULC advantage over an
+  unregularized dense net grows across the interaction ladder, so fan-in genuinely matters more as
+  \(\beta\) rises — the benchmark spans the fan-in-easy to fan-in-hard range.</p>
+
+  <h2>6. Setup</h2>
+  <p>Every condition trains the same model — an MLP of width \(128\) and depth \(\Delta{+}2\) with
+  ReLU — by AdamW (learning rate \(2\times10^{-3}\), cosine schedule, batch \(64\), \(4000\) steps),
+  with the penalty coefficient annealed from \(0\) to its target over the first \(10\%\) of steps and
+  the best-validation-MSE checkpoint kept for evaluation. Each cell is replicated over \(5\) training
+  seeds \(\times\ 3\) graph draws \(=15\) replicates; the in-range evaluation pool is split into
+  disjoint <em>validation</em> (for selection) and <em>test</em> (reported once) halves. The metric
+  is <strong>AULC</strong>, the area under the test-MSE-vs-\(\log n\) curve over
+  \(n\in\{64,128,256,512,1024,2048\}\) (lower is better; \(\mathrm{Var}\,y{=}1\), so AULC near \(0\)
+  is near-perfect and near \(1\) is no better than predicting the mean). Each method's coefficient is
+  chosen per cell by minimum validation AULC over an eight-point grid — the same trial count for
+  every method (equal HP-search budget). FWD is swept over \(\alpha\in\{0.5,1,2\}\), all \(\gt 0\),
+  so the surcharge cannot collapse onto its own null; the null is the <em>separate</em>
+  readout-matched hidden-\(\ell_2\) baseline (\(=\) FWD at \(\alpha{=}0\)), and RLC's \((\tau,p)\)
+  are likewise separate conditions. Every fan-in penalty is taken over each non-readout linear (the
+  input layer included; the readout is excluded throughout, so the comparison is readout-matched).
+  Significance is a paired Wilcoxon and effect size a paired Cohen's \(d_z\), both paired by
+  \((\text{seed},\text{graph})\) against that null (a method beats it when \(d_z\lt 0\) at
+  \(p\lt 0.05\)); figures plot replicate-mean AULC (no error bands — significance is carried by the
+  paired tests). The pre-registered primary endpoint is the
+  <strong>method\(\times\beta\) interaction</strong> — whether the surcharge's advantage over weight
+  decay grows as fan-in becomes necessary (\(\beta\!\uparrow\)) — not a single-cell win.</p>
+
+  <h2>7. Results</h2>
+  <p><strong>The surcharge beats weight decay — but by an amount that does not grow when fan-in
+  becomes necessary.</strong> Every method's AULC climbs from near-zero at \(\beta{=}0\) (additive, a
+  fan-in-1 learner suffices) toward one at \(\beta{=}1\) (pure interaction), and the structure-known
+  oracle keeps a large lead, widest at mid-ladder (Fig.&nbsp;1). Against the readout-matched
+  hidden-\(\ell_2\) null —
+  each at its val-selected coefficient — the fan-in surcharge FWD wins across the whole ladder:
+  FWD\(@\alpha{=}1\) lowers AULC by \(0.034\)&ndash;\(0.049\) for \(\beta\le.75\) (paired
+  \(d_z\) from \(-4.3\) to \(-10.9\), \(p\lt10^{-4}\)) and still by \(0.014\) at \(\beta{=}1\)
+  (\(d_z{=}-2.2\)). This win <em>survives</em> extending the weight-decay grid upward until
+  \(\ell_2\)'s own optimum is interior — it is not an under-regularized-baseline artifact. But the
+  advantage does not grow with \(\beta\) as the fan-in hypothesis requires: it is roughly
+  \(\beta\)-independent, peaking at \(\beta{=}.5\) (\(-0.049\)) and <em>smallest</em> exactly at
+  \(\beta{=}1\) (\(-0.014\)), where fan-in 2 is most necessary (Fig.&nbsp;2). The pre-registered
+  method\(\times\beta\) interaction is thus the <em>wrong sign</em>: the surcharge helps about equally
+  whether or not fan-in is needed, and least when it is needed most. RLC (the non-scale-free
+  shrinkage variant) is the most consistent, beating the null at every \(\beta\) (to \(-0.018\) at
+  \(\beta{=}1\)); the activation-conditioned actFWD is <em>worse</em> than the null everywhere
+  (\(+0.025\) to \(+0.045\)); raw structural IPR (efistruct) wins at low \(\beta\) but ties by
+  \(\beta{=}.75\).</p>
+
+  <figure>
+    <img class="fig" src="fig/ladder_beta.png" alt="Test AULC versus interaction strength beta for each method"/>
+    <figcaption><span class="fignum">Figure 1.</span> Test AULC (area under the MSE-vs-\(\log n\)
+    curve; lower is better) versus interaction strength \(\beta\) at the headline cell
+    (\(\Delta{=}2\), \(\nu{=}4\), \(\kappa{=}1\)). Every method degrades as fan-in becomes necessary;
+    the structure-known oracle (dashed) keeps a lead that widens through \(\beta{=}.75\), then
+    compresses as the dense methods converge toward the mean-prediction ceiling at \(\beta{=}1\).</figcaption>
+  </figure>
+
+  <figure>
+    <img class="fig" src="fig/endpoint.png" alt="Delta AULC of each method against hidden-L2 versus beta"/>
+    <figcaption><span class="fignum">Figure 2.</span> The primary endpoint: \(\Delta\)AULC of each
+    fan-in method against the readout-matched hidden-\(\ell_2\) null, per \(\beta\) (negative ⇒ beats
+    weight decay; circled ⇒ paired Wilcoxon \(p\lt0.05\)). The surcharge's advantage <em>shrinks</em>
+    as \(\beta\) grows — the opposite of the pre-registered prediction.</figcaption>
+  </figure>
+
+  <p><strong>The mechanism is nuisance rejection, not fan-in discovery.</strong> The surcharge
+  genuinely lowers learned fan-in — but toward the cheapest value, not the true one. FWD's mean
+  hidden row-IPR <em>falls</em> from \(4.6\) at \(\beta{=}0\) to \(1.7\) at \(\beta{=}1\)
+  (Fig.&nbsp;3): it confines <em>toward</em> \(1\) exactly as the target demands \(2\), the source of
+  the shrinking advantage, and at depth \(3\), \(\beta{=}1\) this low-fan-in bias makes FWD
+  <em>lose</em> to weight decay (\(+0.014\), \(p{=}0.005\); the depth-2 ladder's \(-0.014\) win flips sign). Where it does help is orthogonal to
+  interaction: on the nuisance axis (\(\beta{=}.75\), \(\nu\in\{0,2,4,8\}\)) FWD's edge over weight
+  decay <em>grows</em> with the number of irrelevant inputs — from \(-0.022\) at \(\nu{=}0\) to
+  \(-0.042\) at \(\nu{=}8\) — because the structural surcharge prices input-layer fan-in and so drops
+  nuisance columns that isotropic decay keeps. And it fails the <em>other</em> half of the target: a
+  low-fan-in row is only compositional if its senders are <em>reused</em>, but the fan-in-lowering
+  methods build private pathways instead — FWD's mass-weighted fan-out reuse \(R\approx1.3\)
+  (efistruct \(0.6\)) sits far below weight decay's \(3.0\), so a sender rarely feeds more than a few
+  receivers. Bounded fan-in with <em>unbounded</em> fan-out — the compositional target — wants low
+  fan-in and <em>high</em> reuse together, which among these conditions only the oracle attains. The
+  surcharge is a nuisance-rejecting, fan-in-<em>lowering</em> prior, not a bounded-fan-in learner — and across all runs its edge tracks
+  weight scale and spikiness, not any approach to the planted fan-in (Fig.&nbsp;4).</p>
+
+  <figure>
+    <img class="fig" src="fig/fanin_beta.png" alt="Learned effective fan-in versus beta"/>
+    <figcaption><span class="fignum">Figure 3.</span> Learned effective fan-in (mean hidden row-IPR
+    at the val-selected coefficient) versus \(\beta\). FWD confines toward \(\approx1\) and never
+    reaches the true \(r{=}2\) (dotted); efistruct pins fan-in at \(1\) with large spiky rows;
+    \(\ell_2\) and NoReg stay dense.</figcaption>
+  </figure>
+
+  <figure>
+    <img class="fig" src="fig/scatter.png" alt="Test AULC versus hidden weight norm, colored by method"/>
+    <figcaption><span class="fignum">Figure 4.</span> Per-(cell, method) test AULC against the hidden
+    weight norm \(\lVert W\rVert_{\rm hid}\), across every cell. The winning methods sit at small
+    norm; AULC tracks weight scale and row-spikiness, not an approach to the planted fan-in — the
+    run-level read that the mechanism is regularization, not bounded-fan-in learning.</figcaption>
+  </figure>
+
+  <p><strong>The penalty is severely gauge-dependent.</strong> Under a random function-preserving
+  ReLU rescale — the network's output unchanged to \(\sim\!10^{-7}\) — each penalty's value, measured on
+  the networks it trained, swings by \(87\%\) for the energy-weighted structural surcharge, versus
+  \(43\%\) for the activation-conditioned variant and \(30\%\) for the scale-free \(\log\)-IPR
+  (Fig.&nbsp;5). This is the parameterization dependence
+  Proposition&nbsp;1 anticipates: the fan-in ratio \(b_u\) is gauge-invariant, but the row energy
+  \(T_u\) the surcharge multiplies it against is not — so the coefficient a reader tunes is not
+  reading an intrinsic property of the computation.</p>
+
+  <figure>
+    <img class="fig" src="fig/gauge.png" alt="Penalty swing under a function-preserving rescale"/>
+    <figcaption><span class="fignum">Figure 5.</span> Relative penalty swing under a
+    function-preserving ReLU rescale, on trained networks. The energy-weighted structural surcharge
+    swings most; the scale-free \(\log\)-IPR least. The rescale leaves \(f(x)\) unchanged, so a
+    gauge-calibrated fan-in measure would not move at all.</figcaption>
+  </figure>
+
+  <p><strong>Discovery, not confinement, is the bottleneck.</strong> The oracle — the same training
+  budget, but wired to the true parents — beats every representation-free method by a margin that
+  <em>grows</em> with \(\beta\) through the mid-ladder, from \(0.085\) AULC at \(\beta{=}0\) to \(0.28\)
+  at \(\beta{=}.75\) (then compressing at \(\beta{=}1\) as every method nears the ceiling), and the
+  best fan-in prior there still trails it by \(0.23\). Confining fan-in makes rows spikier; it does
+  not tell a unit <em>which</em> parents to keep. Deepening the composition (\(\Delta{=}3\)) leaves
+  the picture unchanged at moderate \(\beta\) (FWD \(-0.041\) vs \(\ell_2\)) but pushes the
+  \(\beta{=}1\) cell past learnability for every method, the oracle included (all AULC \(\approx0.95\),
+  oracle \(0.85\)) — where FWD's low-fan-in bias tips into a net loss.</p>
+
+  <p><strong>Only the practical one of the four pre-registered success criteria is met.</strong> A
+  regularizer that beats readout-matched weight decay where fan-in is necessary (A) — <em>met</em>,
+  robustly. Learned fan-in rising toward the true \(r{=}2\) as interaction grows (B) —
+  <em>failed</em>: it falls toward \(1\). Improved graph recovery, or an approach to the oracle (C) —
+  <em>failed</em>: the oracle gap is unclosed. Low incoming fan-in <em>with</em> nontrivial reuse (D)
+  — <em>failed</em>: reuse collapses to private pathways. The surcharge clears the practical bar and
+  misses every structural one — the signature of a regularization effect that is not bounded-fan-in
+  learning.</p>
+
+  <h2>8. Open problems</h2>
+  <p>The measurement result is settled — coordinate fan-in is not a basis-agnostic observable — so
+  any concrete fan-in penalty commits to the neuron basis and inherits the gauge dependence §7
+  measures. Three gaps frame what an oracle-free bounded-fan-in prior would still need.</p>
+
+  <p><strong>A graph-discovery objective is the missing ingredient.</strong> A penalty on effective
+  fan-in cannot, on its own, decide <em>which</em> parents a unit should keep — it only makes rows
+  spikier — which is why the surcharge confines fan-in toward the cheapest value (\(\approx1\)) rather
+  than the planted \(r{=}2\), and why no representation-free method closes the oracle gap. Closing it
+  needs a differentiable graph-<em>discovery</em> objective: a NOTEARS-style term on the hidden
+  node-to-node adjacency that rewards routing mass along a sparse acyclic wiring, not a sharper
+  magnitude prior.</p>
+
+  <p><strong>The gauge must be fixed, not tolerated.</strong> Every energy-weighted fan-in penalty
+  moves under function-preserving ReLU rescalings, because the row energy \(T_u\) scales with a unit's
+  arbitrary gauge while only the scale-free ratio \(b_u\) is invariant. The surcharge \(T_u\,(b_u)^\alpha\)
+  is useful precisely because \(T_u\) also controls magnitude — but that is what makes it gauge-bound.
+  A principled prior would fix the gauge first (normalize each unit by its outgoing-weight or
+  activation scale, then read fan-in) rather than penalize a quantity that a reparameterization can
+  inflate at will.</p>
+
+  <p><strong>Rotation is the deeper obstruction.</strong> Proposition&nbsp;1 says even a gauge-fixed
+  coordinate measure is basis-committed: a network that represents its features in a rotated or
+  overcomplete dictionary — the superposition an SAE would try to unfold — reads as high-fan-in even
+  when its computation is sparse. Here that failure mode is dormant by construction (superposition
+  needs more features than units, and width \(128 \gg N{=}12\) nodes leaves ample capacity), which is
+  why the neuron-basis prior can act at all. The measurement theorem is the warning that this will
+  not survive a capacity-pressured regime; the honest next step makes the input rotation an explicit
+  experimental knob and asks for a discovery objective robust to it — the rotation-invariant target
+  the theorem says any fan-in measure must ultimately meet.</p>
+
+  <p><strong>What this run did not test.</strong> The comparison covers the readout-matched symmetric
+  baselines and the surcharge family, but not the matched-sparsity methods a fair fan-in claim will
+  eventually want beside them — hard-concrete \(\ell_0\), group lasso, magnitude pruning to a fixed
+  row degree, learned top-\(k\) row selection, and the row-Hoyer null — nor a term that rewards reuse
+  directly (an active-node cost that prices <em>creating</em> a unit while leaving fan-out free, the
+  natural follow-up now that low fan-in is shown to arrive without reuse). Both are deferred: the
+  question here — does the surcharge beat weight decay, and why — is settled without them.</p>
+
+</article></main>
+</body>
+</html>

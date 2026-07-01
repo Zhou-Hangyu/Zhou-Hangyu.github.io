@@ -1,0 +1,747 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow"><title>Sample efficiency comes from the function class, not the neuron basis — neurep</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"><script>window.MathJax={tex:{tags:'ams',inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]'],['$$','$$']]},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']},chtml:{displayAlign:'center'}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><style>/* ========================================================================== *
+ *  research-site theme — the single source of truth for the visual language.
+ *  The builder INLINES this file into every generated page's <head>, so each
+ *  report renders standalone (open the .html directly) and is depth-proof.
+ *  Re-theme by editing the :root tokens below, then rebuild.
+ *  Visual language: warm cream ground, charcoal+violet ink, Manrope display.
+ * ========================================================================== */
+:root{
+  --bg:#e7e2d9;          /* warm cream ground */
+  --panel:#efeae0;       /* slightly lifted card/panel */
+  --ink:#16161a;         /* near-black text / wordmark */
+  --mut:#6f685f;         /* muted brown-grey */
+  --violet:#4b2e63;      /* primary accent */
+  --violet-dp:#2b1d3d;   /* deep accent */
+  --line:rgba(22,22,26,.12);
+  --code-bg:rgba(75,46,99,.09);
+  --code-fg:#3a2348;
+  --ok:#1f7a55;          /* status: supported — a clean deep emerald (the old forest green read muddy) */
+  --bad:#9a3b2f;         /* status: refuted */
+  --wip:#8a6d1f;         /* status: wip/draft (parked) */
+  --active:#c2701c;      /* status: active — the live frontier (warm amber, set apart from the muted wip) */
+  --disp:'Manrope',-apple-system,'Segoe UI',Roboto,sans-serif;  /* display/UI */
+  --serif:Georgia,'Iowan Old Style','Times New Roman',serif;     /* body */
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:18px/1.66 var(--serif);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+a{color:var(--violet);text-decoration:none}
+a:hover{text-decoration:underline;text-underline-offset:2px}
+
+/* ---- header (wordmark + tabs), shared by every page ---- */
+.nav{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;
+  gap:1rem;padding:.7rem clamp(1rem,4vw,3rem);
+  background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:saturate(140%) blur(8px)}
+.brand{display:inline-flex;align-items:center;gap:.5rem;color:var(--ink);font:800 1.18rem/1 var(--disp);
+  letter-spacing:-.03em}
+.brand:hover{text-decoration:none}
+.tabs{display:flex;gap:clamp(.7rem,2.4vw,1.9rem);font:500 .96rem/1 var(--disp)}
+.tabs .tab{color:var(--mut);padding:.2rem 0;border-bottom:2px solid transparent;letter-spacing:.01em}
+.tabs .tab:hover{color:var(--ink);text-decoration:none}
+.tabs .tab.active{color:var(--ink);border-bottom-color:var(--violet)}
+
+/* ---- landing hero ---- */
+.hero{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;min-height:min(72vh,640px);padding:3rem 1rem 2rem;overflow:hidden}
+.heroink{position:absolute;inset:-6% -2%;width:104%;height:112%;z-index:0;pointer-events:none}
+.bigmark{position:relative;z-index:1;margin:0;color:var(--ink);
+  font:800 clamp(4rem,17vw,12rem)/.9 var(--disp);letter-spacing:-.045em}
+.tagline{position:relative;z-index:1;margin:clamp(2.2rem,5vw,3.3rem) 0 0;max-width:none;color:var(--mut);
+  font:400 clamp(.95rem,2vw,1.18rem)/1.5 var(--disp);letter-spacing:.01em}
+
+/* ---- landing bands + cards ---- */
+.band{max-width:60rem;margin:0 auto;padding:2.6rem clamp(1rem,4vw,2rem) .6rem;scroll-margin-top:5rem}
+.band-title{font:700 .82rem/1 var(--disp);text-transform:uppercase;letter-spacing:.18em;color:var(--mut);
+  margin:0 0 1.1rem;display:flex;align-items:center;gap:.6rem;border:0;padding-bottom:0}
+.band-title::before{content:"";width:24px;height:2px;background:var(--violet);display:inline-block}
+/* one line under each thread title saying what that branch is for (the blurb) */
+.band-blurb{margin:-.7rem 0 1.2rem;max-width:62ch;color:var(--mut);font:400 .96rem/1.5 var(--serif)}
+.overview{font:400 1.06rem/1.6 var(--serif);color:var(--ink);max-width:60ch;margin:0 0 1.4rem}
+.maplist{margin:.2rem 0 1rem;padding-left:1.2rem;color:var(--mut);font:400 1rem/1.7 var(--serif)}
+.maplist a{color:var(--ink)}
+.cards{display:grid;gap:.9rem;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr))}
+.card{position:relative;display:block;background:var(--panel);border:1px solid var(--line);
+  border-radius:14px;padding:1.05rem 1.1rem 1.15rem;color:var(--ink);transition:transform .14s ease,box-shadow .14s ease,border-color .14s}
+.card:hover{text-decoration:none;transform:translateY(-3px);border-color:color-mix(in srgb,var(--violet) 33%,transparent);
+  box-shadow:0 10px 26px -16px rgba(43,29,61,.55)}
+.card-dot{position:absolute;top:1.15rem;right:1.1rem;width:9px;height:9px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#5a3a73,var(--violet-dp))}
+.card-title{margin:.1rem 2rem .35rem 0;font:600 1.06rem/1.32 var(--disp);letter-spacing:-.01em}
+.card-sum{margin:0;color:var(--mut);font:400 .92rem/1.45 var(--serif)}
+/* a live-frontier card: warm left accent + a breathing dot, so it reads as "in motion" */
+.card.is-active{border-left:3px solid var(--active)}
+.card.is-active .card-dot{background:radial-gradient(circle at 35% 30%,
+  color-mix(in srgb,var(--active) 60%,#fff),var(--active));animation:dotpulse 2.4s ease-in-out infinite}
+@keyframes dotpulse{
+  0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--active) 38%,transparent)}
+  50%    {box-shadow:0 0 0 6px color-mix(in srgb,var(--active) 0%,transparent)}}
+
+/* ---- study page ---- */
+.study{max-width:46rem;margin:0 auto;padding:2.2rem clamp(1rem,4vw,1.4rem) 5rem}
+.study-head h1{margin:0;font:800 clamp(1.7rem,4.6vw,2.3rem)/1.12 var(--disp);letter-spacing:-.025em}
+.study-head .sub{margin:.7rem 0 0;color:var(--mut);font:italic 400 1.12rem/1.45 var(--serif)}
+.study-head .rule{height:3px;width:84px;margin:1.3rem 0 .4rem;border-radius:3px;
+  background:linear-gradient(90deg,var(--violet),var(--violet-dp) 55%,transparent)}
+article{font-size:18px}
+article :first-child{margin-top:0}
+h1,h2,h3,h4{font-family:var(--disp);line-height:1.22;letter-spacing:-.015em}
+h2{font-size:1.4rem;margin:2.3rem 0 .5rem;padding-bottom:.25rem;border-bottom:1px solid var(--line)}
+h3{font-size:1.1rem;margin:1.6rem 0 .3rem}
+p{margin:.75rem 0}
+strong{font-weight:700}
+ul,ol{padding-left:1.3rem} li{margin:.25rem 0}
+hr{border:0;border-top:1px solid var(--line);margin:2rem 0}
+
+/* code: technical identifiers, de-emphasised on cream (never a link) */
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.84em;
+  background:var(--code-bg);color:var(--code-fg);padding:.1em .34em;border-radius:.32em;word-break:break-word}
+
+/* figures */
+figure{margin:1.8rem 0;text-align:center;scroll-margin-top:5rem}
+img.fig{max-width:min(100%,640px);height:auto;display:block;margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:.5em;padding:.4rem}
+.study article img:not(.fig){max-width:100%;height:auto}   /* safety net: no image ever exceeds the line width, even if .fig is forgotten */
+figcaption{font:400 14px/1.55 var(--disp);color:var(--mut);text-align:left;margin:.6rem auto 0;max-width:640px}
+.fignum{color:var(--ink);font-weight:700}
+
+/* equation refs + anchors (KaTeX legacy + MathJax) */
+.xref{font-weight:600;text-decoration:none}
+.eqa{position:relative;top:-4.4rem;visibility:hidden}
+.katex-display{overflow-x:auto;overflow-y:hidden;padding:.25rem 0}
+mjx-container[display="true"]{overflow-x:auto;overflow-y:hidden;padding:.15rem 0}
+mjx-container{outline:none}
+
+/* propositions / proofs (pandoc amsthm) */
+.theorem,.proposition,.lemma,.corollary,.definition,.remark{
+  background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--violet);
+  border-radius:.5em;padding:.7rem 1rem;margin:1.3rem 0;scroll-margin-top:5rem}
+.theorem strong:first-child,.proposition strong:first-child,.lemma strong:first-child,
+.corollary strong:first-child,.definition strong:first-child{
+  font-family:var(--disp);color:var(--violet-dp)}
+.proof{margin:1rem 0 1.4rem;padding-left:1rem;border-left:2px solid var(--line);color:#3c3833;font-size:.97em}
+.proof::after{content:"\220E";display:block;text-align:right;color:var(--mut)}
+
+/* tables (booktabs feel) */
+.tablewrap{overflow-x:auto;margin:1.5rem 0}
+table{border-collapse:collapse;margin:0 auto;font:400 .92rem/1.4 var(--disp)}
+th,td{padding:.4rem .8rem;text-align:left}
+thead th{border-top:2px solid var(--ink);border-bottom:1px solid var(--ink);font-weight:700}
+tbody tr:last-child td{border-bottom:2px solid var(--ink)}
+caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);margin-top:.5rem;text-align:left}
+
+/* TL;DR / boxed callout */
+.tldr{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--violet);
+  border-radius:.5em;padding:.85rem 1.05rem;margin:0 0 1.6rem;font-size:.98rem}
+
+/* ---- study context: thread breadcrumb + builds-on + reproduce badge ---- */
+.context{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem .9rem;margin:.2rem 0 1.4rem;
+  font:500 .9rem/1.4 var(--disp);color:var(--mut)}
+.context a{color:var(--ink)}
+.context .crumb{display:inline-flex;align-items:center;gap:.4rem}
+.context .crumb::before{content:"";width:14px;height:2px;background:var(--violet);display:inline-block}
+.context .dep{color:var(--mut)}
+.status{display:inline-block;font:600 .72rem/1 var(--disp);text-transform:uppercase;letter-spacing:.08em;
+  padding:.22em .5em;border-radius:.4em;border:1px solid var(--line)}
+.status.supported{color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}
+.status.refuted{color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,transparent)}
+.status.wip,.status.draft{color:var(--wip);background:color-mix(in srgb,var(--wip) 12%,transparent)}
+.status.active{color:var(--active);background:color-mix(in srgb,var(--active) 14%,transparent)}
+.status.reference{color:var(--violet);background:color-mix(in srgb,var(--violet) 12%,transparent)}
+.repro{display:inline-flex;align-items:center;gap:.4rem;font:500 .82rem/1 var(--disp)}
+.repro code{background:var(--code-bg);color:var(--code-fg)}
+.repro .git{opacity:.65}
+
+/* ====== landing ============================================================ */
+.landing{max-width:60rem;margin:0 auto;padding:1rem clamp(1rem,4vw,2rem) 5rem}
+.text-link{display:inline-flex;align-items:center;gap:.45rem;margin-top:1.4rem;color:var(--violet);
+  font:600 1.02rem/1 var(--disp);letter-spacing:.01em}
+.text-link span{transition:transform .14s ease}
+.text-link:hover{text-decoration:none}
+.text-link:hover span{transform:translateX(4px)}
+
+/* ====== studies: controls (pure-CSS view + show-WIP toggles) =============== */
+.studies-page{max-width:64rem;margin:0 auto;padding:1.6rem clamp(1rem,4vw,2rem) 4rem}
+.studies-goal{max-width:66ch;margin:.1rem 0 1.7rem;color:var(--ink);font:400 1.05rem/1.62 var(--serif)}
+.studies-goal strong{font-weight:700}
+.sv-input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.studies-bar{display:flex;flex-wrap:wrap;align-items:center;gap:1.1rem;margin:.2rem 0 1.8rem}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--panel)}
+.seg-opt{padding:.42rem .95rem;font:600 .8rem/1 var(--disp);text-transform:uppercase;letter-spacing:.08em;
+  color:var(--mut);cursor:pointer;transition:background .14s ease,color .14s ease}
+.seg-opt+.seg-opt{border-left:1px solid var(--line)}
+.seg-opt:hover{color:var(--ink)}
+#sv-tree:checked~.studies-bar label[for=sv-tree],
+#sv-table:checked~.studies-bar label[for=sv-table]{background:var(--violet);color:#fff}
+.wip-chk{display:inline-flex;align-items:center;gap:.5rem;cursor:pointer;color:var(--mut);
+  font:600 .8rem/1 var(--disp);text-transform:uppercase;letter-spacing:.06em}
+.wip-box{width:34px;height:18px;border-radius:10px;background:var(--line);position:relative;
+  transition:background .15s ease;flex:0 0 auto}
+.wip-box::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;
+  background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.3);transition:transform .15s ease}
+#sv-wip:checked~.studies-bar .wip-box{background:var(--violet)}
+#sv-wip:checked~.studies-bar .wip-box::after{transform:translateX(16px)}
+#sv-tree:focus-visible~.studies-bar label[for=sv-tree],
+#sv-table:focus-visible~.studies-bar label[for=sv-table],
+#sv-wip:focus-visible~.studies-bar .wip-chk{outline:2px solid var(--violet);outline-offset:2px;border-radius:6px}
+
+/* view + WIP switching, driven by the hidden inputs */
+.studies-stage{position:relative}
+#sv-table:checked~.studies-stage .view-tree{display:none}
+#sv-tree:checked~.studies-stage .view-table{display:none}
+#sv-wip:not(:checked)~.studies-stage .tree-all{display:none}
+#sv-wip:checked~.studies-stage .tree-stable{display:none}
+#sv-wip:not(:checked)~.studies-stage .view-table .card.is-wip,
+#sv-wip:not(:checked)~.studies-stage .view-table .band.is-wip{display:none}
+
+/* ====== the downward dot-tree ============================================= *
+ *  Bare dots connected by smooth Bézier curves, growing downward. Every LEAF is
+ *  pulled to one bottom row (the "frontier"). A dot's FILL is its verdict and its
+ *  BORDER is solid (proof-read) or dashed (in progress); the thread-start dot is
+ *  haloed in the thread tint, which also colours that thread's curves. Hover a
+ *  dot to reveal its briefing.
+ * ========================================================================== */
+.treeview{padding:.5rem 0 1.5rem}
+.tree-canvas{position:relative;margin:0 auto}
+.tree-svg{position:absolute;inset:0;display:block;pointer-events:none}
+.tree-empty{color:var(--mut);font:400 1rem/1.5 var(--serif);text-align:center;padding:3rem 0}
+
+.tnode{position:absolute;transform:translate(-50%,-50%);width:16px;height:16px;border-radius:50%;
+  background:var(--dot,var(--mut));border:2px solid var(--dot,var(--mut));z-index:2;cursor:pointer;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--dot,var(--mut)) 17%,transparent);   /* one ring for every node */
+  transition:transform .12s ease}
+.tnode.verified{border-style:solid}                                    /* proof-read */
+.tnode.provisional{border-style:dashed;background:color-mix(in srgb,var(--dot) 26%,var(--bg))}  /* parked wip */
+/* an ACTIVE node restores the live-frontier look — amber fill + a dashed amber ring — set
+   apart from every verdict hue. This OVERRIDES the verdict colour on the tree dot itself;
+   --dot stays the verdict so the node's briefing card + the table pill keep the true colour.
+   (active is ORTHOGONAL to status — see _default_visible.) */
+.tnode.active{border-color:var(--active);border-style:dashed;
+  background:color-mix(in srgb,var(--active) 28%,var(--bg));
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--active) 18%,transparent);
+  animation:apulse 2.4s ease-in-out infinite}
+@keyframes apulse{
+  0%,100%{box-shadow:0 0 0 3px color-mix(in srgb,var(--active) 42%,transparent)}
+  50%    {box-shadow:0 0 0 9px color-mix(in srgb,var(--active) 6%,transparent)}}
+.st-supported{--dot:var(--ok)}
+.st-refuted{--dot:var(--bad)}
+.st-wip,.st-draft{--dot:var(--wip)}
+.st-active{--dot:var(--active)}                                        /* the live frontier */
+.st-reference{--dot:var(--violet)}                                     /* shared reference (not a verdict) */
+.tnode .hit{position:absolute;inset:-10px;border-radius:50%}
+.tnode:hover,.tnode:focus-visible{transform:translate(-50%,-50%) scale(1.22);z-index:30;outline:none}
+/* apex = the root of the forest; a neutral hollow origin that links to the landing/overview */
+.tnode.apex{width:13px;height:13px;background:var(--bg);border:2px solid var(--mut);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--mut) 13%,transparent)}
+.tnode.apex:hover{border-color:var(--violet)}
+.apex-label{color:var(--violet);text-transform:uppercase;letter-spacing:.1em;font-weight:700}
+
+/* always-on small title beside each node (below leaves, above the rest) */
+.tnode-label{position:absolute;left:50%;transform:translateX(-50%);width:max-content;max-width:108px;
+  text-align:center;font:600 10px/1.25 var(--disp);color:var(--ink);letter-spacing:-.004em;
+  pointer-events:none;text-shadow:0 0 3px var(--bg),0 0 3px var(--bg),0 0 6px var(--bg)}
+.tnode-label.lbl-dn{top:calc(100% + 5px)}
+.tnode-label.lbl-up{bottom:calc(100% + 5px)}
+.tnode.provisional .tnode-label{color:var(--mut)}      /* WIP titles read lighter */
+
+/* hover tooltip (the dot's content) */
+.tip{position:absolute;left:50%;top:25px;transform:translateX(-50%);width:max-content;max-width:248px;
+  text-align:left;background:var(--panel);border:1px solid var(--line);
+  border-left:3px solid var(--tree,var(--violet));border-radius:10px;padding:.6rem .75rem;
+  box-shadow:0 18px 44px -22px rgba(22,22,26,.72);opacity:0;visibility:hidden;
+  transition:opacity .13s ease;pointer-events:none;z-index:40}
+.tip-up .tip{top:auto;bottom:25px}
+.tip-l .tip{left:0;transform:none}
+.tip-r .tip{left:auto;right:0;transform:none}
+.tnode:hover .tip,.tnode:focus-visible .tip,.tnode:focus-within .tip{opacity:1;visibility:visible}
+.tip-h{display:flex;align-items:center;gap:.5rem;margin-bottom:.3rem}
+.tip-st{font:600 .56rem/1 var(--disp);text-transform:uppercase;letter-spacing:.07em;
+  color:var(--dot,var(--mut));padding:.22em .45em;border:1px solid var(--line);border-radius:.5em}
+.tip-t{display:block;font:600 .92rem/1.3 var(--disp);color:var(--ink);letter-spacing:-.01em}
+/* the gist line (a short one-line finding, or the question) — shown IN FULL, never truncated;
+   notes are kept short (R11) so the card stays compact without clamping */
+.tip-sub{display:block;margin-top:.34rem;font:400 .82rem/1.42 var(--serif);color:var(--mut)}
+
+/* ---- interactivity: click a node to highlight its subtree, then Focus to isolate it ---- */
+.tree-hint{margin:.2rem 0 1rem;color:var(--mut);font:400 .9rem/1.5 var(--serif)}
+.tree-hint b{color:var(--ink);font-weight:700}
+.treeview .tnode{transition:transform .12s ease,opacity .16s ease}
+.tree-svg path{transition:opacity .16s ease,stroke-opacity .16s ease}
+/* dimmed = not in the selected/focused subtree; highlighted = in it */
+.tnode.is-dim{opacity:.16;animation:none}
+.tnode.is-dim .tnode-label{opacity:.5}
+.tree-svg path.is-dim{stroke-opacity:.06}
+.tree-svg path.is-hl{stroke-opacity:.95;stroke-width:2.6}
+.tree-svg path.is-sel{stroke-opacity:1;stroke-width:3.2}
+/* secondary "builds-on" cross-links: a node's dependencies BEYOND its primary (spanning-tree)
+   parent. Dashed + faint by default so the solid backbone stays the dominant read; the presentation
+   attrs (stroke-opacity/dasharray on the <path>) set that resting look, and these CSS states win
+   over them on demand. is-trace (a hovered node's incoming bundle) solidifies + brightens them. */
+.tree-svg path.edge-2.is-dim{stroke-opacity:.04}
+.tree-svg path.is-trace{stroke-opacity:.92;stroke-width:2.4;stroke-dasharray:none}
+/* a focused cluster also surfaces the EXTERNAL inputs its members build on: muted "satellite" dots
+   in a band above the cluster, joined by a finely-dotted feed-line tinted by the SOURCE thread.
+   They are context, not cluster members — dimmed + italic-labelled, and brighten on hover (still a
+   live link to their report). */
+.tree-svg path.edge-ext{stroke-dasharray:1 5}
+.treeview.is-focused .tnode.is-ghost{opacity:.5;animation:none;z-index:1}
+.treeview.is-focused .tnode.is-ghost:hover,.treeview.is-focused .tnode.is-ghost:focus-visible{opacity:1;z-index:30}
+.treeview.is-focused .tnode.is-ghost .tnode-label{font-style:italic;color:var(--mut);font-weight:600}
+/* fat transparent twin over each limb -> an easy click target even though the svg ignores pointers */
+.tree-svg .edge-hit{pointer-events:stroke;cursor:pointer}
+/* the clicked node itself: a firm halo, no pulse */
+.tnode.is-sel{animation:none;box-shadow:0 0 0 3px var(--bg),0 0 0 6px var(--dot,var(--violet));
+  transform:translate(-50%,-50%) scale(1.18);z-index:25}
+/* an antecedent dot of the hovered node (a study it builds on): a soft thread-tint ring, so the
+   reader can SEE every parent a multi-parent node pulls from while its edges are traced */
+.tnode.is-trace{box-shadow:0 0 0 3px var(--bg),0 0 0 5.5px color-mix(in srgb,var(--tree,var(--violet)) 60%,transparent);z-index:20}
+
+/* action popup (Focus / Open report) anchored under the clicked node */
+.tree-pop{position:absolute;transform:translate(-50%,0);z-index:50;display:inline-flex;align-items:center;gap:.3rem;
+  background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:.32rem;white-space:nowrap;
+  box-shadow:0 16px 38px -20px rgba(22,22,26,.72)}
+/* the FAN: a transparent wedge above the popup, bridging up to the limb so the cursor can
+   glide from limb to button without leaving an active hover zone */
+.tree-pop::before{content:"";position:absolute;left:-26px;right:-26px;bottom:100%;height:30px}
+/* a little caret pointing up toward the limb */
+.tree-pop::after{content:"";position:absolute;left:50%;bottom:100%;transform:translateX(-50%);margin-bottom:-1px;
+  border:6px solid transparent;border-bottom-color:var(--panel)}
+.pop-focus{font:700 .68rem/1 var(--disp);text-transform:uppercase;letter-spacing:.06em;color:#fff;
+  background:var(--violet);border:0;border-radius:8px;padding:.42rem .6rem;cursor:pointer;transition:background .12s ease}
+.pop-focus:hover{background:var(--violet-dp)}
+.pop-open{font:700 .68rem/1 var(--disp);text-transform:uppercase;letter-spacing:.06em;color:var(--violet);padding:.42rem .5rem}
+.pop-open:hover{text-decoration:none;color:var(--violet-dp)}
+/* when the JS layer is live, the rich hover card is the floating fan-popup (.node-pop) —
+   so the inline CSS tooltip is hidden (it stays the JS-off fallback). */
+.treeview.js-on .tip{display:none}
+/* the node briefing: same fan-popup chrome (caret + fan + shadow), but a left-aligned,
+   multi-line block instead of a button row, centred over the node. */
+/* fixed width so every card is identical regardless of content; no hover transform, so the
+   card never "springs back" as the cursor leaves (it just shows/hides). The thread tint is the
+   card's TOP edge (the tree grows top-to-bottom); the whole card is a link (cursor:pointer
+   says so), so there is no explicit "open" affordance. */
+.node-pop{display:block;text-align:left;white-space:normal;width:250px;
+  padding:.66rem .8rem .7rem;border-top:3px solid var(--tree,var(--violet));cursor:pointer}
+/* the node card has NO caret — the wedge fought the tinted top edge, so it's dropped; the card
+   simply sits just under the node (proximity + the fan hover-bridge carry the connection) */
+.node-pop::after{display:none}
+
+/* focus bar — shown only while a branch is isolated */
+.tree-focusbar{display:flex;align-items:center;gap:.7rem;margin:0 0 .4rem;padding:.5rem .85rem;
+  background:color-mix(in srgb,var(--violet) 8%,var(--panel));border:1px solid var(--line);border-radius:11px}
+.fb-label{color:var(--mut);font:700 .72rem/1 var(--disp);text-transform:uppercase;letter-spacing:.09em}
+.fb-exit{margin-left:auto;font:700 .72rem/1 var(--disp);text-transform:uppercase;letter-spacing:.06em;cursor:pointer;
+  color:var(--violet);background:none;border:1px solid var(--line);border-radius:8px;padding:.38rem .65rem;transition:.12s ease}
+.fb-exit:hover{background:var(--violet);color:#fff;border-color:var(--violet)}
+
+/* honour reduced-motion: the live-frontier signal degrades to a static ring */
+@media (prefers-reduced-motion:reduce){
+  .tnode.active,.card.is-active .card-dot{animation:none}
+}
+
+@media (max-width:600px){
+  .nav{flex-wrap:wrap;gap:.5rem} .tabs{order:3;width:100%} body{font-size:17px}
+  .studies-page{padding-left:.6rem;padding-right:.6rem}
+}
+</style>
+</head>
+<body>
+<header class="nav"><a class="brand" href="../index.html"><span>neurep</span></a></header><main class="study"><header class="study-head"><h1>Sample efficiency comes from the function class, not the neuron basis</h1><p class=sub>What the statistical-learning, superposition, and modularity literatures &mdash; and the program&rsquo;s own studies &mdash; say about structural vs functional modularity.</p><div class="rule"></div></header><div class="context"><span class="crumb"><a href="../studies.html#thread-theory">Encoding &amp; modularity theory</a></span><span class="status draft">draft</span><span class="dep">builds on: <a href="../emergent_modularity_report/">Confinement, not endpoint sparsity, buys sample efficiency</a>, <a href="../theory/">When does a neuron representation make a network modular?</a>, <a href="../axdn_forensics_report/">The axon–dendrite wiring prior
+(nr.axdn-euc-abs) on
+flat_modular</a>, <a href="../explicit_communication/">A measured-communication prior for neuron-aligned modules</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou-Hangyu/neurep/commit/9d78ea7"><code>9d78ea7</code></a> <span class="git">· sef-foundations</span></span></div><article>
+
+  <div class="repro"><p><span class="status draft">draft &middot; unverified</span>
+  This node is a <strong>cross-study synthesis</strong>, not a new experiment. Its external
+  claims were gathered by an automated deep-research pass and machine-checked by adversarial
+  vote (&sect;2); its internal numbers are quoted from four sibling reports. <strong>The author
+  has not yet independently verified them.</strong> Every claim below carries its provenance and
+  verification verdict so it can be audited &mdash; do not cite until checked.</p></div>
+
+  <div class="tldr"><p><strong>TL;DR.</strong> The program&rsquo;s lever is to fit functions with
+  a sparse computation graph more sample-efficiently than \(\ell_1\)/\(\ell_2\). The question this
+  note settles from theory and from our own experiments: does aligning the network&rsquo;s
+  <em>realization</em> to the neuron basis (<em>structural</em> modularity) buy efficiency over
+  confining the <em>function class</em> to the right sparse structure (<em>functional</em>
+  modularity), and is the gap between the two caused by nonlinearity? The verified answer is
+  <strong>no</strong> and <strong>yes</strong>. Every formal handle on sample efficiency &mdash;
+  nonparametric minimax rates and norm-based generalization bounds &mdash; is a property of the
+  function class and is <strong>invariant to rotation of the representation basis</strong>
+  (\eqref{eq:rate}&ndash;\eqref{eq:rad}); no theorem rewards one-neuron-per-feature. Nonlinearity is
+  what severs structural from functional: it manufactures non-axis-aligned mixed selectivity, so the
+  loss-optimal code is a <em>rotated, superposed</em> functional decomposition &mdash; the natural
+  product of training (and why LLMs are polysemantic and still work). Empirically, enforced block
+  modularity is inert (Mittal 2022; Csord&aacute;s 2021), and our
+  <a class="xref" href="../emergent_modularity_report/">emergent&nbsp;modularity</a> study supplies the sharp
+  version: the <em>most</em> structurally modular prior we have ties plain \(\ell_1\) to within 1%
+  and buys zero compositional generalization, while confinement to the <em>correct</em> graph wins
+  14.5&times;. The prize is confinement to the right (possibly rotated) structure, not neuron
+  alignment. One unsettled caveat: structural alignment may help in the heavy-noise regime
+  (&sect;7).</p></div>
+
+  <h2>1. The question</h2>
+
+  <p>Modern networks place features in <em>superposition</em>: one neuron participates in many
+  features and one feature spreads across many neurons. This is the documented, loss-driven
+  behaviour of large models, and it works. So a modular decomposition realized in a <em>rotated,
+  many-neuron</em> basis &mdash; functional modularity &mdash; appears to be the natural product of
+  training. Against that backdrop, a per-neuron representation prior that pushes the weights toward
+  a block-diagonal, one-neuron-per-feature layout looks like it might be fighting the optimizer for
+  no reward. This note asks whether it is.</p>
+
+  <p>Three things get conflated under the word &ldquo;modularity,&rdquo; and the whole argument turns
+  on separating them. The target object throughout is a <strong>sparse computation graph</strong>:
+  \(f^\star\) is computed by a DAG of intermediate nodes arranged in \(\Delta\) tiers, each node a
+  nonlinear map of at most \(r\) parents (per-node fan-in \(r \ll d\)) &mdash; a hierarchy, not a
+  single layer. The additive form \(f^\star(x)=\sum_k g_k(x_{S_k})\) with small \(S_k\) is only its
+  depth-one (\(\Delta{=}1\)) special case.</p>
+
+  <p class="definition"><strong>Functional modularity</strong> &mdash; a property of <em>what is
+  computed</em>: \(f^\star\) factors through that sparse computation graph (low per-node fan-in,
+  possibly deep). The network may <em>realize</em> the graph in <em>rotated, superposed</em>
+  coordinates that mix many neurons; functional modularity does <em>not</em> require neuron alignment.
+  <br><strong>Structural modularity</strong> &mdash; a property of the <em>trained realization</em>:
+  the same low-fan-in graph, but routed <em>in the neuron basis</em> &mdash; block-diagonal weights,
+  one-neuron-per-feature alignment. Structural is functional <em>plus</em> axis-alignment.
+  <br><strong>Confinement</strong> &mdash; a property of the <em>search</em>: the prior or
+  architecture restricts the hypothesis class to the correct graph <em>throughout training</em>, not
+  merely at the endpoint.</p>
+
+  <div class="remark"><p><strong>Graph-sparse is not input-sparse.</strong> A deep fan-in-\(r\) graph
+  composes nonlinear nodes, so it can carry <em>high</em> input-interaction order (high Sobol
+  \(\mathrm{F}\)) while remaining graph-sparse &mdash; the root of a depth-\(\Delta\) tree reads up to
+  \(r^{\Delta}\) inputs with high-order interactions among them. So &ldquo;functional sparsity&rdquo;
+  in the narrow sense of a low-order additive map (Sobol \(\mathrm{F}\approx0\)) is a <em>distinct,
+  weaker</em> property, and &mdash; per <a class="xref" href="../emergent_modularity_report/">emergent&nbsp;modularity</a>
+  &mdash; is <em>not</em> the efficiency source: confinement to the graph is. The additive special
+  case is not the object of interest.</p></div>
+
+  <p>Sharpened, the question is: <strong>does aligning the realization to the neuron basis
+  (structural) buy anything beyond confining the function class to the correct sparse computation
+  graph (functional)?</strong> The remainder argues the answer is no &mdash; sample efficiency is a
+  confinement phenomenon that is blind to basis (&sect;3) &mdash; and that nonlinearity is precisely
+  why the correct functional structure is generically <em>not</em> axis-aligned (&sect;4), so a
+  structural prior reaches for an object the optimum does not put on the axes (&sect;6).</p>
+
+  <h2>2. Setup &mdash; evidence and how it was checked</h2>
+
+  <p><strong>External evidence.</strong> A deep-research harness decomposed the question into five
+  angles, fetched 24 primary sources, extracted 108 falsifiable claims, and sent the top 25 through
+  a three-vote adversarial verification (a claim is killed on &ge;2 of 3 refutations); 20 were
+  confirmed and 5 killed. Each external claim below is tagged with its vote (e.g. <em>3&ndash;0</em>)
+  and links its source; the killed claims are listed in the ledger (&sect;9) rather than hidden.
+  Two named sources could not be independently re-fetched in that pass (Locatello 2019; the
+  Whittington keystone, which appeared only corroboratively) and are flagged where used.</p>
+
+  <p><strong>Internal evidence.</strong> Numbers attributed to a sibling study are quoted from its
+  published report and inherit that study&rsquo;s setup (seeds, statistics, training budget); follow
+  the cross-link for provenance. The four sources are
+  <a class="xref" href="../emergent_modularity_report/">emergent&nbsp;modularity</a> (the structural-vs-functional
+  ladder), <a class="xref" href="../theory/">the modularity theory note</a> (Propositions&nbsp;1&ndash;3),
+  <a class="xref" href="../axdn_forensics_report/">the axon&ndash;dendrite prior</a>, and
+  <a class="xref" href="../explicit_communication/">the measured-communication prior</a>.</p>
+
+  <p class="definition"><strong>Symbols and metrics used below.</strong>
+  \(s\) target smoothness; \(d\) ambient input dimension; \(r,\,t_i\) <strong>per-node fan-in</strong>
+  in the computation graph (the \(\le r\) parents a node actually reads), with \(r,\,t_i \ll d\) under
+  sparsity; \(n\) training-set size.
+  <strong>AULC</strong> &mdash; area under the test-MSE-vs-\(\log n\) learning curve, lower is more
+  sample-efficient. <strong>Effective fan-in</strong> &mdash; mean count of senders with
+  non-negligible weight into a node (\(\approx 9\) dense, lower is more block-modular).
+  <strong>axis-mass</strong> &mdash; a module&rsquo;s squared loading on its top neuron, averaged;
+  \(1\) is neuron-aligned, \(\approx 1/H\) is fully rotated/distributed.
+  <strong>ARI</strong> &mdash; adjusted Rand index between a neuron partition and the true modules;
+  \(0\) is chance. <strong>AP</strong> &mdash; average precision of recovered edges against the true
+  graph (chance level stated alongside). <strong>\(d_z\)</strong> &mdash; paired Cohen&rsquo;s
+  effect size; \(p\) from a paired Wilcoxon test. A fuller glossary lives in
+  <a class="xref" href="../metrics_reference/">metrics&nbsp;reference</a>.</p>
+
+  <h2>3. Sample efficiency is a function-class property</h2>
+
+  <p>Every rigorous account of &ldquo;structure buys sample efficiency&rdquo; locates the gain in a
+  restriction of the <em>function class</em>, and none of them mentions the neuron basis.</p>
+
+  <p><strong>The fan-in sets the exponent, not the ambient dimension &mdash; but not by a single
+  substitution.</strong> For an \(s\)-smooth function of all \(d\) inputs the optimal minimax
+  (squared-error) rate is \(n^{-2s/(2s+d)}\)
+  (<a href="https://projecteuclid.org/journals/annals-of-statistics/volume-10/issue-4/Optimal-Global-Rates-of-Convergence-for-Nonparametric-Regression/10.1214/aos/1176345969.full">Stone&nbsp;1982</a>,
+  <em>3&ndash;0</em>): reaching error \(\varepsilon\) costs \(n\sim\varepsilon^{-(2s+d)/2s}\),
+  exponential in \(d\) &mdash; the curse. Two structural restrictions break it, and they are
+  <em>not</em> the same object.</p>
+
+  <p><em>(i) Input-level (shallow) sparsity.</em> If \(f^\star\) is a sum of terms each reading at
+  most \(r\) of the <em>inputs</em> &mdash; an additive or order-\(r\) interaction model &mdash; the
+  ambient \(d\) is replaced by the <em>interaction order</em> \(r\) (Stone 1985, 1994):</p>
+
+  \[\begin{equation}\label{eq:rate}
+    \underbrace{n^{-\,2s/(2s+r)}}_{\text{interaction order } r}
+    \;\;\gg\;\;
+    \underbrace{n^{-\,2s/(2s+d)}}_{\text{ambient } d},
+    \qquad r \ll d .
+  \end{equation}\]
+
+  <p><em>(ii) Hierarchical (deep) sparsity.</em> A deep computation graph is generally <em>not</em>
+  input-sparse &mdash; its root reads up to \(r^{\Delta}\) inputs at high interaction order &mdash; so
+  \eqref{eq:rate} does <em>not</em> hold with \(r\) read as the per-node fan-in. The deep case is
+  governed by composition instead
+  (<a href="https://arxiv.org/abs/1708.06633">Schmidt-Hieber&nbsp;2020</a>, <em>3&ndash;0</em>):</p>
+
+  \[\begin{equation}\label{eq:sh}
+    \phi_n \;=\; \max_{i=0,\dots,q}\; n^{-\,2\beta_i^\ast/(2\beta_i^\ast + t_i)},
+    \qquad \beta_i^\ast=\beta_i\!\!\prod_{l\gt i}\min(\beta_l,1).
+  \end{equation}\]
+
+  <p>The fan-in here is the per-<em>node</em> fan-in, binding <em>intermediate</em> nodes, not just
+  inputs &mdash; exactly what \eqref{eq:sh} encodes: \(t_i\) is the number of parents a tier-\(i\) node
+  reads (\(\beta_i\) its smoothness), so the dimension in each factor is the small fan-in,
+  <em>never</em> \(d\) &mdash; the reduction does survive depth. Two refinements the shallow form
+  \eqref{eq:rate} hides: the rate is the <em>max over tiers</em> (the bottleneck tier dominates, not
+  one clean exponent), and the smoothness is the composition-degraded <em>effective</em> smoothness
+  \(\beta_i^\ast\le s\), not \(s\). So the headline &mdash; fan-in, not ambient \(d\), governs the
+  rate &mdash; holds for deep graphs (the program&rsquo;s own <a class="xref" href="../theory/">theory note</a>
+  argues the same), while the clean \(n^{-2s/(2s+r)}\) of \eqref{eq:rate} is the shallow idealization
+  the deep rate refines. Bauer &amp; Kohler
+  (<a href="https://projecteuclid.org/journals/annals-of-statistics/volume-47/issue-4/On-deep-learning-as-a-remedy-for-the-curse-of/10.1214/18-AOS1747.full">2019</a>,
+  <em>3&ndash;0</em>) reach the same fan-in-not-\(d\) conclusion for hierarchical models. Nothing in
+  these rates references the neuron basis.</p>
+
+  <p><strong>Sparse recovery: irrelevant variables are nearly free once you confine to the support.</strong>
+  Lasso support recovery has a sharp sample-complexity threshold
+  (<a href="https://arxiv.org/abs/math/0605740">Wainwright&nbsp;2006/2009</a>, <em>3&ndash;0</em> for
+  the threshold fact):</p>
+
+  \[\begin{equation}\label{eq:lasso}
+    n \;\gt\; 2(\theta_u+\epsilon)\,\log(p-k) \;+\; k \;+\; 1 ,
+  \end{equation}\]
+
+  <p>ambient \(p\) entering only <em>logarithmically</em>, sparsity \(k\) linearly. (The stronger
+  reading &mdash; that confinement converts the cost from polynomial to logarithmic in general &mdash;
+  was <em>killed&nbsp;1&ndash;2</em>: the Wainwright converse is Lasso failure, not a limit over all
+  estimators. Quote \eqref{eq:lasso}, not the sweeping interpretation.)</p>
+
+  <p><strong>The load-bearing fact: generalization bounds are rotation-invariant.</strong> For norm-bounded
+  networks the empirical Rademacher complexity is
+  (<a href="https://arxiv.org/abs/1712.06541">Golowich, Rakhlin &amp; Shamir&nbsp;2018</a>,
+  <em>3&ndash;0</em>)</p>
+
+  \[\begin{equation}\label{eq:rad}
+    \widehat{\mathfrak{R}}(\mathcal{F})
+    \;\le\;
+    \frac{B\bigl(\sqrt{2\log 2\,\cdot\,\mathrm{depth}}+1\bigr)\,\prod_j M_F(j)}{\sqrt{m}},
+    \qquad \lVert QW\rVert_F=\lVert W\rVert_F ,
+  \end{equation}\]
+
+  <p>where \(M_F(j)\) bounds the Frobenius norm of layer \(j\): only \(\sqrt{\mathrm{depth}}\)
+  dependence, <em>no</em> width or parameter-count term. Because the Frobenius norm is unitarily
+  invariant, an axis-aligned (structural) and a rotated/superposed (functional) solution with equal
+  weight norms receive an <strong>identical</strong> bound. Neuron-basis alignment is not a quantity
+  this theory can see; weight magnitude is. <strong>The caveat.</strong> Equations
+  \eqref{eq:rate}&ndash;\eqref{eq:sh} are existence/minimax results &mdash; a good estimator
+  <em>exists</em> and the rate is intrinsic &mdash; not a guarantee that SGD finds it; and
+  norm bounds like \eqref{eq:rad} can be loose in practice
+  (<a href="https://arxiv.org/abs/1902.04742">Nagarajan &amp; Kolter&nbsp;2019</a>). The residual
+  role for any prior is therefore as an <em>optimization</em> bias toward the confined region &mdash;
+  decided by experiment (&sect;6), not by these theorems.</p>
+
+  <h2>4. Why structural &ne; functional: nonlinearity and a symmetry of the loss</h2>
+
+  <p>Two mechanisms compound. <strong>The objective is rotation-invariant</strong>, so the optimum
+  is a whole rotation-equivalence class and gradient descent has no force selecting the axis-aligned
+  member: the minimax rate is a function-class property (&sect;3), the capacity term is unitarily
+  invariant \eqref{eq:rad}, and the loss-optimal superposition embedding is itself defined only up to
+  rotation (&sect;5). <strong>Nonlinearity manufactures non-axis-aligned codes.</strong> Neurons with
+  <em>nonlinear mixed selectivity</em> &mdash; responses not expressible as a linear sum of
+  single-variable tunings &mdash; yield high-dimensional population codes from which one linear
+  readout realizes exponentially many functions, \(N_c=2^d\)
+  (<a href="https://www.nature.com/articles/nature12160">Rigotti et&nbsp;al.&nbsp;2013</a>,
+  <em>3&ndash;0</em>); pure and even <em>linear</em>-mixed selectivity can only generate
+  low-dimensional codes (<em>2&ndash;1</em>). Nonlinearity is the thing that pushes the code off the
+  neuron axes.</p>
+
+  <p><strong>The keystone.</strong> Under biological constraints &mdash; nonnegativity and energy
+  efficiency in both activity and weights &mdash; optimal single neurons align to the axes of
+  variation, but the theory &ldquo;explain[s] when the brain instead <em>entangles</em>
+  representations in response to entangled task factors&rdquo;
+  (<a href="https://arxiv.org/abs/2210.01768">Whittington, Dorrell, Ganguli &amp; Behrens&nbsp;2023</a>,
+  ICLR). Distilled: alignment is optimal in the near-linear, separably-mapped regime; an entangling
+  (nonlinear/multiplicative) map makes persistent mixed selectivity optimal and the code
+  unalignable to single neurons. This is the cleanest formal statement that nonlinearity breaks the
+  structural&harr;functional equivalence &mdash; <em>but</em> it was <strong>not independently
+  re-verified</strong> in this pass and the abstract phrases the condition as &ldquo;entangled task
+  factors,&rdquo; not literally &ldquo;iff linear,&rdquo; so its exact hypotheses should be checked
+  before it carries manuscript weight.</p>
+
+  <div class="remark"><p><strong>Citation note.</strong> The keystone is <em>ICLR&nbsp;2023</em>
+  (arXiv:2210.01768), authors Whittington, Dorrell, Ganguli &amp; Behrens &mdash; <em>not</em> a
+  <em>Nature</em> paper, and with no coauthor &ldquo;Barry.&rdquo; That misattribution is a common
+  slip from this group&rsquo;s separate Tolman&ndash;Eichenbaum-Machine grid-cell lineage
+  (<em>Cell</em>&nbsp;2020 / <em>Nature</em>, where Caswell Barry is a coauthor);
+  <a class="xref" href="../theory/">the theory note</a>&rsquo;s Prop&nbsp;3 already cites it correctly.</p></div>
+
+  <p>The program&rsquo;s own theory note reaches the same conclusion internally and more sharply:
+  a penalty-only per-neuron code receives no task gradient (Prop&nbsp;1), collapses to a constant
+  (Prop&nbsp;2), and &mdash; the localizability ceiling (Prop&nbsp;3) &mdash; can express only
+  axis-aligned structure, so it is <em>blind to a module that occupies a rotated subspace</em> even
+  when forward-coupled. Its forensics show leading-direction concentration \(0.3\)&ndash;\(0.7\)
+  (not \(1\)) and neuron-partition \(\mathrm{ARI}\approx 0\) <em>even where the regularizer performs
+  best</em>. The external literature and the program&rsquo;s theory are the same argument.</p>
+
+  <h2>5. Superposition is the loss-optimal natural product</h2>
+
+  <p>The premise that superposed functional modularity is what training naturally produces is
+  well-supported. ReLU networks on sparse inputs &ldquo;represent more features than they have
+  dimensions&rdquo; by placing them on near-orthogonal directions &mdash; a capacity benefit at the
+  price of interference, with sparsity causally driving the network to push features
+  <em>off</em> the neuron axes (<a href="https://transformer-circuits.pub/2022/toy_model/index.html">Elhage
+  et&nbsp;al.&nbsp;2022</a>, <em>3&ndash;0</em>; indexed by the harness at arXiv:2209.10652). Optimal
+  capacity allocation makes the most important features monosemantic and the rest polysemantic in
+  proportion to loss impact, so polysemanticity is the loss-optimal solution, and the efficient
+  embedding factorizes</p>
+
+  \[\begin{equation}\label{eq:qbp}
+    W \;=\; Q\,B\,P \qquad (Q\ \text{orthogonal},\ B\ \text{block-diagonal},\ P\ \text{permutation}),
+  \end{equation}\]
+
+  <p>invariant to rotation, with block <em>size</em> set by architecture
+  (<a href="https://arxiv.org/abs/2210.01892">Scherlis et&nbsp;al.&nbsp;2022</a>; allocation
+  <em>3&ndash;0</em>, the \(W=QBP\) form <em>2&ndash;1</em>). Whether neurons look monosemantic is an
+  architecture-dependent byproduct, not what the loss rewards.</p>
+
+  <div class="remark"><p><strong>But expressivity is not sample efficiency.</strong> The \(2^d\)
+  result is flexibility, not generalization; the same line of work shows high-dimensional mixed
+  selectivity gives high discriminability but <em>low</em> generalization, while low-dimensional,
+  factorized/abstract codes generalize better
+  (<a href="https://www.cell.com/cell/fulltext/S0092-8674(20)31388-9">Bernardi et&nbsp;al.&nbsp;2020</a>).
+  So on the structural-vs-functional axis, &ldquo;functional&rdquo; must mean <em>the correct
+  low-dimensional factorization</em> (which may be rotated), not &ldquo;more superposition is
+  better.&rdquo;</p></div>
+
+  <h2>6. The empirical record: structural modularity is inert</h2>
+
+  <p><strong>External.</strong> On a benchmark with known ground-truth modular structure, modular
+  systems beat monolithic ones &ldquo;often only by a small margin&rdquo;; the <em>oracle</em> with
+  perfect ground-truth specialization wins, &ldquo;especially in the regime of many rules,&rdquo;
+  while end-to-end training &ldquo;do[es] not discover perfect specialization&rdquo; and collapse
+  &ldquo;becomes worse with increasing number of rules&rdquo; &mdash; the titular answer is <em>no</em>
+  (<a href="https://arxiv.org/abs/2206.02713">Mittal, Bengio &amp; Lajoie&nbsp;2022</a>,
+  <em>3&ndash;0</em>). Common networks also fail to reuse/recombine submodules, tied to poor
+  systematic generalization (<a href="https://arxiv.org/abs/2010.02066">Csord&aacute;s
+  et&nbsp;al.&nbsp;2021</a>, <em>3&ndash;0</em>). The prize is <em>correct specialization plus extra
+  inductive bias</em>, not block structure per se.</p>
+
+  <p><strong>Internal &mdash; the sharper, on-distribution version.</strong> The
+  <a class="xref" href="../emergent_modularity_report/">emergent&nbsp;modularity</a> ladder pits the four
+  reference points D (dense), L1 (plain \(\ell_1\)), Lf (a fixed random-code prior &mdash; the
+  <em>most structurally modular</em> condition), and Fc (oracle confined to the true graph &mdash;
+  <em>functional</em>).</p>
+
+  <div class="tablewrap"><table>
+  <thead><tr><th>Evidence (source)</th><th>What it shows</th><th>Key numbers</th></tr></thead>
+  <tbody>
+  <tr><td><strong>Lf vs L1</strong><br><a class="xref" href="../emergent_modularity_report/">emergent&nbsp;modularity</a></td>
+      <td>The most structurally modular prior ties plain \(\ell_1\) &mdash; structural modularity buys
+      nothing over generic sparsity</td>
+      <td>AULC <strong>0.242 vs 0.239</strong> (ratio 1.01); Lf fan-in <strong>1.2 &lt; oracle 1.7</strong>;
+      Lf edge-recovery AP <strong>0.25 &le; chance 0.33</strong> (tracks the random code, not \(E(G)\))</td></tr>
+  <tr><td><strong>Fc (functional confinement)</strong><br><a class="xref" href="../emergent_modularity_report/">emergent&nbsp;modularity</a></td>
+      <td>Confinement to the <em>correct</em> graph is the whole prize</td>
+      <td><strong>14.5&times;</strong> AULC vs dense (24/24 pooled, \(d_z=-3.0\), \(p\approx1.2\times10^{-7}\));
+      <strong>34&times;</strong> on controls; flat in ambient dim (slope \(2\times10^{-4}\) vs D&rsquo;s \(6.3\times10^{-3}\))</td></tr>
+  <tr><td><strong>E9 compositional OOD</strong><br>(train A&amp;B, B&amp;C &rarr; test A&amp;C)</td>
+      <td>Only the correct functional structure composes; structural modularity does not</td>
+      <td>Fc closes the gap to <strong>3.6&ndash;61&times; smaller</strong> than dense
+      (\(d_z=1.26\), \(p=1.2\times10^{-4}\)); <strong>Lf no better than \(\ell_1\)</strong></td></tr>
+  <tr><td><strong>Neuron-aligned wiring prior</strong><br><a class="xref" href="../axdn_forensics_report/">axon&ndash;dendrite</a></td>
+      <td>A structural prior does not beat \(\ell_1\); &ldquo;axons &ne; variables&rdquo;; no subspace carving</td>
+      <td>axdn <strong>0.0276 &gt; L1 0.0226 &gt; Separator 0.0151</strong> MSE; cross-module overlap
+      0.278 &asymp; NoReg 0.284; cluster-vs-module ARI <strong>&minus;0.18</strong> (chance)</td></tr>
+  <tr><td><strong>Forward-coupled comm. prior</strong><br><a class="xref" href="../explicit_communication/">explicit&nbsp;communication</a></td>
+      <td>The one positive signal: an un-detached prior <em>de-rotates</em> a superposed rep where no
+      weight penalty can &mdash; but the accuracy edge over \(|W|\) vanishes as data grows</td>
+      <td>axis-mass <strong>0.24 &rarr; 0.44</strong> (\(d_z\) up to 3.6) vs group-lasso &asymp;0.28&ndash;0.32;
+      MSE win at \(n{=}1024\) (0.089 vs 0.134) <em>ties out</em> by \(n{=}2048\)</td></tr>
+  </tbody>
+  </table></div>
+
+  <p><strong>You have already run the field&rsquo;s decisive open experiment.</strong> The external
+  review flags as <em>open</em>: whether a neuron-aligned penalty out- or under-performs plain
+  \(\ell_1\)/\(\ell_2\)/group-lasso <em>at equal function-class restriction</em>, on a
+  sparse-computation-graph target. The Lf-vs-L1 contrast is exactly that experiment, on exactly that
+  target, and the answer is <em>under-performs to a tie</em> &mdash; the rotation-invariance of
+  \eqref{eq:rad} supplying the mechanism for why.</p>
+
+  <h2>7. The counter-current and the honest caveats</h2>
+
+  <p>The dichotomy is not closed against structural alignment everywhere. A recent result claims
+  enforced <em>monosemantic</em> features beat polysemantic ones under heavy corruption
+  (e.g. +13.7% top-1 on ImageNet-100 at 90% label noise), reversing in the clean regime
+  (<a href="https://arxiv.org/abs/2410.21331">arXiv:2410.21331</a>). It <strong>failed</strong> this
+  pass&rsquo;s verification (<em>1&ndash;2</em>), so it is <em>unsettled, not refuted</em> &mdash; and
+  it points at a genuine, regime-dependent tension in exactly the sample-scarce regime the program
+  cares about. Robustness-under-noise is a different axis from the clean-label minimax rate of
+  &sect;3. Combined with the ERM&ne;SGD gap (&sect;3), the live empirical question is which prior
+  best steers SGD into the confined region under realistic noise &mdash; where, on present evidence,
+  structural priors (Lf, axdn) lose to \(\ell_1\) while correct-functional confinement (Fc) wins.</p>
+
+  <h2>8. Verdict and implications</h2>
+
+  <p><strong>Does structural modularity have a sample-efficiency benefit over functional?</strong>
+  No &mdash; not from neuron-basis alignment as such. Efficiency is a function-class property
+  (\eqref{eq:rate}&ndash;\eqref{eq:rad}), bought by confining to the correct sparse structure, which
+  is rotation-agnostic; the most-structural prior ties \(\ell_1\) and a neuron-aligned wiring prior
+  loses to it, while the functional oracle wins 14.5&times;.</p>
+
+  <p><strong>Do they fail to be equivalent because of nonlinearity?</strong> Yes. The loss is
+  rotation-invariant, so the optimum is a rotation class with no axis-aligned preference; and
+  nonlinearity produces mixed selectivity that is alignable to neurons only in the near-linear
+  regime. With a nonlinear factor-to-representation map the correct functional modules occupy rotated
+  subspaces a per-neuron code provably cannot express. In the linear case the two coincide;
+  nonlinearity is what severs them.</p>
+
+  <p><strong>For the program.</strong> Stop treating neuron-basis alignment as the goal: it is not a
+  source of sample efficiency, and our own results confirm it ties or loses to \(\ell_1\). The lever
+  is confinement to the correct, rotation-agnostic structure &mdash; Fc&rsquo;s 14.5&times; is the
+  ceiling. The open problem this isolates is a <em>learned</em> cost that self-discovers the right
+  structure (not a sparser or randomly-modular one), which by Prop&nbsp;1 requires the
+  structure-defining object to sit in the task-gradient path. That is why
+  <a class="xref" href="../explicit_communication/">explicit&nbsp;communication</a>&rsquo;s forward-coupled
+  de-rotation is the most promising thread &mdash; though its edge is currently alignment, not
+  accuracy &mdash; and why the single most decisive next experiment is the noise&times;scarcity
+  crossover that would either rescue or bury the structural hypothesis on its last defensible ground
+  (&sect;7); its plan is drafted under
+  <code>studies/explicit_communication/plan/</code>.</p>
+
+  <h2>9. Verification ledger</h2>
+
+  <p>The external claims this note rests on, with adversarial-verification verdict (confirmations
+  &ndash; refutations of 3) and primary source. Killed claims are retained here as the boundary of
+  what the evidence does <em>not</em> support.</p>
+
+  <div class="tablewrap"><table>
+  <thead><tr><th>Claim</th><th>Vote</th><th>Source</th></tr></thead>
+  <tbody>
+  <tr><td>Sample efficiency is a basis-agnostic function-class property; rate set by effective fan-in, not ambient \(d\)</td><td>3&ndash;0</td><td>Stone 1982; Schmidt-Hieber 2020; Bauer&ndash;Kohler 2019</td></tr>
+  <tr><td>Generalization is governed by weight norm and is rotation-invariant (axis-aligned &equiv; rotated at equal norm)</td><td>3&ndash;0</td><td>Golowich et al. 2018</td></tr>
+  <tr><td>Sparse recovery has a sharp threshold; ambient \(p\) enters logarithmically \eqref{eq:lasso}</td><td>3&ndash;0</td><td>Wainwright 2006/2009</td></tr>
+  <tr><td>Superposition is the loss-optimal product of training under feature sparsity; defined up to rotation</td><td>3&ndash;0</td><td>Elhage 2022; Scherlis 2022</td></tr>
+  <tr><td>Nonlinear mixed selectivity yields \(2^d\) linear-readout expressivity (expressivity, <em>not</em> generalization)</td><td>3&ndash;0</td><td>Rigotti et al. 2013</td></tr>
+  <tr><td>Enforced block modularity is largely inert; the prize is correct specialization + extra inductive bias</td><td>3&ndash;0</td><td>Mittal 2022; Csord&aacute;s 2021</td></tr>
+  <tr><td>Nonlinearity is <em>necessary</em> for high-dimensional (non-axis-aligned) selectivity</td><td>2&ndash;1</td><td>Rigotti et al. 2013</td></tr>
+  <tr><td>Optimal superposition embedding is block-semi-orthogonal \(W=QBP\)</td><td>2&ndash;1</td><td>Scherlis et al. 2022</td></tr>
+  <tr><td>&ldquo;Confinement converts irrelevant-variable cost polynomial&rarr;logarithmic&rdquo; (strong framing)</td><td>1&ndash;2 &#10007;</td><td>Wainwright (over-read)</td></tr>
+  <tr><td>Enforced monosemanticity beats polysemantic under noise/scarcity (+13.7% @ 90% noise)</td><td>1&ndash;2 &#10007;</td><td>arXiv:2410.21331</td></tr>
+  <tr><td>Axis-alignment advantage reverses in the clean regime</td><td>1&ndash;2 &#10007;</td><td>arXiv:2410.21331</td></tr>
+  <tr><td>Mixed/superposed coding gives a strictly more powerful linear readout</td><td>1&ndash;2 &#10007;</td><td>Fusi et al. 2016 (over-read)</td></tr>
+  <tr><td>Axis-aligned specialization precludes a multi-variable linear readout</td><td>0&ndash;3 &#10007;</td><td>Fusi et al. 2016 (over-read)</td></tr>
+  </tbody>
+  </table></div>
+
+  <p><em>Keystone not independently re-verified here:</em> Whittington et al. 2023 (ICLR;
+  arXiv:2210.01768) &mdash; corroborative only. Named but not fetched: Locatello et al. 2019 (ICML);
+  BIMT (Liu, Gan &amp; Tegmark 2023); seRNN (Achterberg et al. 2023); Filan et al. clusterability.</p>
+
+</article></main>
+</body>
+</html>
