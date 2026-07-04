@@ -386,7 +386,7 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
 </style>
 </head>
 <body>
-<header class="nav"><a class="brand" href="../index.html"><span>neurep</span></a></header><main class="study"><header class="study-head"><h1>Local fan-in selectivity across species</h1><p class=sub>A neuron contacts a small, cell-type-structured fraction of the partners it could reach nearby — and the fraction you measure depends entirely on the denominator you choose.</p><div class="rule"></div></header><div class="context"><span class="crumb"><a href="../studies.html#thread-reference">Reference</a></span><span class="status reference">reference</span><span class="repro">reproduce: <a href="https://github.com/Zhou-Hangyu/neurep/commit/7623818"><code>7623818</code></a> <span class="git">· master</span></span></div><article>
+<header class="nav"><a class="brand" href="../index.html"><span>neurep</span></a></header><main class="study"><header class="study-head"><h1>Local fan-in selectivity across species</h1><p class=sub>A neuron contacts a small, cell-type-structured fraction of the partners it could reach nearby — and the fraction you measure depends entirely on the denominator you choose.</p><p class="vnote">Version 1 · First release — the cross-species local-connectivity literature synthesised around a single measure, the local connection probability.</p><div class="rule"></div></header><div class="context"><span class="crumb"><a href="../studies.html#thread-reference">Reference</a></span><span class="status reference">reference</span><span class="repro">reproduce: <a href="https://github.com/Zhou-Hangyu/neurep/commit/9483ee1"><code>9483ee1</code></a> <span class="git">· master</span></span></div><article>
 
   <div class="tldr"><p><strong>Summary.</strong> A cortical neuron carries thousands of synapses yet
   connects to only a minority of the neurons it could reach locally. Measured as a <em>local connection
@@ -401,11 +401,11 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
 
   <h2>1. The measure</h2>
 
-  <p>Ask how selectively a neuron wires, and the raw count of its synapses answers the wrong question: a
-  mouse cortical neuron carries on the order of several thousand synapses, yet it contacts only a small,
-  particular subset of the cells whose axons and dendrites pass close enough to reach it. The quantity that
-  captures selectivity is the <strong>local connection probability</strong> — among the neurons close enough
-  to be plausible partners, the fraction a neuron actually connects to:</p>
+  <p>A neuron's raw synapse count is a poor measure of selectivity — it mostly tracks brain size, not
+  choosiness. A mouse cortical neuron carries several thousand synapses, yet contacts only a small, particular
+  subset of the cells whose axons and dendrites pass close enough to reach it. The quantity that captures
+  selectivity is the <strong>local connection probability</strong> — among the neurons close enough to be
+  plausible partners, the fraction a neuron actually connects to:</p>
 
   \[\begin{equation}\label{eq:phi}
     \phi \;=\; \frac{\#\,\text{connected pairs}}{\#\,\text{nearby tested pairs}}.
@@ -416,7 +416,7 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
   patching two nearby neurons and testing for a synapse. It normalises out sheer neuron count — a cell with
   thousands of synapses can still have a low \(\phi\), whereas a synapse total mostly reflects brain size.
   And it is comparable across circuits <em>once the denominator is fixed</em> — which nearby pairs count as
-  &ldquo;plausible partners.&rdquo; That denominator is the one subtlety, and, as §3 shows, it is the whole story.</p>
+  &ldquo;plausible partners.&rdquo;</p>
 
   <h2>2. Selective, not dense</h2>
 
@@ -458,17 +458,17 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
 
   <h2>3. The denominator</h2>
 
-  <p>Because \(\phi\) is a ratio, the answer depends on which nearby pairs go in the denominator — and widening
-  that set drives \(\phi\) down. The whole-brain <a href="https://en.wikipedia.org/wiki/Connectome">connectome</a>
+  <p>Because \(\phi\) is a ratio, its value depends entirely on which nearby pairs enter the denominator, and
+  widening that set drives it down. The whole-brain <a href="https://en.wikipedia.org/wiki/Connectome">connectome</a>
   of the fly <a href="https://en.wikipedia.org/wiki/Drosophila_melanogaster"><em>Drosophila</em></a> shows the
   effect within a single dataset: across all neuron pairs the connection probability is \(1.6\times10^{-4}\)
   (\(\sim\)0.016%), yet <em>&ldquo;over 71% of connections occur between neuron pairs within 50&nbsp;&micro;m of
   each other, despite these pairs constituting less than 3% of the total&rdquo;</em>
   (<a href="https://doi.org/10.1038/s41586-024-07968-y">Lin&nbsp;2024</a>). Re-scoping the denominator from
-  the whole brain to that local neighbourhood raises the local rate to \(\sim\)0.38% — a \(\sim\)24&times; jump
-  from the same connectome's own figures. The direction is arithmetic; the point is the size, more than an order
-  of magnitude, and it is why a &ldquo;fraction of all neurons&rdquo; figure is nearly meaningless: it mostly
-  reports brain size.</p>
+  the whole brain to that local neighbourhood raises the rate to \(\sim\)0.38% — a \(\sim\)24&times; jump from
+  the same connectome's own figures. Widening the opportunity set thus moves \(\phi\) by more than an order of
+  magnitude, which is why a &ldquo;fraction of all neurons&rdquo; figure mostly reports brain size rather than
+  selectivity.</p>
 
   <p>The finest denominator is anatomical rather than by-pair: of the axon&ndash;dendrite appositions close
   enough to <em>become</em> a synapse, how many are occupied? This <strong>filling fraction</strong></p>
@@ -522,11 +522,15 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
   (<a href="https://doi.org/10.7554/eLife.37349">Seeman&nbsp;2018</a>): whatever local selectivity buys, it is not
   a monotone dial on intelligence.</p>
 
-  <h2>6. The biological reading</h2>
+  <h2>6. Conclusion</h2>
 
-  <p>The single number a reader wants — how selective is a neuron? — does not exist on its own: a connection probability means something only against a stated opportunity set, and the meaningful set is local — nearby tested pairs, arbor-overlapping pairs, or potential synaptic sites — never the whole brain. Read that way, local connectivity is less a measurement than a design constraint, one that comparative biology leaves detached from cognition: across species, thinking scales with the sheer number of neurons, not with how choosily each one wires.</p>
+  <p>So the single number a reader wants — how selective is a neuron? — exists only against a stated, local
+  opportunity set: nearby tested pairs, arbor-overlapping pairs, or potential synaptic sites, never the whole
+  brain. Read that way, local sparsity is a design constraint on cortical wiring, not a proxy for cognitive
+  ability — across species, thinking scales with the sheer number of neurons, not with how choosily each one
+  wires.</p>
 
-</article></main><nav class="vrail" aria-label="Report versions"><ol><li><a class="vbar" href="v1/" aria-label="Version 1, 2026-07-04, archived"><span class="vbar__flyout" aria-hidden="true"><span class="vbar__vn">v1</span><span class="vbar__tag">archived</span><span class="vbar__date">2026-07-04 · 2ae1df3</span></span><span class="vbar__mark"></span></a></li><li><a class="vbar is-current" href="." aria-current=page aria-label="Version 2, 2026-07-04, latest"><span class="vbar__flyout" aria-hidden="true"><span class="vbar__vn">v2</span><span class="vbar__tag">latest</span><span class="vbar__date">2026-07-04 · f343ff8*</span></span><span class="vbar__mark"></span></a></li></ol></nav>
+</article></main><nav class="vrail" aria-label="Report versions"><ol><li><a class="vbar is-current" href="." aria-current=page aria-label="Version 1, 2026-07-04, latest"><span class="vbar__flyout" aria-hidden="true"><span class="vbar__vn">v1</span><span class="vbar__tag">latest</span><span class="vbar__date">2026-07-04 · 6c2807c</span></span><span class="vbar__mark"></span></a></li></ol></nav>
 <script>(function(){
   var bars=[].slice.call(document.querySelectorAll('.vrail .vbar')),openBar=null,hideT=null;
   function reveal(b){if(hideT){clearTimeout(hideT);hideT=null}
