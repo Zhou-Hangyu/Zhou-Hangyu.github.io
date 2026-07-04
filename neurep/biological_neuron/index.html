@@ -1,35 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow"><title>Local fan-in selectivity across species — neurep</title><link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%234b2e63'/%3E%3C/svg%3E"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"><script>window.MathJax={tex:{tags:'ams',inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]'],['$$','$$']]},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']},chtml:{displayAlign:'center'}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><style>
-.vrail{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:60;
-  padding:.5rem 1.05rem .5rem 1.3rem;font-family:var(--disp)}
-.vrail ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:1.05rem}
-.vrail li{display:flex;justify-content:flex-end}
-.vbar{position:relative;display:flex;align-items:center;justify-content:flex-end;
-  width:52px;height:16px;text-decoration:none;cursor:pointer;outline:none;
-  -webkit-tap-highlight-color:transparent}
-.vbar__mark{display:block;height:3px;width:30px;border-radius:2px;
-  background:var(--mut);opacity:.5;transition:background .22s,opacity .22s}
-.vbar:hover .vbar__mark,.vbar:focus-visible .vbar__mark{background:var(--ink);opacity:1}
-.vbar.is-current .vbar__mark{background:var(--violet);opacity:1}
-.vbar:focus-visible .vbar__mark{box-shadow:0 0 0 2px var(--bg),0 0 0 3px var(--mut)}
-.vbar__flyout{position:absolute;right:60px;top:50%;transform:translateY(-50%) translateX(8px);
-  width:230px;text-align:left;white-space:normal;background:var(--violet-dp);
-  border:1px solid rgba(255,255,255,.10);border-radius:9px;padding:.55rem .75rem .6rem;
-  box-shadow:-18px 20px 52px rgba(22,16,30,.34);opacity:0;pointer-events:none;
-  transition:opacity .18s,transform .18s cubic-bezier(.2,.8,.2,1)}
-.vbar.is-open .vbar__flyout,.vbar:focus-visible .vbar__flyout{opacity:1;pointer-events:auto;
-  transform:translateY(-50%) translateX(0)}
-.vbar__vn{font-weight:700;font-size:.8rem;color:#efe7f4;letter-spacing:.02em}
-.vbar.is-current .vbar__vn{color:#c9b3e0}
-.vbar__tag{font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;color:#9d8fb0;margin-left:.5rem}
-.vbar__date{display:block;font-family:var(--mono,ui-monospace,monospace);font-size:.68rem;color:#b3a7c2;margin-top:.2rem}
-.vnote{margin:.4rem 0 0;font:600 .72rem/1.4 var(--disp);letter-spacing:.04em;color:var(--mut)}
-.vnote a{color:var(--violet)}
-@media (max-width:900px){.vrail{display:none}}
-@media (prefers-reduced-motion:reduce){.vbar,.vbar__mark,.vbar__flyout{transition:none!important}}
-</style><style>/* ========================================================================== *
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow"><title>Local fan-in selectivity across species — neurep</title><link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%234b2e63'/%3E%3C/svg%3E"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"><script>window.MathJax={tex:{tags:'ams',inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]'],['$$','$$']]},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']},chtml:{displayAlign:'center'}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><style>/* ========================================================================== *
  *  research-site theme — the single source of truth for the visual language.
  *  The builder INLINES this file into every generated page's <head>, so each
  *  report renders standalone (open the .html directly) and is depth-proof.
@@ -386,7 +358,7 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
 </style>
 </head>
 <body>
-<header class="nav"><a class="brand" href="../index.html"><span>neurep</span></a></header><main class="study"><header class="study-head"><h1>Local fan-in selectivity across species</h1><p class=sub>A neuron contacts a small, cell-type-structured fraction of the partners it could reach nearby — and the fraction you measure depends entirely on the denominator you choose.</p><p class="vnote">Version 1 · First release — the cross-species local-connectivity literature synthesised around a single measure, the local connection probability.</p><div class="rule"></div></header><div class="context"><span class="crumb"><a href="../studies.html#thread-reference">Reference</a></span><span class="status reference">reference</span><span class="repro">reproduce: <a href="https://github.com/Zhou-Hangyu/neurep/commit/9483ee1"><code>9483ee1</code></a> <span class="git">· master</span></span></div><article>
+<header class="nav"><a class="brand" href="../index.html"><span>neurep</span></a></header><main class="study"><header class="study-head"><h1>Local fan-in selectivity across species</h1><p class=sub>A neuron contacts a small, cell-type-structured fraction of the partners it could reach nearby — and the fraction you measure depends entirely on the denominator you choose.</p><div class="rule"></div></header><div class="context"><span class="crumb"><a href="../studies.html#thread-reference">Reference</a></span><span class="status reference">reference</span><span class="repro">reproduce: <a href="https://github.com/Zhou-Hangyu/neurep/commit/f3169e1"><code>f3169e1</code></a> <span class="git">· master</span></span></div><article>
 
   <div class="tldr"><p><strong>Summary.</strong> A cortical neuron carries thousands of synapses yet
   connects to only a minority of the neurons it could reach locally. Measured as a <em>local connection
@@ -416,7 +388,11 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
   patching two nearby neurons and testing for a synapse. It normalises out sheer neuron count — a cell with
   thousands of synapses can still have a low \(\phi\), whereas a synapse total mostly reflects brain size.
   And it is comparable across circuits <em>once the denominator is fixed</em> — which nearby pairs count as
-  &ldquo;plausible partners.&rdquo;</p>
+  &ldquo;plausible partners.&rdquo; And because it is a ratio, the denominator dominates the number: widen it
+  from the local neighbourhood to the whole brain and \(\phi\) drops by more than an order of magnitude — in the
+  fly <a href="https://en.wikipedia.org/wiki/Connectome">connectome</a>, 71% of connections fall among the
+  &lt;3% of neuron pairs within 50&nbsp;&micro;m (<a href="https://doi.org/10.1038/s41586-024-07968-y">Lin&nbsp;2024</a>),
+  so a &ldquo;fraction of all neurons&rdquo; figure mostly reports brain size.</p>
 
   <h2>2. Selective, not dense</h2>
 
@@ -452,38 +428,11 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
   known — clustered layer-5 pyramidal subnetworks, or the barrel L4 spiny stellates at \(24.3\%\)
   (<a href="https://doi.org/10.1016/j.neuron.2008.12.020">Lefort&nbsp;2009</a>) — either sit just above the band
   or are specific, named pathways. The one motif that is reliably <em>dense</em> is inhibition: a pyramidal cell
-  and a neighbouring fast-spiking interneuron connect with probability \(0.5\)&ndash;\(0.75\). So the honest
-  statement is not &ldquo;everything is sparse&rdquo; but &ldquo;excitatory recurrence is bounded, with a few
+  and a neighbouring fast-spiking interneuron connect with probability \(0.5\)&ndash;\(0.75\). The honest
+  summary is not &ldquo;everything is sparse&rdquo; but &ldquo;excitatory recurrence is bounded, with a few
   cell-type-specific pathways dense by design.&rdquo;</p>
 
-  <h2>3. The denominator</h2>
-
-  <p>Because \(\phi\) is a ratio, its value depends entirely on which nearby pairs enter the denominator, and
-  widening that set drives it down. The whole-brain <a href="https://en.wikipedia.org/wiki/Connectome">connectome</a>
-  of the fly <a href="https://en.wikipedia.org/wiki/Drosophila_melanogaster"><em>Drosophila</em></a> shows the
-  effect within a single dataset: across all neuron pairs the connection probability is \(1.6\times10^{-4}\)
-  (\(\sim\)0.016%), yet <em>&ldquo;over 71% of connections occur between neuron pairs within 50&nbsp;&micro;m of
-  each other, despite these pairs constituting less than 3% of the total&rdquo;</em>
-  (<a href="https://doi.org/10.1038/s41586-024-07968-y">Lin&nbsp;2024</a>). Re-scoping the denominator from
-  the whole brain to that local neighbourhood raises the rate to \(\sim\)0.38% — a \(\sim\)24&times; jump from
-  the same connectome's own figures. Widening the opportunity set thus moves \(\phi\) by more than an order of
-  magnitude, which is why a &ldquo;fraction of all neurons&rdquo; figure mostly reports brain size rather than
-  selectivity.</p>
-
-  <p>The finest denominator is anatomical rather than by-pair: of the axon&ndash;dendrite appositions close
-  enough to <em>become</em> a synapse, how many are occupied? This <strong>filling fraction</strong></p>
-
-  \[\begin{equation}\label{eq:fill}
-    \phi_{\text{site}} \;=\; \frac{\#\,\text{actual synapses}}{\#\,\text{potential synaptic sites}}
-  \end{equation}\]
-
-  <p>is \(0.26\) in mouse neocortex and \(0.22\)&ndash;\(0.34\) in rat hippocampus
-  (<a href="https://doi.org/10.1016/S0896-6273(02)00652-9">Stepanyants&nbsp;2002</a>) — a substantial-but-not-dense
-  use of microscopic opportunity. Because it is a reconstruction estimate, it does not suffer the slicing
-  undercount; and because its numerator and denominator differ from \(\phi\)'s, it belongs on its own axis and
-  must never be read as a pair-level probability. Same phenomenon, different rung of the same ladder.</p>
-
-  <h2>4. Structured, not merely sparse</h2>
+  <h2>3. Structured, not merely sparse</h2>
 
   <p>Sparsity and structure are distinct: a neuron can sample few partners at <em>random</em>, or few partners
   <em>selectively</em>. The distinction is only decidable when feature-based targeting is measured <em>after</em>
@@ -509,44 +458,26 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
   (<a href="https://doi.org/10.1038/nature12063">Caron&nbsp;2013</a>) — sparsity carrying no identity structure at
   all. Sparse and structured are separate claims, and both are needed to describe cortex.</p>
 
-  <h2>5. Selectivity and cognition</h2>
+  <h2>4. Selectivity and cognition</h2>
 
-  <p>Does a neuron's local selectivity have anything to do with how clever its owner is? A targeted search finds
-  <strong>no</strong> study relating a local-connectivity measure to cognitive ability across species. What the
+  <p>Local selectivity does not track cognitive ability across species. A targeted search finds
+  <strong>no</strong> study relating a local-connectivity measure to cognition between species; what the
   comparative literature relates cognition to is <em>scale</em>: across 36 species, absolute brain volume best
   predicts self-control (<a href="https://doi.org/10.1073/pnas.1323533111">MacLean&nbsp;2014</a>); across 111
   birds, the number of neurons in the forebrain tracks behavioural innovation
-  (<a href="https://doi.org/10.1038/s41559-022-01815-x">Sol&nbsp;2022</a>). It also dispatches a tempting but
-  false idea — that cleverer species wire more sparsely. Within a single study, method, and distance window,
+  (<a href="https://doi.org/10.1038/s41559-022-01815-x">Sol&nbsp;2022</a>). It also refutes the idea that
+  cleverer species wire more sparsely: within a single study, method, and distance window,
   human layer&nbsp;2/3 connectivity (\(\sim\)19%) <em>exceeds</em> mouse visual cortex (\(\sim\)5&ndash;10%)
   (<a href="https://doi.org/10.7554/eLife.37349">Seeman&nbsp;2018</a>): whatever local selectivity buys, it is not
   a monotone dial on intelligence.</p>
 
-  <h2>6. Conclusion</h2>
+  <h2>5. Conclusion</h2>
 
-  <p>So the single number a reader wants — how selective is a neuron? — exists only against a stated, local
-  opportunity set: nearby tested pairs, arbor-overlapping pairs, or potential synaptic sites, never the whole
-  brain. Read that way, local sparsity is a design constraint on cortical wiring, not a proxy for cognitive
-  ability — across species, thinking scales with the sheer number of neurons, not with how choosily each one
-  wires.</p>
+  <p>A neuron's selectivity has no single value; it exists only against a stated local opportunity set —
+  nearby tested pairs, arbor-overlapping pairs, or potential synaptic sites, never the whole brain. Local
+  sparsity is therefore a design constraint on cortical wiring, not a proxy for cognitive ability: across
+  species, cognition scales with the number of neurons, not with how selectively each one wires.</p>
 
-</article></main><nav class="vrail" aria-label="Report versions"><ol><li><a class="vbar is-current" href="." aria-current=page aria-label="Version 1, 2026-07-04, latest"><span class="vbar__flyout" aria-hidden="true"><span class="vbar__vn">v1</span><span class="vbar__tag">latest</span><span class="vbar__date">2026-07-04 · 6c2807c</span></span><span class="vbar__mark"></span></a></li></ol></nav>
-<script>(function(){
-  var bars=[].slice.call(document.querySelectorAll('.vrail .vbar')),openBar=null,hideT=null;
-  function reveal(b){if(hideT){clearTimeout(hideT);hideT=null}
-    if(openBar&&openBar!==b)openBar.classList.remove('is-open');
-    b.classList.add('is-open');openBar=b}
-  function hideSoon(){if(hideT)clearTimeout(hideT);
-    hideT=setTimeout(function(){if(openBar){openBar.classList.remove('is-open');openBar=null}hideT=null},130)}
-  bars.forEach(function(b,i){
-    b.addEventListener('mouseenter',function(){reveal(b)});
-    b.addEventListener('mouseleave',hideSoon);
-    var f=b.querySelector('.vbar__flyout');
-    if(f){f.addEventListener('mouseenter',function(){reveal(b)});f.addEventListener('mouseleave',hideSoon)}
-    b.addEventListener('keydown',function(e){
-      var j=e.key==='ArrowDown'?i+1:e.key==='ArrowUp'?i-1:-1;
-      if(j>=0&&j<bars.length){e.preventDefault();bars[j].focus()}})});
-})();</script>
-
+</article></main>
 </body>
 </html>
