@@ -358,7 +358,7 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
 </style>
 </head>
 <body>
-<header class="nav"><a class="brand" href="../index.html"><span>neurep</span></a></header><main class="study"><header class="study-head"><h1>Local fan-in selectivity across species</h1><p class=sub>A neuron contacts a small, cell-type-structured fraction of the partners it could reach nearby — and the fraction you measure depends entirely on the denominator you choose.</p><div class="rule"></div></header><div class="context"><span class="crumb"><a href="../studies.html#thread-reference">Reference</a></span><span class="status reference">reference</span><span class="repro">reproduce: <a href="https://github.com/Zhou-Hangyu/neurep/commit/f3169e1"><code>f3169e1</code></a> <span class="git">· master</span></span></div><article>
+<header class="nav"><a class="brand" href="../index.html"><span>neurep</span></a></header><main class="study"><header class="study-head"><h1>Local fan-in selectivity across species</h1><p class=sub>A neuron contacts a small, cell-type-structured fraction of the partners it could reach nearby — and the fraction you measure depends entirely on the denominator you choose.</p><div class="rule"></div></header><div class="context"><span class="crumb"><a href="../studies.html#thread-reference">Reference</a></span><span class="status reference">reference</span><span class="repro">reproduce: <a href="https://github.com/Zhou-Hangyu/neurep/commit/33df169"><code>33df169</code></a> <span class="git">· master</span></span></div><article>
 
   <div class="tldr"><p><strong>Summary.</strong> A cortical neuron carries thousands of synapses yet
   connects to only a minority of the neurons it could reach locally. Measured as a <em>local connection
@@ -388,11 +388,11 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
   patching two nearby neurons and testing for a synapse. It normalises out sheer neuron count — a cell with
   thousands of synapses can still have a low \(\phi\), whereas a synapse total mostly reflects brain size.
   And it is comparable across circuits <em>once the denominator is fixed</em> — which nearby pairs count as
-  &ldquo;plausible partners.&rdquo; And because it is a ratio, the denominator dominates the number: widen it
-  from the local neighbourhood to the whole brain and \(\phi\) drops by more than an order of magnitude — in the
-  fly <a href="https://en.wikipedia.org/wiki/Connectome">connectome</a>, 71% of connections fall among the
-  &lt;3% of neuron pairs within 50&nbsp;&micro;m (<a href="https://doi.org/10.1038/s41586-024-07968-y">Lin&nbsp;2024</a>),
-  so a &ldquo;fraction of all neurons&rdquo; figure mostly reports brain size.</p>
+  &ldquo;plausible partners.&rdquo; That denominator dominates the number: widen it from the local
+  neighbourhood to the whole brain and \(\phi\) drops by more than an order of magnitude — in the fly
+  <a href="https://en.wikipedia.org/wiki/Connectome">connectome</a>, 71% of connections fall among the
+  &lt;3% of neuron pairs within 50&nbsp;&micro;m (<a href="https://doi.org/10.1038/s41586-024-07968-y">Lin&nbsp;2024</a>) —
+  so a &ldquo;fraction of all neurons&rdquo; figure says more about brain size than about wiring.</p>
 
   <h2>2. Selective, not dense</h2>
 
