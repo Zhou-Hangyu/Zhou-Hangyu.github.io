@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow"><title>The flat winning ticket under the
-microscope — neurep</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false},{left:'$$',right:'$$',display:true}],throwOnError:false});"></script><style>/* ========================================================================== *
+microscope — neurep</title><link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%234b2e63'/%3E%3C/svg%3E"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false},{left:'$$',right:'$$',display:true}],throwOnError:false});"></script><style>/* ========================================================================== *
  *  research-site theme — the single source of truth for the visual language.
  *  The builder INLINES this file into every generated page's <head>, so each
  *  report renders standalone (open the .html directly) and is depth-proof.
@@ -93,6 +93,10 @@ article :first-child{margin-top:0}
 h1,h2,h3,h4{font-family:var(--disp);line-height:1.22;letter-spacing:-.015em}
 h2{font-size:1.4rem;margin:2.3rem 0 .5rem;padding-bottom:.25rem;border-bottom:1px solid var(--line)}
 h3{font-size:1.1rem;margin:1.6rem 0 .3rem}
+h4{font-size:1.22rem;margin:1.6rem 0 .3rem}
+/* pandoc maps LaTeX \paragraph -> h5; keep it a legible sub-heading (the browser
+   default h5 is ~0.83em serif -- far too small for a section title) */
+h5{font-family:var(--disp);font-size:1.12rem;font-weight:700;line-height:1.25;letter-spacing:-.01em;color:var(--ink);margin:1.5rem 0 .3rem}
 p{margin:.75rem 0}
 strong{font-weight:700}
 ul,ol{padding-left:1.3rem} li{margin:.25rem 0}
@@ -108,6 +112,11 @@ img.fig{max-width:min(100%,640px);height:auto;display:block;margin:0 auto;backgr
 .study article img:not(.fig){max-width:100%;height:auto}   /* safety net: no image ever exceeds the line width, even if .fig is forgotten */
 figcaption{font:400 14px/1.55 var(--disp);color:var(--mut);text-align:left;margin:.6rem auto 0;max-width:640px}
 .fignum{color:var(--ink);font-weight:700}
+/* multi-panel figures: build.py wraps collapsed pandoc subfigures in <div class="subfigs">;
+   lay the panels side by side, bottom-aligned, at equal height (mirrors the PDF (a)/(b) row).
+   A plain class (not :has()) so it renders in every browser. */
+.subfigs{display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-end;gap:1rem;margin:0 auto}
+.subfigs img.fig{max-width:none;width:auto;height:11.5rem;box-sizing:border-box;margin:0}
 
 /* equation refs + anchors (KaTeX legacy + MathJax) */
 .xref{font-weight:600;text-decoration:none}

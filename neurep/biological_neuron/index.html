@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow"><title>An Exact MLP Encoding of Computation Graphs — neurep</title><link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%234b2e63'/%3E%3C/svg%3E"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false},{left:'$$',right:'$$',display:true}],throwOnError:false});"></script><style>/* ========================================================================== *
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow"><title>Local fan-in selectivity across species — neurep</title><link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%234b2e63'/%3E%3C/svg%3E"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"><script>window.MathJax={tex:{tags:'ams',inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]'],['$$','$$']]},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']},chtml:{displayAlign:'center'}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><style>/* ========================================================================== *
  *  research-site theme — the single source of truth for the visual language.
  *  The builder INLINES this file into every generated page's <head>, so each
  *  report renders standalone (open the .html directly) and is depth-proof.
@@ -358,310 +358,222 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
 </style>
 </head>
 <body>
-<header class="nav"><a class="brand" href="../index.html"><span>neurep</span></a></header><main class="study"><header class="study-head"><h1>An Exact MLP Encoding of Computation Graphs</h1><div class="rule"></div></header><div class="context"><span class="crumb"><a href="../studies.html#thread-theory">Encoding &amp; modularity theory</a></span><span class="status supported">supported</span><span class="repro">reproduce: <a href="https://github.com/Zhou-Hangyu/neurep/commit/3394642"><code>3394642</code></a> <span class="git">· feature/runstore-pipeline</span></span></div><article><p>This note constructs an <em>exact</em> realization of any computation
-graph as a ReLU MLP whose neuron groups are the graph’s nodes, and
-transfers the discrete complexity <span
-class="math inline">\((D,N,r)\)</span> to network depth and width.</p>
-<h2 id="sec:setup">Computation graphs and their complexity</h2>
-<div class="definition">
-<p><strong>Definition 1</strong> (Computation graph). A <em>computation
-graph</em> is a DAG <span class="math inline">\(G=(V,E)\)</span> in
-which each node <span class="math inline">\(v\)</span> carries a finite
-<em>alphabet</em> <span class="math inline">\(\Sigma_v\)</span> (values
-<span class="math inline">\(z_v\in\Sigma_v\)</span>) and a <em>parent
-set</em> <span class="math inline">\(\mathrm{pa}(v)=\{u:(u,v)\in
-E\}\)</span>, and each non-input node carries a <em>lookup table</em>
-<span
-class="math inline">\(g_v:\prod_{u\in\mathrm{pa}(v)}\Sigma_u\to\Sigma_v\)</span>,
-<span
-class="math inline">\(z_v=g_v\big((z_u)_{u\in\mathrm{pa}(v)}\big)\)</span>.
-Vertices partition as <span
-class="math inline">\(V=V_{\mathrm{in}}\sqcup V_{\mathrm{hid}}\sqcup
-V_{\mathrm{out}}\)</span>; inputs have <span
-class="math inline">\(\mathrm{pa}(v)=\varnothing\)</span> and are
-clamped, <span class="math inline">\(z_v=x_v\)</span> for <span
-class="math inline">\(x\in\mathcal{X}:=\prod_{v\in
-V_{\mathrm{in}}}\Sigma_v\)</span>. Evaluating <span
-class="math inline">\(G\)</span> computes <span
-class="math inline">\(z_v\)</span> in topological order; the
-<em>function computed by <span class="math inline">\(G\)</span></em> is
-<span class="math inline">\(f_G(x)=h\big((z_v)_{v\in
-V_{\mathrm{out}}}\big)\)</span>, with <span
-class="math inline">\(h\)</span> the identity when <span
-class="math inline">\(|V_{\mathrm{out}}|=1\)</span>.</p>
-</div>
-<p>We track four parameters, the last of which, <span
-class="math inline">\(\Delta\)</span>, governs network depth: the number
-of values <span class="math inline">\(D:=\max_v|\Sigma_v|\)</span>, the
-node count <span class="math inline">\(N:=|V|\)</span> (with <span
-class="math inline">\(N_{\mathrm{hid}}:=|V_{\mathrm{hid}}|\)</span>),
-the max fan-in <span
-class="math inline">\(r:=\max_v|\mathrm{pa}(v)|\)</span>, and the depth
-<span class="math inline">\(\Delta:=\max_v\mathrm{dep}(v)\le N\)</span>,
-where <span class="math inline">\(\mathrm{dep}(v)=0\)</span> on <span
-class="math inline">\(V_{\mathrm{in}}\)</span> and <span
-class="math inline">\(\mathrm{dep}(v)=1+\max_{u\in\mathrm{pa}(v)}\mathrm{dep}(u)\)</span>
-otherwise. The quantity that transfers to the network is the total table
-content: node <span class="math inline">\(v\)</span> has <span
-class="math inline">\(\prod_{u\in\mathrm{pa}(v)}|\Sigma_u|\le
-D^{\,r}\)</span> rows, each storing one symbol of <span
-class="math inline">\(\Sigma_v\)</span> (<span
-class="math inline">\(\log_2|\Sigma_v|\le\log_2 D\)</span> bits), so the
-description length is <span class="eqa" id="eq:desc"></span><span class="math display">\[
+<header class="nav"><a class="brand" href="../index.html"><span>neurep</span></a></header><main class="study"><header class="study-head"><h1>Local fan-in selectivity across species</h1><p class=sub>How selectively neurons wire relative to what they could connect to locally — and whether it tracks cognition. <span class="status reference">reference</span></p><div class="rule"></div></header><div class="context"><span class="crumb"><a href="../studies.html#thread-reference">Reference</a></span><span class="status reference">reference</span><span class="repro">reproduce: <a href="https://github.com/Zhou-Hangyu/neurep/commit/7623818"><code>7623818</code></a> <span class="git">· master</span></span></div><article>
 
-|G|\:=\ \sum_{v\notin
-V_{\mathrm{in}}}\Big(\textstyle\prod_{u\in\mathrm{pa}(v)}|\Sigma_u|\Big)\log_2|\Sigma_v|
-\ \le\ N\,D^{\,r}\log_2 D. \tag{1}\]</span> We use a common alphabet size <span
-class="math inline">\(|\Sigma_v|=D\)</span> for readability; the
-per-node form replaces <span class="math inline">\(D^{\,r}\)</span> by
-<span
-class="math inline">\(\prod_{u\in\mathrm{pa}(v)}|\Sigma_u|\)</span>
-throughout, and no structural argument uses equality of the
-alphabets.</p>
-<h5 id="running-example-g_0.">Running example <span
-class="math inline">\(G_0\)</span>.</h5>
-<p>Figure <a href="#fig:both" data-reference-type="ref"
-data-reference="fig:both">1</a>(a) shows <span
-class="math inline">\(\mathrm{pa}(A)=\{x_1,x_3\}\)</span>, <span
-class="math inline">\(\mathrm{pa}(B)=\{x_1,x_2\}\)</span>, <span
-class="math inline">\(\mathrm{pa}(C)=\{B,x_3\}\)</span>, <span
-class="math inline">\(\mathrm{pa}(Y)=\{A,C\}\)</span>, <span
-class="math inline">\(V_{\mathrm{out}}=\{Y\}\)</span>, <span
-class="math inline">\(x_4\)</span> isolated: fan-in <span
-class="math inline">\(r=2\)</span>, depths <span
-class="math inline">\(1,1,2,3\)</span> so <span
-class="math inline">\(\Delta=3\)</span>, <span
-class="math inline">\(N=8\)</span>, and four <span
-class="math inline">\(D^2\)</span>-entry tables (<span
-class="math inline">\(4D^2\)</span> total). Nodes <span
-class="math inline">\(x_1\)</span> and <span
-class="math inline">\(x_3\)</span> are shared — <span
-class="math inline">\(x_1\)</span> feeds <span
-class="math inline">\(A,B\)</span> and <span
-class="math inline">\(x_3\)</span> feeds <span
-class="math inline">\(A,C\)</span> — exercising re-use rather than a
-disjoint partition.</p>
-<figure id="fig:both" data-latex-placement="!ht">
-<div class="subfigs"><img class="fig" src="fig/fig_graph.svg" alt="fig_graph" loading="lazy" />
-<img class="fig" src="fig/fig_encoding.svg" alt="fig_encoding" loading="lazy" /></div><figcaption><span class="fignum">Figure 1.</span> (a) The running example as a DAG. (b) Its exact MLP encoding
-by depth: computed nodes are conjunction–readout gadgets,
-deeper-consumed values are carried forward (dashed; the computed <span
-class="math inline">\(A\)</span> via its one-time readout <span
-class="math inline">\(\xi_A=U^Ah^A\)</span>), <span
-class="math inline">\(x_4\)</span> is unused. Both panels produced by
-the figure script.</figcaption>
-</figure>
-<h2 id="sec:enc">An exact MLP encoding</h2>
-<p>We encode each node value as a one-hot indicator. Write <span
-class="math inline">\(\xi_v:=e_{z_v}\in\{0,1\}^{|\Sigma_v|}\)</span> for
-the indicator of node <span class="math inline">\(v\)</span>; for
-inputs, <span class="math inline">\(\xi_v=e_{x_v}\)</span>.</p>
-<h5 id="per-node-gadget.">Per-node gadget.</h5>
-<p>Fix a non-input <span class="math inline">\(v\)</span> with parents
-<span class="math inline">\(p_1,\dots,p_k\)</span>, <span
-class="math inline">\(k\le r\)</span>. A <em>conjunction layer</em>
-carries one unit per joint pattern <span
-class="math inline">\(a\in\prod_i\Sigma_{p_i}\)</span>, <span class="eqa" id="eq:conj"></span><span
-class="math display">\[
+  <div class="tldr"><p><strong>TL;DR.</strong> A neuron can carry thousands of synapses and still
+  be highly <em>selective</em> relative to the partners it could reach locally. This node verifies,
+  against primary sources, four claims about that local selectivity. <strong>(1)</strong> Local
+  excitatory cortical circuits are selective, not dense: the pair-level connection probability sits
+  predominantly at \(\sim\)1&ndash;20% (typically single-digit to mid-teens), with a few specific pathways
+  denser still. <strong>(2)</strong> The number is
+  governed by the <em>denominator</em> &mdash; re-denominating one system from a local neighbourhood to
+  the whole brain drops the connection probability by more than an order of magnitude. <strong>(3)</strong>
+  Local wiring is <em>structured</em>, not merely sparse, wherever it is measured after distance and
+  density are controlled &mdash; but not universally (the fly mushroom body is sparse yet apparently
+  random). <strong>(4)</strong> No primary study surfaced, under a pre-registered search, linking local
+  selectivity to cross-species cognitive ability; comparative cognition instead tracks neuron counts and
+  brain size. The upshot for artificial
+  networks: bounded, structured, cell-type-specific local integration is a plausible <em>scalability</em>
+  principle, not a standalone predictor of reasoning.</p></div>
 
-h^v_a\ =\
-\mathrm{ReLU}\!\Big(\textstyle\sum_{i=1}^{k}\xi_{p_i}[a_i]-(k-1)\Big)
-\ =\ \mathbf{1}\big[z_{p_i}=a_i\ \forall i\big], \tag{2}\]</span> the argument being an integer equal to <span
-class="math inline">\(k\)</span> iff every parent matches and <span
-class="math inline">\(\le k-1\)</span> otherwise; so the vector <span
-class="math inline">\(h^v\)</span>, with one component <span
-class="math inline">\(h^v_a\)</span> per joint pattern <span
-class="math inline">\(a\)</span>, is the one-hot indicator of the joint
-parent value. A <em>readout</em> <span
-class="math inline">\(U^v\in\{0,1\}^{|\Sigma_v|\times\prod_i|\Sigma_{p_i}|}\)</span>,
-<span class="math inline">\(U^v_{c,a}=\mathbf{1}[g_v(a)=c]\)</span>,
-gives <span class="eqa" id="eq:readout"></span><span class="math display">\[
+  <h2>1. The denominator problem</h2>
 
-\xi_v\ =\ U^v h^v\ =\ e_{g_v(z_{p_1},\dots,z_{p_k})}. \tag{3}\]</span> The matrix <span
-class="math inline">\(U^v\)</span> <em>is</em> the table; carrying no
-nonlinearity, it folds into the next stage’s affine, so each graph depth
-costs one ReLU stage. Folding has a price: when a consumer with fan-in
-<span class="math inline">\(k\)</span> reads a computed parent <span
-class="math inline">\(p\)</span> (own fan-in <span
-class="math inline">\(r_p\)</span>) from the preceding stage, the
-composed block carries exactly <span
-class="math inline">\(D^{\,r_p+k-1}\)</span> nonzeros — for
-<em>every</em> table, since the block has at most <span
-class="math inline">\(D\)</span> distinct rows whose supports <span
-class="math inline">\(g_p^{-1}(c)\)</span> partition the <span
-class="math inline">\(D^{\,r_p}\)</span> columns (<span
-class="math inline">\(\sum_c|g_p^{-1}(c)|=D^{\,r_p}\)</span>), each
-repeated over the <span class="math inline">\(D^{\,k-1}\)</span>
-completions of the pattern. A node consumed more than one depth ahead is
-<em>carried</em> by the identity (ReLU fixes nonnegative one-hot
-entries); a <em>computed</em> one is first materialized once (<span
-class="math inline">\(U^v\)</span> inside a later stage’s affine, <span
-class="math inline">\(D^{\,r_v}\)</span> nonzeros), then carried at cost
-<span class="math inline">\(D\)</span> per stage. The prediction is
-<span class="math inline">\(\hat y=\omega^\top\xi_Y\)</span> (identity
-if the target is symbolic).</p>
-<div id="prop:exact" class="proposition">
-<p><strong>Proposition 1</strong> (Exact realization and size). <em>Let
-<span class="math inline">\(G\)</span> be a computation graph as above,
-with <span
-class="math inline">\(W_{\max}:=\max_d|\{v:\mathrm{dep}(v)=d\}|\)</span>
-the maximum number of nodes at one depth. The ReLU network <span
-class="math inline">\(\mathcal{E}_{\mathrm{MLP}}(G)\)</span> satisfies
-<span
-class="math inline">\(\mathcal{E}_{\mathrm{MLP}}(G)(x)=f_G(x)\)</span>
-for every <span class="math inline">\(x\in\mathcal{X}\)</span>, using
-depth <span class="math inline">\(\Delta\)</span> (hidden ReLU stages),
-maximum width <span class="math inline">\(m=O\!\big(W_{\max} D^{\,r}+N
-D\big)\)</span>, and <span class="math inline">\(\sum_{v\notin
-V_{\mathrm{in}}}\prod_{u\in\mathrm{pa}(v)}|\Sigma_u|\le N
-D^{\,r}\)</span> conjunction units (plus <span class="math inline">\(O(N
-D\,\Delta)\)</span> carry units), with <span class="math inline">\(O(N r
-D^{\,2r-1}+N D\,\Delta)\)</span> nonzero weights in all (each folded
-parent slot costs exactly <span
-class="math inline">\(D^{\,r_p+k-1}\)</span>).</em></p>
-</div>
-<div class="proof">
-<p><em>Proof.</em> Induction on depth. At depth <span
-class="math inline">\(0\)</span> the input groups hold <span
-class="math inline">\(\xi_v=e_{x_v}\)</span> by construction. Assume
-that at the input to stage <span class="math inline">\(d\)</span> every
-node <span class="math inline">\(u\)</span> with <span
-class="math inline">\(\mathrm{dep}(u)&lt;d\)</span> that is still needed
-has its indicator <span class="math inline">\(\xi_u\)</span> available
-(by direct computation or carry). For each <span
-class="math inline">\(v\)</span> with <span
-class="math inline">\(\mathrm{dep}(v)=d\)</span> the parents have depth
-<span class="math inline">\(&lt;d\)</span>, so their indicators are
-present; <a class="xref" href="#eq:conj">(2)</a> produces the joint indicator
-<span class="math inline">\(h^v\)</span> and <a class="xref" href="#eq:readout">(3)</a>
-produces <span class="math inline">\(\xi_v\)</span>. Carries forward the
-remaining needed indicators by <span
-class="math inline">\(\mathrm{ReLU}\circ\mathrm{Id}\)</span>. Thus the
-hypothesis holds at stage <span class="math inline">\(d+1\)</span>. At
-<span class="math inline">\(d=\Delta\)</span> the output indicator <span
-class="math inline">\(\xi_Y\)</span> is available and <span
-class="math inline">\(\omega^\top\xi_Y\)</span> returns the readout. The
-size statement counts the units in <a class="xref" href="#eq:conj">(2)</a>–<a class="xref" href="#eq:readout">(3)</a> per node and the carries;
-for the weights, each folded <span class="math inline">\(U^p\)</span>
-contributes <span class="math inline">\(D^{\,r_p+k-1}\)</span> per
-consumer slot (<span class="math inline">\(\le rD^{\,2r-1}\)</span> per
-node), one-time materializations <span
-class="math inline">\(D^{\,r_v}\)</span> (absorbed), and carries <span
-class="math inline">\(D\)</span> per stage. ◻</p>
-</div>
-<div class="remark">
-<p><em>Remark 1</em>. For worst-case tables the gadget storage <span
-class="math inline">\(\Theta(N D^{\,r})\)</span> (weights) is
-order-optimal up to <span class="math inline">\(\log\)</span> factors,
-since an arbitrary table costs <span
-class="math inline">\(\Theta(D^{\,r}\log D)\)</span> bits per node by <a class="xref" href="#eq:desc">(1)</a>; structured <span
-class="math inline">\(g_v\)</span> (linear, low-rank, monotone) compress
-below it. Across consecutive stages the forwarded activation has width
-<span class="math inline">\(O(W_{\max} D^{\,r}+N D)\)</span>.</p>
-</div>
-<h5 id="complexity-and-the-dense-comparison.">Complexity, and the dense
-comparison.</h5>
-<p>Each conjunction unit is wired only to its <span
-class="math inline">\(\le r\)</span> parents, and each readout — one
-nonzero per column of <span class="math inline">\(U^v\)</span> standing
-alone — costs <span class="math inline">\(D^{\,r_v+k-1}\)</span> per
-fan-in-<span class="math inline">\(k\)</span> consumer slot once folded,
-so the gadgets carry <span class="math inline">\(O(N r
-D^{\,2r-1})\)</span> nonzero weights — the table content <span
-class="math inline">\(|G|\)</span> of <a class="xref" href="#eq:desc">(1)</a> up to
-<span class="math inline">\(rD^{\,r-1}\)</span> and <span
-class="math inline">\(\log D\)</span> factors — and the identity carries
-add <span class="math inline">\(O(N D\Delta)\)</span> (negligible once
-<span class="math inline">\(\Delta=O(rD^{\,r-1})\)</span>), at depth
-<span class="math inline">\(\Delta\)</span> and width <span
-class="math inline">\(m=O(W_{\max}D^{\,r}{+}ND)\)</span>. A
-<em>dense</em> ReLU MLP of the same depth and width is fully connected,
-with <span class="math inline">\(\Theta(\Delta\,m^2)\)</span> weights;
-the exact encoding is the sparse subnetwork whose wiring is <span
-class="math inline">\(G\)</span>, using only an <span
-class="math inline">\(O(N r D^{\,2r-1}{+}ND\Delta)/\Theta(\Delta
-m^2)\)</span> fraction of them.</p>
-<div class="center">
-<div class="tablewrap"><table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: center;">depth</th>
-<th style="text-align: center;">width</th>
-<th style="text-align: center;">nonzero weights</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;"><span
-class="math inline">\(\mathcal{E}_{\mathrm{MLP}}(G)\)</span> (exact
-encoding)</td>
-<td style="text-align: center;"><span
-class="math inline">\(\Delta\)</span></td>
-<td style="text-align: center;"><span
-class="math inline">\(O(W_{\max}D^{\,r}{+}ND)\)</span></td>
-<td style="text-align: center;"><span class="math inline">\(O(N r
-D^{\,2r-1}{+}ND\Delta)\)</span></td>
-</tr>
-<tr>
-<td style="text-align: left;">dense MLP, same depth &amp; width</td>
-<td style="text-align: center;"><span
-class="math inline">\(\Delta\)</span></td>
-<td style="text-align: center;"><span
-class="math inline">\(O(W_{\max}D^{\,r}{+}ND)\)</span></td>
-<td style="text-align: center;"><span
-class="math inline">\(\Theta\!\big(\Delta\,(W_{\max}D^{\,r}{+}ND)^2\big)\)</span></td>
-</tr>
-</tbody>
-</table></div>
-</div>
-<h5 id="size-and-validation.">Size and validation.</h5>
-<p>For <span class="math inline">\(G_0\)</span> at <span
-class="math inline">\(D=4\)</span>: the four gadgets use <span
-class="math inline">\(4D^2=64\)</span> conjunction units and <span
-class="math inline">\(2D^3{+}8D^2{+}D=260\)</span> nonzero weights at
-depth <span class="math inline">\(\Delta=3\)</span>, the folded <span
-class="math inline">\(B{\to}C\)</span> and <span
-class="math inline">\(C{\to}Y\)</span> slots costing <span
-class="math inline">\(D^3\)</span> apiece (widest stage — <span
-class="math inline">\(A,B\)</span> plus the <span
-class="math inline">\(x_3\)</span> carry — <span
-class="math inline">\(2D^2{+}D=36\)</span> units). A dense depth-<span
-class="math inline">\(3\)</span> MLP at the width bound <span
-class="math inline">\(W_{\max}D^{\,r}{+}ND=64\)</span> holds <span
-class="math inline">\(3\cdot64^2\approx1.2\times10^4\)</span> weights —
-about <span class="math inline">\(47\times\)</span> more. An
-accompanying script reproduces the construction bit-exactly (Figure <a
-href="#fig:val" data-reference-type="ref"
-data-reference="fig:val">2</a>): enumerating all <span
-class="math inline">\(D^{|V_{\mathrm{in}}|}\)</span> inputs for <span
-class="math inline">\(D\in\{2,3,4\}\)</span> across <span
-class="math inline">\(100\)</span> random table draws each (<span
-class="math inline">\(35{,}300\)</span> checks) gives <span
-class="math inline">\(0\)</span> mismatches, <span
-class="math inline">\(4D^2\)</span> conjunction units (<span
-class="math inline">\(16/36/64\)</span>), <span
-class="math inline">\(\Delta=3\)</span> ReLU stages, and per-layer
-nonzero weights <span
-class="math inline">\(\big(4D^2{+}D,\;D^3{+}2D^2,\;D^3{+}D^2\big)\)</span>
-plus a <span class="math inline">\(D^2\)</span> head — matching the
-formula on <em>every</em> draw — and a stacked ReLU MLP assembled from
-the per-depth weights attains exactly zero loss.</p>
-<figure id="fig:val" data-latex-placement="H">
-<img class="fig" src="fig/fig_validation.svg" alt="fig_validation" loading="lazy" />
-<figcaption><span class="fignum">Figure 2.</span> Empirical validation of <span
-class="math inline">\(\mathcal{E}_{\mathrm{MLP}}(G_0)\)</span>.
-<em>Left:</em> the realized conjunction-unit count equals the predicted
-<span class="math inline">\(4D^2\)</span>, at constant depth <span
-class="math inline">\(\Delta=3\)</span>. <em>Right:</em> enumerating
-every input for <span class="math inline">\(D\in\{2,3,4\}\)</span> over
-<span class="math inline">\(100\)</span> random table draws each (<span
-class="math inline">\(35{,}300\)</span> checks) gives <em>zero</em>
-mismatches, and a stacked ReLU MLP built from the per-depth weights
-attains exactly zero loss, its per-layer nonzero counts matching the
-predicted formulas on every draw. Produced by the validation
-script.</figcaption>
-</figure>
+  <p>Ask how many neurons a given neuron &ldquo;listens to,&rdquo; and the raw synaptic fan-in is the
+  wrong answer: a mouse cortical neuron carries on the order of \(\sim\)8,200 synapses, yet it contacts a
+  tiny, structured subset of the cells it could physically reach. The computationally interesting quantity
+  is <em>relative</em> &mdash; connected partners divided by the partners that were geometrically and
+  biologically <em>eligible</em>. Write the eligible presynaptic set of neuron \(i\) as \(E_{\mathrm{in}}(i)\)
+  and the count of distinct presynaptic partners as \(d^{\mathrm{unique}}_{\mathrm{in}}(i)\). The
+  <strong>pair-level local selectivity</strong> is</p>
+
+  \[\begin{equation}\label{eq:phipair}
+    \phi^{\mathrm{pair}}_{\mathrm{in}}(i) \;=\; \frac{d^{\mathrm{unique}}_{\mathrm{in}}(i)}{\lvert E_{\mathrm{in}}(i)\rvert},
+    \qquad\text{population form}\quad
+    P_{\mathrm{conn}}(A\!\to\! B \mid \mathrm{local}) \;=\; \frac{\#\,\text{connected tested pairs } A\to B}{\#\,\text{eligible/tested local pairs } A\to B}.
+  \end{equation}\]
+
+  <p>Everything turns on the choice of \(E_{\mathrm{in}}(i)\) &mdash; the <em>denominator</em>. It can be
+  the whole brain, neurons within a radius, arbor-overlapping pairs, or, most finely, the axon&ndash;dendrite
+  appositions close enough to form a synapse. That last, site-level definition gives the
+  <strong>potential-synapse filling fraction</strong></p>
+
+  \[\begin{equation}\label{eq:phisite}
+    \phi^{\mathrm{site}} \;=\; \frac{\#\,\text{actual synapses}}{\#\,\text{potential synaptic sites (axon--dendrite appositions)}},
+  \end{equation}\]
+
+  <p>which asks a categorically different question (how many microscopic opportunities are occupied) and
+  must never be compared to a pair-level probability. A fourth, weight-aware notion &mdash; the
+  <strong>effective fan-in</strong>, an inverse-participation-ratio count that discounts many tiny inputs
+  &mdash; connects the biology to bounded-fan-in regularisation in artificial networks:</p>
+
+  \[\begin{equation}\label{eq:eff}
+    d^{\mathrm{eff}}_{\mathrm{in}}(i) \;=\; \frac{\bigl(\sum_j w_j\bigr)^2}{\sum_j w_j^2},\qquad w_j \ge 0.
+  \end{equation}\]
+
+  <p>These denominators form a <strong>strictness ladder</strong> &mdash; whole-brain \(\prec\)
+  radius/tested-pair \(\prec\) arbor-overlap \(\prec\) potential-synapse-site &mdash; and a single
+  &ldquo;neurons are \(X\%\) selective&rdquo; headline is meaningless without saying which rung it sits on.
+  Every quantity below is verified against a primary source (methods in &sect;7).</p>
+
+  <h2>2. Local excitatory connection probability</h2>
+
+  <p>Across rodent and human neocortex, and across recording methods, the pair-level excitatory connection
+  probability at the <em>tested-pair</em> rung sits predominantly at \(\sim\)1&ndash;20%, with the mode in the
+  single digits. In rat layer&nbsp;2/3 it falls from \(0.09\) to \(0.01\) as intersomatic distance grows from
+  25 to 200&nbsp;&micro;m; a large mouse+human multipatch census reports an overall \(1731/23620 = 7.3\%\) with
+  peak recurrent E&rarr;E near \(5\%\); human L2/3 rises to the mid-teens but stays under \(20\%\).</p>
+
+  <div class="tablewrap"><table>
+    <thead><tr><th>Circuit</th><th>Denominator</th><th>\(\phi\) / \(P_{\mathrm{conn}}\)</th><th>Method (evidence quality)</th><th>Source</th></tr></thead>
+    <tbody>
+      <tr><td>Rat L2/3 pyr&rarr;pyr</td><td>tested-pair, 25&ndash;200&nbsp;&micro;m</td><td>0.09 &rarr; 0.01</td><td>dual patch, slice (lower bound)</td><td>Holmgren 2003</td></tr>
+      <tr><td>Mouse+human neocortex (all subclasses)</td><td>tested-pair, &lt;150&nbsp;&micro;m</td><td>7.3% (peak E&rarr;E \(\sim\)5%)</td><td>8-electrode multipatch, slice</td><td>Campagnola 2022</td></tr>
+      <tr><td>Mouse V1 E&rarr;E</td><td>tested-pair, &lt;100&nbsp;&micro;m</td><td>4.8&ndash;10%</td><td>multipatch, slice</td><td>Seeman 2018</td></tr>
+      <tr><td>Human L2/L3 pyr&rarr;pyr</td><td>tested-pair, &lt;100&nbsp;&micro;m</td><td>18.8&ndash;18.9%</td><td>8-electrode multipatch, slice</td><td>Seeman 2018</td></tr>
+      <tr><td>Human temporal L2/3 pyr&rarr;pyr</td><td>tested-pair (local cluster)</td><td>15.8% (1094/6911)</td><td>multineuron patch, slice</td><td>Planert 2025</td></tr>
+      <tr><td>Mouse V1 E&rarr;E (optogenetic)</td><td>tested-pair, &lt;100&nbsp;&micro;m</td><td>5.8%</td><td>2-photon optogenetics</td><td>Oldenburg 2022</td></tr>
+      <tr><td><em>Exception</em> &mdash; mouse L4&rarr;L4 spiny stellate</td><td>within-barrel tested-pair</td><td>24.3%</td><td>multipatch, slice</td><td>Lefort 2009</td></tr>
+      <tr><td><em>Exception</em> &mdash; pyr&harr;fast-spiking interneuron</td><td>cell-type-conditioned</td><td>0.5&ndash;0.75</td><td>dual patch, slice</td><td>Holmgren 2003</td></tr>
+    </tbody>
+  </table></div>
+
+  <p><strong>The sparse picture is method-robust, not a slice artifact.</strong> Paired-recording in
+  slices severs axons and therefore <em>undercounts</em> connectivity &mdash; so these values are lower
+  bounds. Voltage imaging in rat CA3 makes the bias explicit: optical measurement recovered \(5.3\%\) where
+  same-condition patch-clamp found only \(0.47\%\) (an \(\sim\)11&times; gap), still below the anatomical
+  ceiling of \(14.9\%\). Correcting the undercount pushes values <em>up</em>, never out of the
+  \(1\text{--}20\%\) band.</p>
+
+  <p><strong>&ldquo;Predominantly&rdquo; is a representative claim, not a selected one.</strong> An active
+  contradictor search (11 queries, six candidate dense circuits) surfaced exactly one genuine band-breaker:
+  within-barrel L4&rarr;L4 spiny-stellate connectivity at \(24.3\%\) (corroborated by Feldmeyer 1999). The
+  other candidates report in-band values or concern <em>structure</em> atop a sparse baseline &mdash; Song
+  2005's \(11.6\%\) is the archetype, Perin 2011's \(\sim\)21% appears only at extreme short range, and the
+  named L5 thick-tufted &ldquo;dense cluster&rdquo; gives only \(5.2\%\)/\(3.2\%\). So the honest statement is
+  interactional: local excitatory connectivity is <em>bounded</em>, with specific pathways
+  (L4&rarr;L4 \(\sim\)24%; pyr&harr;fast-spiking interneurons \(0.5\text{--}0.75\)) locally dense by design.</p>
+
+  <h2>3. Denominator dependence</h2>
+
+  <p>Because \(\phi\) is a ratio, broadening \(E_{\mathrm{in}}(i)\) at fixed actual-connection count drives
+  it down &mdash; the falsifiable content is the <em>magnitude</em> of that drop within a single system, not
+  its (arithmetically guaranteed) direction. The <em>Drosophila</em> whole-brain connectome supplies a clean
+  within-system rung: over all pairs the connection probability is \(P_{\mathrm{conn}} = 1.61\times10^{-4}\)
+  (\(\sim\)0.016%), yet <em>&ldquo;over 71% of connections occur between neuron pairs within 50&nbsp;&micro;m
+  of each other, despite these pairs constituting less than 3% of the total.&rdquo;</em> Re-denominating to
+  that local, arbor-overlap neighbourhood gives an implied local rate of \(\sim\)0.38% &mdash; a
+  \(\sim\)24&times; jump from the same connectome's own figures, comfortably past an order of magnitude, and
+  a <em>floor</em> since &ldquo;over 71%&rdquo; and &ldquo;less than 3%&rdquo; bound the numerator and
+  denominator the conservative way.</p>
+
+  <p>The potential-synapse filling fraction of \eqref{eq:phisite} lives on a <em>different axis</em>: in
+  mouse neocortex \(\phi^{\mathrm{site}} = 0.26\), in rat hippocampus \(0.22\text{--}0.34\) &mdash; a
+  reconstruction-based estimate, so unlike slice \(\phi^{\mathrm{pair}}\) it is not subject to the
+  axon-severing undercount. That neurons occupy roughly a quarter to a third of their microscopic synaptic
+  opportunities is &ldquo;substantial but not dense,&rdquo; and it answers a genuinely different question
+  from the pair-level probabilities &mdash; which is exactly why the two must never share an axis.</p>
+
+  <h2>4. Structure versus sparsity</h2>
+
+  <p>Sparsity and <em>structure</em> are distinct: a neuron can sample few partners at <em>random</em>, or
+  few partners <em>selectively</em>. The distinction matters for inductive bias, and it is decidable only
+  when feature-based targeting is measured <em>after</em> the geometric opportunity (proximity, density) is
+  controlled &mdash; otherwise a &ldquo;like-to-like&rdquo; correlation may be a spatial-overlap artifact.</p>
+
+  <p><strong>Excitatory like-to-like survives a proximity control.</strong> Fusing MICrONS electron
+  microscopy with two-photon imaging of the same mouse V1 neurons, Ding 2025 separates tuning similarity
+  into feature and spatial components and regresses out the axon&ndash;dendrite co-travel distance (a
+  Peters'-rule geometric null stronger than soma distance): <em>only the feature component predicts
+  fine-scale connections beyond what proximity explains</em>, and connected pairs are more tuning-correlated
+  than unconnected controls whose dendrites pass within 5&nbsp;&micro;m of the axon. <strong>Inhibitory
+  targeting is cell-type-specific by design.</strong> A millimetre-scale connectomic census (Schneider-Mizell
+  2024; 1352 cells, \(\gt\)70,000 inhibitory synapses) shows &ldquo;widespread specificity, with many
+  interneurons exhibiting differential targeting of spatially <em>intermingled</em> subpopulations&rdquo;
+  &mdash; differential targeting of equally available, same-depth targets is distance control by construction,
+  and it survives a null matched by depth bin, cell type, and compartment. Optogenetics adds a distance- and
+  density-matched contrast: at \(\lt\)100&nbsp;&micro;m, excitatory neurons contact fast-spiking interneurons
+  at \(46.3\%\) versus pyramidal cells at \(5.8\%\) (\(p \approx 10^{-9}\)); and human cortex shows an
+  <em>expanded</em> interneuron-to-interneuron network relative to mouse.</p>
+
+  <p><strong>The counterpoint: sparse need not mean structured.</strong> In the <em>Drosophila</em> mushroom
+  body each Kenyon cell integrates on average \(\sim\)7 projection-neuron inputs (2&ndash;11 dendritic claws,
+  \(n=200\)) in an <em>apparently random</em> combination &mdash; the canonical expansion-layer code for
+  associative learning. That randomness is <em>apparent</em>, not strict: it carries a documented,
+  modest neurogeometric bias (a strict &ldquo;no-enrichment&rdquo; framing did not survive adversarial
+  verification), and later electron microscopy gives a slightly lower median. Still, single-Kenyon-cell input
+  sets are sparse and non-stereotyped &mdash; sparsity here does <em>not</em> imply identity-structured
+  targeting, which is precisely why sparsity and structure are separate claims.</p>
+
+  <h2>5. Cross-species cognition</h2>
+
+  <p>Does local fan-in selectivity track abstract-reasoning or learning ability across species? A
+  pre-registered search &mdash; 15 query variants across PubMed/PMC, Semantic Scholar, and the
+  Scholar-indexed literature, with ten near-miss papers logged &mdash; surfaced <strong>no</strong> primary
+  study that regresses a local connection-selectivity measure on a cross-species cognitive measure with
+  confound control. The verdict is scoped to the recorded protocol: <em>no such study surfaced</em>, not
+  <em>none exists</em>. What the comparative literature does establish is a link to <em>global scale</em>:
+  across 36 species, absolute brain volume best predicts self-control; across 111 bird species, pallial
+  telencephalon neuron number tracks innovation propensity; and large-brained corvids and parrots reach
+  primate-like forebrain neuron counts in far smaller brains. Cognition, as measured, tracks the size of the
+  associative neuron population &mdash; not any local wiring-selectivity statistic.</p>
+
+  <p>This also settles a tempting but false hypothesis: that more intelligent species always wire more
+  <em>sparsely</em> locally. In a <em>single</em> study &mdash; Seeman 2018, the 8-electrode multipatch dataset
+  behind the mouse-V1 row above &mdash; human L2/L3 pyramidal connectivity within 100&nbsp;&micro;m
+  (\(\sim\)18.8&ndash;18.9%) <em>exceeds</em> mouse V1 in the same window (\(\sim\)4.8&ndash;10%): one method, one
+  distance cutoff (a distinct dataset from the pooled human \(15.8\%\) of Planert 2025). The
+  &ldquo;smarter&nbsp;\(\Rightarrow\)&nbsp;sparser&rdquo; ordering is cleanly refuted by that matched comparison
+  &mdash; not by the intake's original cross-study \(15.8\%\)-vs-\(7\%\) contrast, which confounds lab, method,
+  and cutoff.</p>
+
+  <h2>6. Synthesis</h2>
+
+  <p>The load-bearing conclusion is not &ldquo;everything is sparse.&rdquo; It is that local biological
+  wiring is <em>bounded, structured, and cell-type-specific</em>, that its measured &ldquo;selectivity&rdquo;
+  is a property of the denominator as much as of the biology, and that this local selectivity is decoupled
+  from cross-species cognition once population scale is accounted for. Cognitive ability plausibly depends on
+  an interaction &mdash; associative neuron count, local bounded selectivity, cell-type diversity, plasticity,
+  and long-range organisation &mdash; in which bounded local fan-in is a <em>necessary scalability feature</em>
+  for building large computers out of neurons, not a sufficient explanation of reasoning. For a per-neuron
+  representation prior, the biology endorses the <em>form</em> of the inductive bias &mdash; sample a bounded,
+  structured, cell-type-aware subset of local inputs (the effective fan-in of \eqref{eq:eff}) &mdash; while
+  cautioning that the structure, not the sparsity alone, is what carries function.</p>
+
+  <div class="repro"><p><strong>Verdict.</strong> On its pre-registered pass/fail rule the review
+  <strong>passes</strong>: all four claims are supported by primary sources &mdash; sparsity (with named
+  dense, above-band exceptions), the \(\sim\)24&times; within-system denominator drop, an unrefuted and
+  provenance-recorded null on cognition, and distance-controlled structure &mdash; the
+  &ldquo;smarter&nbsp;\(\Rightarrow\)&nbsp;sparser&rdquo; negative control is cleanly refuted, and
+  traceability is 35/36 (32 confirmed, 3 corrected, 1 unverifiable). It is a synthesis reference node, not a
+  verdict on a <code>neurep</code> method.</p></div>
+
+  <h2>7. Verification</h2>
+
+  <p>This node substitutes source verification for a compute campaign: no models, seeds, or cluster jobs.
+  Its &ldquo;experiment&rdquo; is a <code>deep-research</code> harness that fans out web
+  searches, fetches primary sources (journal / PMC / publisher &mdash; not blogs or trackers), extracts each
+  quantity from an abstract, methods section, or named table, and subjects it to <strong>three-vote
+  adversarial verification</strong> (a claim dies on \(\ge 2/3\) refutations). Every headline quantity was
+  frozen into a tiered manifest <em>before</em> the searches ran, and each received one of three verdicts:
+  <strong>confirmed</strong> (the source states the value), <strong>corrected</strong> (a materially
+  different value or qualification, recorded with the original), or <strong>unverifiable</strong> (no
+  accessible primary source). Denominator class, region, cell type, soma-distance, method, and evidence
+  quality are tagged per record so that no two rungs of the strictness ladder are ever conflated; a separate
+  contradictor search guards the representativeness of &ldquo;predominantly&rdquo; against selection bias.</p>
+
+  <p>Of 36 value-bearing quantities, 32 confirmed verbatim, three were corrected, and one
+  (a claim that primate cortical neurons carry fewer synapses per neuron than mouse) could not be sourced and
+  is reported as unverifiable. <strong>(i)</strong> The
+  human \(15.8\%\) figure (Planert 2025) rests on a <em>single</em> Charit&eacute; Berlin dataset; Peng 2024,
+  cited by the intake as a second source, analyses the directed-acyclic structure of the <em>identical</em>
+  recordings &mdash; one measurement, not two independent replications. <strong>(ii)</strong> The mushroom-body
+  &ldquo;random&rdquo; convergence is <em>apparently</em> random with a documented weak neurogeometric bias.
+  <strong>(iii)</strong> Tecuatl 2021's potential-connectivity estimates are for the rodent hippocampal
+  formation, not mouse neocortex. One further data-label correction concerns a corroborating source (an
+  all-distance total mislabelled as a within-100&nbsp;&micro;m subset), which leaves the conclusions untouched.
+  The complete per-quantity ledger, including both search-provenance records, is the committed reproduce trail
+  at <code>results/claim_records.json</code>.</p>
+
 </article></main>
 </body>
 </html>
