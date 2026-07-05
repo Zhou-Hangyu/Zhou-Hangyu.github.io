@@ -1,0 +1,1233 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow"><title>Sample complexity of bounded-arity DAG classes and their fan-in-limited MLP realizations — neurep</title><link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%234b2e63'/%3E%3C/svg%3E"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"><script>window.MathJax={tex:{tags:'ams',inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]'],['$$','$$']]},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']},chtml:{displayAlign:'center'}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><style>/* ========================================================================== *
+ *  research-site theme — the single source of truth for the visual language.
+ *  The builder INLINES this file into every generated page's <head>, so each
+ *  report renders standalone (open the .html directly) and is depth-proof.
+ *  Re-theme by editing the :root tokens below, then rebuild.
+ *  Visual language: warm cream ground, charcoal+violet ink, Manrope display.
+ * ========================================================================== */
+:root{
+  --bg:#e7e2d9;          /* warm cream ground */
+  --panel:#efeae0;       /* slightly lifted card/panel */
+  --ink:#16161a;         /* near-black text / wordmark */
+  --mut:#6f685f;         /* muted brown-grey */
+  --violet:#4b2e63;      /* primary accent */
+  --violet-dp:#2b1d3d;   /* deep accent */
+  --line:rgba(22,22,26,.12);
+  --code-bg:rgba(75,46,99,.09);
+  --code-fg:#3a2348;
+  --ok:#1f7a55;          /* status: supported — a clean deep emerald (the old forest green read muddy) */
+  --bad:#9a3b2f;         /* status: refuted */
+  --wip:#8a6d1f;         /* status: wip/draft (parked) */
+  --active:#c2701c;      /* status: active — the live frontier (warm amber, set apart from the muted wip) */
+  --disp:'Manrope',-apple-system,'Segoe UI',Roboto,sans-serif;  /* display/UI */
+  --serif:Georgia,'Iowan Old Style','Times New Roman',serif;     /* body */
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:18px/1.66 var(--serif);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+a{color:var(--violet);text-decoration:none}
+a:hover{text-decoration:underline;text-underline-offset:2px}
+
+/* ---- header (wordmark + tabs), shared by every page ---- */
+.nav{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;
+  gap:1rem;padding:.7rem clamp(1rem,4vw,3rem);
+  background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:saturate(140%) blur(8px)}
+.brand{display:inline-flex;align-items:center;gap:.5rem;color:var(--ink);font:800 1.18rem/1 var(--disp);
+  letter-spacing:-.03em}
+.brand:hover{text-decoration:none}
+.tabs{display:flex;gap:clamp(.7rem,2.4vw,1.9rem);font:500 .96rem/1 var(--disp)}
+.tabs .tab{color:var(--mut);padding:.2rem 0;border-bottom:2px solid transparent;letter-spacing:.01em}
+.tabs .tab:hover{color:var(--ink);text-decoration:none}
+.tabs .tab.active{color:var(--ink);border-bottom-color:var(--violet)}
+
+/* ---- landing hero ---- */
+.hero{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;min-height:min(72vh,640px);padding:3rem 1rem 2rem;overflow:hidden}
+.heroink{position:absolute;inset:-6% -2%;width:104%;height:112%;z-index:0;pointer-events:none}
+.bigmark{position:relative;z-index:1;margin:0;color:var(--ink);
+  font:800 clamp(4rem,17vw,12rem)/.9 var(--disp);letter-spacing:-.045em}
+.tagline{position:relative;z-index:1;margin:clamp(2.2rem,5vw,3.3rem) 0 0;max-width:none;color:var(--mut);
+  font:400 clamp(.95rem,2vw,1.18rem)/1.5 var(--disp);letter-spacing:.01em}
+
+/* ---- landing bands + cards ---- */
+.band{max-width:60rem;margin:0 auto;padding:2.6rem clamp(1rem,4vw,2rem) .6rem;scroll-margin-top:5rem}
+.band-title{font:700 .82rem/1 var(--disp);text-transform:uppercase;letter-spacing:.18em;color:var(--mut);
+  margin:0 0 1.1rem;display:flex;align-items:center;gap:.6rem;border:0;padding-bottom:0}
+.band-title::before{content:"";width:24px;height:2px;background:var(--violet);display:inline-block}
+/* one line under each thread title saying what that branch is for (the blurb) */
+.band-blurb{margin:-.7rem 0 1.2rem;max-width:62ch;color:var(--mut);font:400 .96rem/1.5 var(--serif)}
+.overview{font:400 1.06rem/1.6 var(--serif);color:var(--ink);max-width:60ch;margin:0 0 1.4rem}
+.maplist{margin:.2rem 0 1rem;padding-left:1.2rem;color:var(--mut);font:400 1rem/1.7 var(--serif)}
+.maplist a{color:var(--ink)}
+.cards{display:grid;gap:.9rem;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr))}
+.card{position:relative;display:block;background:var(--panel);border:1px solid var(--line);
+  border-radius:14px;padding:1.05rem 1.1rem 1.15rem;color:var(--ink);transition:transform .14s ease,box-shadow .14s ease,border-color .14s}
+.card:hover{text-decoration:none;transform:translateY(-3px);border-color:color-mix(in srgb,var(--violet) 33%,transparent);
+  box-shadow:0 10px 26px -16px rgba(43,29,61,.55)}
+.card-dot{position:absolute;top:1.15rem;right:1.1rem;width:9px;height:9px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#5a3a73,var(--violet-dp))}
+.card-title{margin:.1rem 2rem .35rem 0;font:600 1.06rem/1.32 var(--disp);letter-spacing:-.01em}
+.card-sum{margin:0;color:var(--mut);font:400 .92rem/1.45 var(--serif)}
+/* a live-frontier card: warm left accent + a breathing dot, so it reads as "in motion" */
+.card.is-active{border-left:3px solid var(--active)}
+.card.is-active .card-dot{background:radial-gradient(circle at 35% 30%,
+  color-mix(in srgb,var(--active) 60%,#fff),var(--active));animation:dotpulse 2.4s ease-in-out infinite}
+@keyframes dotpulse{
+  0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--active) 38%,transparent)}
+  50%    {box-shadow:0 0 0 6px color-mix(in srgb,var(--active) 0%,transparent)}}
+
+/* ---- study page ---- */
+.study{max-width:46rem;margin:0 auto;padding:2.2rem clamp(1rem,4vw,1.4rem) 5rem}
+.study-head h1{margin:0;font:800 clamp(1.7rem,4.6vw,2.3rem)/1.12 var(--disp);letter-spacing:-.025em}
+.study-head .sub{margin:.7rem 0 0;color:var(--mut);font:italic 400 1.12rem/1.45 var(--serif)}
+.study-head .rule{height:3px;width:84px;margin:1.3rem 0 .4rem;border-radius:3px;
+  background:linear-gradient(90deg,var(--violet),var(--violet-dp) 55%,transparent)}
+article{font-size:18px}
+article :first-child{margin-top:0}
+h1,h2,h3,h4{font-family:var(--disp);line-height:1.22;letter-spacing:-.015em}
+h2{font-size:1.4rem;margin:2.3rem 0 .5rem;padding-bottom:.25rem;border-bottom:1px solid var(--line)}
+h3{font-size:1.1rem;margin:1.6rem 0 .3rem}
+h4{font-size:1.22rem;margin:1.6rem 0 .3rem}
+/* pandoc maps LaTeX \paragraph -> h5; keep it a legible sub-heading (the browser
+   default h5 is ~0.83em serif -- far too small for a section title) */
+h5{font-family:var(--disp);font-size:1.12rem;font-weight:700;line-height:1.25;letter-spacing:-.01em;color:var(--ink);margin:1.5rem 0 .3rem}
+p{margin:.75rem 0}
+strong{font-weight:700}
+ul,ol{padding-left:1.3rem} li{margin:.25rem 0}
+hr{border:0;border-top:1px solid var(--line);margin:2rem 0}
+
+/* code: technical identifiers, de-emphasised on cream (never a link) */
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.84em;
+  background:var(--code-bg);color:var(--code-fg);padding:.1em .34em;border-radius:.32em;word-break:break-word}
+
+/* figures */
+figure{margin:1.8rem 0;text-align:center;scroll-margin-top:5rem}
+img.fig{max-width:min(100%,640px);height:auto;display:block;margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:.5em;padding:.4rem}
+.study article img:not(.fig){max-width:100%;height:auto}   /* safety net: no image ever exceeds the line width, even if .fig is forgotten */
+figcaption{font:400 14px/1.55 var(--disp);color:var(--mut);text-align:left;margin:.6rem auto 0;max-width:640px}
+.fignum{color:var(--ink);font-weight:700}
+/* multi-panel figures: build.py wraps collapsed pandoc subfigures in <div class="subfigs">;
+   lay the panels side by side, bottom-aligned, at equal height (mirrors the PDF (a)/(b) row).
+   A plain class (not :has()) so it renders in every browser. */
+.subfigs{display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-end;gap:1rem;margin:0 auto}
+.subfigs img.fig{max-width:none;width:auto;height:11.5rem;box-sizing:border-box;margin:0}
+
+/* equation refs + anchors (KaTeX legacy + MathJax) */
+.xref{font-weight:600;text-decoration:none}
+.eqa{position:relative;top:-4.4rem;visibility:hidden}
+.katex-display{overflow-x:auto;overflow-y:hidden;padding:.25rem 0}
+mjx-container[display="true"]{overflow-x:auto;overflow-y:hidden;padding:.15rem 0}
+mjx-container{outline:none}
+
+/* propositions / proofs (pandoc amsthm) */
+.theorem,.proposition,.lemma,.corollary,.definition,.remark{
+  background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--violet);
+  border-radius:.5em;padding:.7rem 1rem;margin:1.3rem 0;scroll-margin-top:5rem}
+.theorem strong:first-child,.proposition strong:first-child,.lemma strong:first-child,
+.corollary strong:first-child,.definition strong:first-child{
+  font-family:var(--disp);color:var(--violet-dp)}
+.proof{margin:1rem 0 1.4rem;padding-left:1rem;border-left:2px solid var(--line);color:#3c3833;font-size:.97em}
+.proof::after{content:"\220E";display:block;text-align:right;color:var(--mut)}
+
+/* tables (booktabs feel) */
+.tablewrap{overflow-x:auto;margin:1.5rem 0}
+table{border-collapse:collapse;margin:0 auto;font:400 .92rem/1.4 var(--disp)}
+th,td{padding:.4rem .8rem;text-align:left}
+thead th{border-top:2px solid var(--ink);border-bottom:1px solid var(--ink);font-weight:700}
+tbody tr:last-child td{border-bottom:2px solid var(--ink)}
+caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);margin-top:.5rem;text-align:left}
+
+/* TL;DR / boxed callout */
+.tldr{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--violet);
+  border-radius:.5em;padding:.85rem 1.05rem;margin:0 0 1.6rem;font-size:.98rem}
+
+/* ---- study context: thread breadcrumb + builds-on + reproduce badge ---- */
+.context{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem .9rem;margin:.2rem 0 1.4rem;
+  font:500 .9rem/1.4 var(--disp);color:var(--mut)}
+.context a{color:var(--ink)}
+.context .crumb{display:inline-flex;align-items:center;gap:.4rem}
+.context .crumb::before{content:"";width:14px;height:2px;background:var(--violet);display:inline-block}
+.context .dep{color:var(--mut)}
+.status{display:inline-block;font:600 .72rem/1 var(--disp);text-transform:uppercase;letter-spacing:.08em;
+  padding:.22em .5em;border-radius:.4em;border:1px solid var(--line)}
+.status.supported{color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}
+.status.refuted{color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,transparent)}
+.status.wip,.status.draft{color:var(--wip);background:color-mix(in srgb,var(--wip) 12%,transparent)}
+.status.active{color:var(--active);background:color-mix(in srgb,var(--active) 14%,transparent)}
+.status.reference{color:var(--violet);background:color-mix(in srgb,var(--violet) 12%,transparent)}
+.repro{display:inline-flex;align-items:center;gap:.4rem;font:500 .82rem/1 var(--disp)}
+.repro code{background:var(--code-bg);color:var(--code-fg)}
+.repro .git{opacity:.65}
+
+/* ====== landing ============================================================ */
+.landing{max-width:60rem;margin:0 auto;padding:1rem clamp(1rem,4vw,2rem) 5rem}
+.text-link{display:inline-flex;align-items:center;gap:.45rem;margin-top:1.4rem;color:var(--violet);
+  font:600 1.02rem/1 var(--disp);letter-spacing:.01em}
+.text-link span{transition:transform .14s ease}
+.text-link:hover{text-decoration:none}
+.text-link:hover span{transform:translateX(4px)}
+
+/* ====== studies: controls (pure-CSS view + show-WIP toggles) =============== */
+.studies-page{max-width:64rem;margin:0 auto;padding:1.6rem clamp(1rem,4vw,2rem) 4rem}
+.studies-goal{max-width:66ch;margin:.1rem 0 1.7rem;color:var(--ink);font:400 1.05rem/1.62 var(--serif)}
+.studies-goal strong{font-weight:700}
+.sv-input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.studies-bar{display:flex;flex-wrap:wrap;align-items:center;gap:1.1rem;margin:.2rem 0 1.8rem}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--panel)}
+.seg-opt{padding:.42rem .95rem;font:600 .8rem/1 var(--disp);text-transform:uppercase;letter-spacing:.08em;
+  color:var(--mut);cursor:pointer;transition:background .14s ease,color .14s ease}
+.seg-opt+.seg-opt{border-left:1px solid var(--line)}
+.seg-opt:hover{color:var(--ink)}
+#sv-tree:checked~.studies-bar label[for=sv-tree],
+#sv-table:checked~.studies-bar label[for=sv-table]{background:var(--violet);color:#fff}
+.wip-chk{display:inline-flex;align-items:center;gap:.5rem;cursor:pointer;color:var(--mut);
+  font:600 .8rem/1 var(--disp);text-transform:uppercase;letter-spacing:.06em}
+.wip-box{width:34px;height:18px;border-radius:10px;background:var(--line);position:relative;
+  transition:background .15s ease;flex:0 0 auto}
+.wip-box::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;
+  background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.3);transition:transform .15s ease}
+#sv-wip:checked~.studies-bar .wip-box{background:var(--violet)}
+#sv-wip:checked~.studies-bar .wip-box::after{transform:translateX(16px)}
+#sv-tree:focus-visible~.studies-bar label[for=sv-tree],
+#sv-table:focus-visible~.studies-bar label[for=sv-table],
+#sv-wip:focus-visible~.studies-bar .wip-chk{outline:2px solid var(--violet);outline-offset:2px;border-radius:6px}
+
+/* view + WIP switching, driven by the hidden inputs */
+.studies-stage{position:relative}
+#sv-table:checked~.studies-stage .view-tree{display:none}
+#sv-tree:checked~.studies-stage .view-table{display:none}
+#sv-wip:not(:checked)~.studies-stage .tree-all{display:none}
+#sv-wip:checked~.studies-stage .tree-stable{display:none}
+#sv-wip:not(:checked)~.studies-stage .view-table .card.is-wip,
+#sv-wip:not(:checked)~.studies-stage .view-table .band.is-wip{display:none}
+
+/* ====== the downward dot-tree ============================================= *
+ *  Bare dots connected by smooth Bézier curves, growing downward. Every LEAF is
+ *  pulled to one bottom row (the "frontier"). A dot's FILL is its verdict and its
+ *  BORDER is solid (proof-read) or dashed (in progress); the thread-start dot is
+ *  haloed in the thread tint, which also colours that thread's curves. Hover a
+ *  dot to reveal its briefing.
+ * ========================================================================== */
+.treeview{padding:.5rem 0 1.5rem}
+.tree-canvas{position:relative;margin:0 auto}
+.tree-svg{position:absolute;inset:0;display:block;pointer-events:none}
+.tree-empty{color:var(--mut);font:400 1rem/1.5 var(--serif);text-align:center;padding:3rem 0}
+
+.tnode{position:absolute;transform:translate(-50%,-50%);width:16px;height:16px;border-radius:50%;
+  background:var(--dot,var(--mut));border:2px solid var(--dot,var(--mut));z-index:2;cursor:pointer;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--dot,var(--mut)) 17%,transparent);   /* one ring for every node */
+  transition:transform .12s ease}
+.tnode.verified{border-style:solid}                                    /* proof-read */
+.tnode.provisional{border-style:dashed;background:color-mix(in srgb,var(--dot) 26%,var(--bg))}  /* parked wip */
+/* an ACTIVE node restores the live-frontier look — amber fill + a dashed amber ring — set
+   apart from every verdict hue. This OVERRIDES the verdict colour on the tree dot itself;
+   --dot stays the verdict so the node's briefing card + the table pill keep the true colour.
+   (active is ORTHOGONAL to status — see _default_visible.) */
+.tnode.active{border-color:var(--active);border-style:dashed;
+  background:color-mix(in srgb,var(--active) 28%,var(--bg));
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--active) 18%,transparent);
+  animation:apulse 2.4s ease-in-out infinite}
+@keyframes apulse{
+  0%,100%{box-shadow:0 0 0 3px color-mix(in srgb,var(--active) 42%,transparent)}
+  50%    {box-shadow:0 0 0 9px color-mix(in srgb,var(--active) 6%,transparent)}}
+.st-supported{--dot:var(--ok)}
+.st-refuted{--dot:var(--bad)}
+.st-wip,.st-draft{--dot:var(--wip)}
+.st-active{--dot:var(--active)}                                        /* the live frontier */
+.st-reference{--dot:var(--violet)}                                     /* shared reference (not a verdict) */
+.tnode .hit{position:absolute;inset:-10px;border-radius:50%}
+.tnode:hover,.tnode:focus-visible{transform:translate(-50%,-50%) scale(1.22);z-index:30;outline:none}
+/* apex = the root of the forest; a neutral hollow origin that links to the landing/overview */
+.tnode.apex{width:13px;height:13px;background:var(--bg);border:2px solid var(--mut);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--mut) 13%,transparent)}
+.tnode.apex:hover{border-color:var(--violet)}
+.apex-label{color:var(--violet);text-transform:uppercase;letter-spacing:.1em;font-weight:700}
+
+/* always-on small title beside each node (below leaves, above the rest) */
+.tnode-label{position:absolute;left:50%;transform:translateX(-50%);width:max-content;max-width:108px;
+  text-align:center;font:600 10px/1.25 var(--disp);color:var(--ink);letter-spacing:-.004em;
+  pointer-events:none;text-shadow:0 0 3px var(--bg),0 0 3px var(--bg),0 0 6px var(--bg)}
+.tnode-label.lbl-dn{top:calc(100% + 5px)}
+.tnode-label.lbl-up{bottom:calc(100% + 5px)}
+.tnode.provisional .tnode-label{color:var(--mut)}      /* WIP titles read lighter */
+
+/* hover tooltip (the dot's content) */
+.tip{position:absolute;left:50%;top:25px;transform:translateX(-50%);width:max-content;max-width:248px;
+  text-align:left;background:var(--panel);border:1px solid var(--line);
+  border-left:3px solid var(--tree,var(--violet));border-radius:10px;padding:.6rem .75rem;
+  box-shadow:0 18px 44px -22px rgba(22,22,26,.72);opacity:0;visibility:hidden;
+  transition:opacity .13s ease;pointer-events:none;z-index:40}
+.tip-up .tip{top:auto;bottom:25px}
+.tip-l .tip{left:0;transform:none}
+.tip-r .tip{left:auto;right:0;transform:none}
+.tnode:hover .tip,.tnode:focus-visible .tip,.tnode:focus-within .tip{opacity:1;visibility:visible}
+.tip-h{display:flex;align-items:center;gap:.5rem;margin-bottom:.3rem}
+.tip-st{font:600 .56rem/1 var(--disp);text-transform:uppercase;letter-spacing:.07em;
+  color:var(--dot,var(--mut));padding:.22em .45em;border:1px solid var(--line);border-radius:.5em}
+.tip-t{display:block;font:600 .92rem/1.3 var(--disp);color:var(--ink);letter-spacing:-.01em}
+/* the gist line (a short one-line finding, or the question) — shown IN FULL, never truncated;
+   notes are kept short (R11) so the card stays compact without clamping */
+.tip-sub{display:block;margin-top:.34rem;font:400 .82rem/1.42 var(--serif);color:var(--mut)}
+
+/* ---- interactivity: click a node to highlight its subtree, then Focus to isolate it ---- */
+.tree-hint{margin:.2rem 0 1rem;color:var(--mut);font:400 .9rem/1.5 var(--serif)}
+.tree-hint b{color:var(--ink);font-weight:700}
+.treeview .tnode{transition:transform .12s ease,opacity .16s ease}
+.tree-svg path{transition:opacity .16s ease,stroke-opacity .16s ease}
+/* dimmed = not in the selected/focused subtree; highlighted = in it */
+.tnode.is-dim{opacity:.16;animation:none}
+.tnode.is-dim .tnode-label{opacity:.5}
+.tree-svg path.is-dim{stroke-opacity:.06}
+.tree-svg path.is-hl{stroke-opacity:.95;stroke-width:2.6}
+.tree-svg path.is-sel{stroke-opacity:1;stroke-width:3.2}
+/* secondary "builds-on" cross-links: a node's dependencies BEYOND its primary (spanning-tree)
+   parent. Dashed + faint by default so the solid backbone stays the dominant read; the presentation
+   attrs (stroke-opacity/dasharray on the <path>) set that resting look, and these CSS states win
+   over them on demand. is-trace (a hovered node's incoming bundle) solidifies + brightens them. */
+.tree-svg path.edge-2.is-dim{stroke-opacity:.04}
+.tree-svg path.is-trace{stroke-opacity:.92;stroke-width:2.4;stroke-dasharray:none}
+/* a focused cluster also surfaces the EXTERNAL inputs its members build on: muted "satellite" dots
+   in a band above the cluster, joined by a finely-dotted feed-line tinted by the SOURCE thread.
+   They are context, not cluster members — dimmed + italic-labelled, and brighten on hover (still a
+   live link to their report). */
+.tree-svg path.edge-ext{stroke-dasharray:1 5}
+.treeview.is-focused .tnode.is-ghost{opacity:.5;animation:none;z-index:1}
+.treeview.is-focused .tnode.is-ghost:hover,.treeview.is-focused .tnode.is-ghost:focus-visible{opacity:1;z-index:30}
+.treeview.is-focused .tnode.is-ghost .tnode-label{font-style:italic;color:var(--mut);font-weight:600}
+/* fat transparent twin over each limb -> an easy click target even though the svg ignores pointers */
+.tree-svg .edge-hit{pointer-events:stroke;cursor:pointer}
+/* the clicked node itself: a firm halo, no pulse */
+.tnode.is-sel{animation:none;box-shadow:0 0 0 3px var(--bg),0 0 0 6px var(--dot,var(--violet));
+  transform:translate(-50%,-50%) scale(1.18);z-index:25}
+/* an antecedent dot of the hovered node (a study it builds on): a soft thread-tint ring, so the
+   reader can SEE every parent a multi-parent node pulls from while its edges are traced */
+.tnode.is-trace{box-shadow:0 0 0 3px var(--bg),0 0 0 5.5px color-mix(in srgb,var(--tree,var(--violet)) 60%,transparent);z-index:20}
+
+/* action popup (Focus / Open report) anchored under the clicked node */
+.tree-pop{position:absolute;transform:translate(-50%,0);z-index:50;display:inline-flex;align-items:center;gap:.3rem;
+  background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:.32rem;white-space:nowrap;
+  box-shadow:0 16px 38px -20px rgba(22,22,26,.72)}
+/* the FAN: a transparent wedge above the popup, bridging up to the limb so the cursor can
+   glide from limb to button without leaving an active hover zone */
+.tree-pop::before{content:"";position:absolute;left:-26px;right:-26px;bottom:100%;height:30px}
+/* a little caret pointing up toward the limb */
+.tree-pop::after{content:"";position:absolute;left:50%;bottom:100%;transform:translateX(-50%);margin-bottom:-1px;
+  border:6px solid transparent;border-bottom-color:var(--panel)}
+.pop-focus{font:700 .68rem/1 var(--disp);text-transform:uppercase;letter-spacing:.06em;color:#fff;
+  background:var(--violet);border:0;border-radius:8px;padding:.42rem .6rem;cursor:pointer;transition:background .12s ease}
+.pop-focus:hover{background:var(--violet-dp)}
+.pop-open{font:700 .68rem/1 var(--disp);text-transform:uppercase;letter-spacing:.06em;color:var(--violet);padding:.42rem .5rem}
+.pop-open:hover{text-decoration:none;color:var(--violet-dp)}
+/* when the JS layer is live, the rich hover card is the floating fan-popup (.node-pop) —
+   so the inline CSS tooltip is hidden (it stays the JS-off fallback). */
+.treeview.js-on .tip{display:none}
+/* the node briefing: same fan-popup chrome (caret + fan + shadow), but a left-aligned,
+   multi-line block instead of a button row, centred over the node. */
+/* fixed width so every card is identical regardless of content; no hover transform, so the
+   card never "springs back" as the cursor leaves (it just shows/hides). The thread tint is the
+   card's TOP edge (the tree grows top-to-bottom); the whole card is a link (cursor:pointer
+   says so), so there is no explicit "open" affordance. */
+.node-pop{display:block;text-align:left;white-space:normal;width:250px;
+  padding:.66rem .8rem .7rem;border-top:3px solid var(--tree,var(--violet));cursor:pointer}
+/* the node card has NO caret — the wedge fought the tinted top edge, so it's dropped; the card
+   simply sits just under the node (proximity + the fan hover-bridge carry the connection) */
+.node-pop::after{display:none}
+
+/* focus bar — shown only while a branch is isolated */
+.tree-focusbar{display:flex;align-items:center;gap:.7rem;margin:0 0 .4rem;padding:.5rem .85rem;
+  background:color-mix(in srgb,var(--violet) 8%,var(--panel));border:1px solid var(--line);border-radius:11px}
+.fb-label{color:var(--mut);font:700 .72rem/1 var(--disp);text-transform:uppercase;letter-spacing:.09em}
+.fb-exit{margin-left:auto;font:700 .72rem/1 var(--disp);text-transform:uppercase;letter-spacing:.06em;cursor:pointer;
+  color:var(--violet);background:none;border:1px solid var(--line);border-radius:8px;padding:.38rem .65rem;transition:.12s ease}
+.fb-exit:hover{background:var(--violet);color:#fff;border-color:var(--violet)}
+
+/* honour reduced-motion: the live-frontier signal degrades to a static ring */
+@media (prefers-reduced-motion:reduce){
+  .tnode.active,.card.is-active .card-dot{animation:none}
+}
+
+@media (max-width:600px){
+  .nav{flex-wrap:wrap;gap:.5rem} .tabs{order:3;width:100%} body{font-size:17px}
+  .studies-page{padding-left:.6rem;padding-right:.6rem}
+}
+</style>
+</head>
+<body>
+<header class="nav"><a class="brand" href="../index.html"><span>neurep</span></a></header><main class="study"><header class="study-head"><h1>Sample complexity of bounded-arity DAG classes and their fan-in-limited MLP realizations</h1><p class=sub>Local arity sets the rate, ambient dimension only logarithmically; fan-in-2 MLPs realize the class exactly.</p><div class="rule"></div></header><div class="context"><span class="crumb"><a href="../studies.html#thread-theory">Encoding &amp; modularity theory</a></span><span class="status supported">supported</span><span class="dep">builds on: <a href="../neurep_mlp_encoding/">An Exact MLP Encoding of Computation Graphs</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou-Hangyu/neurep/commit/84d947b"><code>84d947b</code></a> <span class="git">· worktree-fan-in-sample-efficiency-plan</span></span></div><article>
+
+  <div class="tldr"><p><strong>TL;DR.</strong> For targets computed by finite, axis-aligned,
+  bounded-fan-in computation DAGs (\(N\) lookup-table nodes of local arity \(r\) over alphabet
+  size \(D\) — the class of <a class="xref" href="../neurep_mlp_encoding/">Note&nbsp;0</a>), every consistent
+  learner over the matched bounded-arity DAG class reaches 0&ndash;1 error \(\epsilon\) from
+  \(n = O\!\big(\tfrac1\epsilon[\,N D^{r}\log D + \sum_v r\log(eM_v/r) + \log(1/\delta)\,]\big)\)
+  samples — table content plus a wiring cost <em>logarithmic</em> in the ambient dimension \(d\),
+  never \(D^{d}\). We prove the full chain (T1&ndash;T6: upper bounds, an arity-mismatch floor, a
+  matching \(2^{r} + r\log(d/r)\) lower bound at \(D{=}2\) — forced already by the \(N{=}1\)
+  subclass; matching the \(N\)-dependence remains open — an exact fan-in-2 MLP realization at
+  depth \(O(\Delta\, r\log D)\), and a quantized capacity separation), and an exact-enumeration
+  campaign illustrates the predicted finite-sample signatures: ambient dimension nearly free
+  (paired \(n(0.1)\) ratio \(1.25\) for \(d\,{=}\,6{\to}12\) against a \(514\times\) flat-class
+  wall), the version-space error U-shape minimized at \(k=r\), and GF(2) basis-mixing collapsing
+  the advantage (median error \(0.404\) vs \(0.090\)).
+  <span class="status supported">theory: supported</span>&ensp;
+  <span class="status supported">signatures: supported</span></p></div>
+
+  <h2>1. Motivation</h2>
+
+  <p>The program this study belongs to asks when per-neuron structure buys statistical
+  efficiency. <a class="xref" href="../neurep_mlp_encoding/">Note&nbsp;0</a> settled the representation side:
+  every finite axis-aligned computation DAG — hidden nodes computing lookup tables
+  \(z_v = g_v(z_{\mathrm{pa}(v)})\) of fan-in at most \(r\) over alphabet-\(D\) variables — embeds
+  exactly into an MLP. <a class="xref" href="../sample_efficiency_foundations/">A companion foundations
+  note</a> pinned the complementary constraint: sample efficiency is a property of the
+  <em>function class</em>, blind to the neuron basis chosen to represent it. Together they leave
+  one question open, and it is this study's: does the bounded-arity DAG <em>class</em> itself have
+  small statistical complexity — small enough to escape the \(D^{d}\) flat-function wall, cheap in
+  the unknown-wiring case, minimized at the true arity, and realizable by architectures whose
+  per-neuron fan-in is bounded?</p>
+
+  <p>The study is a theory note first and an experiment second, and its verdict keeps that order
+  (§8): the theorems of §3 stand or fall with their proofs alone, while the exact-enumeration
+  campaign of §4&ndash;§7 illustrates the finite-sample signatures the theory predicts and
+  stress-tests its modeling assumptions, with SGD removed as a confound. Hypotheses, cells,
+  thresholds, seeds, and statistics were locked before any data existed
+  (<code>plan/contract.json</code>, status <code>locked</code>, 2026-07-04); one amendment (A01,
+  locked after the adversarial proof audit but still before dispatch, so before any campaign data)
+  re-pinned <em>theorem statements only</em> — no cell, threshold, seed, or statistic changed.
+  Everything below is pre-registered unless labeled descriptive; theorems are stated in their
+  post-amendment (A01) form.</p>
+
+  <h2>2. Setting</h2>
+
+  <div class="definition"><p><strong>The class.</strong> All variables share a finite alphabet of
+  size \(D\); inputs are \(x \in \Sigma^{d}\). A target is computed by a DAG over the \(d\) input
+  coordinates and \(N\) named internal nodes with one designated output node: internal node \(v\)
+  computes \(z_v = g_v(z_{\mathrm{pa}(v)})\) by an arbitrary lookup table over its
+  \(r_v \le r\) parents (the fan-in, or local arity, is \(r = \max_v r_v\)); \(\Delta\) is the
+  DAG depth. \(\mathcal F_G\) denotes the functions computable with structure \(G\) fixed and
+  tables free; the fan-in-\(r\) class is the union over admissible structures, where node \(v\)
+  draws its parents from a candidate set of size \(M_v \le d + N\). <em>Axis-aligned</em> means
+  the DAG's variables are literal input coordinates and named latent nodes — the class is defined
+  <em>in a basis</em>.</p></div>
+
+  <p>Learning is realizable 0&ndash;1 classification on the output symbol: the target \(f^\star\)
+  lies in the class, inputs are i.i.d. \(x \sim P\), and the learner sees
+  \(S_n = \{(x_i, f^\star(x_i))\}_{i=1}^{n}\). T1/T2/T5 are distribution-free; T3's floor and all
+  experiments fix \(P\) uniform. In the campaign, test error is always the exact expectation over
+  all \(D^{d}\) inputs — never a sampled test set. (Agnostic remark, not used anywhere: for a
+  finite class, uniform convergence gives the standard
+  \(n = O(\epsilon^{-2}[\ln|\mathcal H| + \ln(1/\delta)])\) rate.)</p>
+
+  <p>Two learner notions are kept explicit throughout. The theorems hold for <em>every
+  consistent learner (ERM)</em> — any rule returning a hypothesis with zero empirical error. The
+  experiments run the <em>uniform version-space (VS) predictor</em>: predict with a uniform draw
+  from the version space (the hypotheses consistent with \(S_n\)) — a Gibbs-style learner, not
+  deterministic ERM — under two pre-registered weightings: <strong>w-rep</strong>, uniform over
+  (graph, tables) <em>descriptions</em> (functions with many encodings get extra weight), and
+  <strong>w-fun</strong>, uniform over <em>distinct input&ndash;output maps</em>
+  (function-deduplicated via truth-table hashing, or closed forms at \(N{=}1\)). Gates evaluate on
+  w-fun; w-rep is the pre-registered sensitivity, and divergence between the two would itself be a
+  reported finding. When the version space is empty — the deliberately non-realizable regimes:
+  \(k \lt r\) arms, basis-mixing, label-shuffle — the predictor draws uniformly from the
+  minimum-empirical-disagreement set and is then named the <em>uniform-min-ERM predictor</em>
+  (there is no version space).</p>
+
+  <p>A standing remark the contract carries verbatim: &ldquo;the finite-class upper bounds count
+  <strong>descriptions</strong>, so they remain valid under duplicate encodings of the same
+  function; function-deduplication only tightens the empirical VS predictor.&rdquo; The campaign
+  measured the slack: the diamond class at \(d{=}9\) has \(49{,}545{,}216\) descriptions computing
+  only \(376{,}700\) distinct functions — \(99.24\%\) duplicates (\(d{=}6\):
+  \(5{,}898{,}240 \to 37{,}484\), \(99.36\%\)).</p>
+
+  <h2>3. Theory</h2>
+
+  <p>&ldquo;Fully proved&rdquo; (Gate&nbsp;A, §8) means complete proofs in this note modulo
+  exactly one citation-grade import: <strong>[B]</strong> Bartlett, Harvey, Liaw &amp; Mehrabian,
+  <em>JMLR</em> 20(63), 2019 — VC/pseudo-dimension \(\tilde O(WL)\) for piecewise-linear networks
+  — used only in T5(c)'s labeled real-valued remark. (A junta-VC import was pre-authorized and
+  went unused: both shattering directions of T4 are self-proved.) Each theorem passed a
+  fresh-context adversarial proof-check before the campaign was dispatched; the statement
+  re-pinnings that audit forced are amendment A01, and the statements below are the A01 ones. The
+  full proof text lives beside this report (<code>report/theory_proofs.md</code>) and is
+  reproduced here in condensed but complete form.</p>
+
+  <h3>3.1 Known structure</h3>
+
+  <div class="lemma"><p><strong>Lemma 1 (finite-class realizable bound).</strong> Let
+  \(\mathcal H\) be finite with \(f^\star \in \mathcal H\), and let \(\hat h \in \mathcal H\) be
+  <em>any</em> hypothesis consistent with \(S_n\). If</p>
+  \[\begin{equation}\label{eq:l1}
+  n \;\ge\; \tfrac1\epsilon\Big(\ln|\mathcal H| + \ln\tfrac1\delta\Big),
+  \end{equation}\]
+  <p>then with probability at least \(1-\delta\), \(\mathrm{err}_P(\hat h) \le \epsilon\).</p></div>
+
+  <p><em>Proof.</em> Fix \(h\) with \(\mathrm{err}_P(h) \gt \epsilon\): each sample is consistent
+  with \(h\) with probability below \(1-\epsilon\), so \(h\) survives all \(n\) with probability
+  below \((1-\epsilon)^{n} \le e^{-\epsilon n}\) (from \(1+x \le e^{x}\)). A union bound over the
+  at most \(|\mathcal H|\) such \(h\) makes the survival probability of <em>any</em>
+  \(\epsilon\)-bad hypothesis below \(|\mathcal H|\,e^{-\epsilon n} \le \delta\) at
+  \eqref{eq:l1}; a consistent \(\hat h\) exists by realizability and is then \(\epsilon\)-good.
+  \(\square\) No \(\log(1/\epsilon)\) factor appears; the bound is the plain
+  \(\epsilon^{-1}(\ln|\mathcal H| + \ln(1/\delta))\) form, derived, not imported.</p>
+
+  <div class="lemma"><p><strong>Lemma 2 (counting, known DAG).</strong> For a fixed graph \(G\)
+  with node arities \(r_v \le r\),</p>
+  \[\begin{equation}\label{eq:l2}
+  \log_2|\mathcal F_G| \;\le\; \sum_{v} D^{r_v}\log_2 D \;\le\; N\,D^{r}\log_2 D.
+  \end{equation}\]
+  <p><em>Proof.</em> A description fixes each node's table (\(\prod_v D^{D^{r_v}}\) choices);
+  functions are at most descriptions. \(\square\)</p></div>
+
+  <div class="theorem"><p><strong>Theorem T1 (known DAG).</strong> Every consistent learner over
+  \(\mathcal F_G\) reaches error \(\epsilon\) with probability at least \(1-\delta\) from
+  \(n = O\big(\tfrac1\epsilon[\,N D^{r}\log D + \log(1/\delta)\,]\big)\) samples.
+  <em>Proof.</em> Lemma 1 + Lemma 2. \(\square\)</p></div>
+
+  <h3>3.2 Unknown wiring</h3>
+
+  <div class="lemma"><p><strong>Lemma 3 (counting, unknown DAG — scope pinned).</strong> Fix the
+  node set (count \(N\), labels), the designated output, the alphabets, and candidate-parent sets
+  of sizes \(r \le M_v \le d+N\) with \(\mathrm{pa}^\star(v) \subseteq\) the candidates for every
+  node (realizability hypothesis). Let \(\mathcal F\) be all functions computed by choices of
+  parent sets of size at most \(r\) drawn from the candidates (acyclic) together with tables.
+  Then</p>
+  \[\begin{equation}\label{eq:l3}
+  \log_2|\mathcal F| \;\le\; \sum_v\Big[r\log_2\tfrac{eM_v}{r} + D^{r}\log_2 D\Big]
+  \;=\; N D^{r}\log_2 D + O\!\Big(N r\log\tfrac{e(d+N)}{r}\Big).
+  \end{equation}\]</div>
+
+  <p><em>Proof.</em> Every \(f \in \mathcal F\) has, by definition, an acyclic description with
+  parent sets of size at most \(r\) — no padding needed — so \(|\mathcal F|\) is at most the
+  number of all (parent-sets, tables) tuples, acyclic or not (dropping acyclicity only enlarges
+  the count): \(|\mathcal F| \le \prod_v \big[\sum_{j \le r}\binom{M_v}{j}\big] D^{D^{r}}\), where
+  a fan-in-\(j\) table with \(j \lt r\) is subsumed by \(D^{D^{j}} \le D^{D^{r}}\). The binomial
+  sum is bounded in two lines: for \(M \ge r\), multiplying term \(j\) by
+  \((r/M)^{j-r} \ge 1\) gives</p>
+  \[\begin{equation}\label{eq:binom}
+  \sum_{j\le r}\binom{M}{j} \;\le\; \Big(\tfrac{M}{r}\Big)^{r}\sum_{j\le M}\binom{M}{j}
+  \Big(\tfrac{r}{M}\Big)^{j} \;=\; \Big(\tfrac{M}{r}\Big)^{r}\Big(1+\tfrac{r}{M}\Big)^{M}
+  \;\le\; \Big(\tfrac{eM}{r}\Big)^{r}\qquad (M \ge r),
+  \end{equation}\]
+  <p>using \(1+x \le e^{x}\); this is where \(M_v \ge r\) is used (for \(M_v \lt r\) it can fail,
+  and the study never needs that regime — full candidate sets have \(M_v = d+N-1 \ge r\) and the
+  diamond leaf pairs have \(M_v = d \ge r\)). Because the relaxed count never uses a topological
+  order, unknown <em>order</em> is covered for free when the candidate sets are order-free
+  (\(M_v\) = all other nodes + inputs); with narrower candidate sets the order-coverage claim is
+  vacuous rather than wrong. Unknown \(N\), unknown output designation, and unknown alphabets are
+  <em>not</em> covered and not claimed. \(\square\)</p>
+
+  <div class="theorem"><p><strong>Theorem T2 (unknown DAG).</strong> Every consistent learner over
+  Lemma 3's class reaches error \(\epsilon\) with probability at least \(1-\delta\) from</p>
+  \[\begin{equation}\label{eq:t2}
+  n \;=\; O\!\Big(\tfrac1\epsilon\Big[N D^{r}\log D + \sum_v r\log\tfrac{eM_v}{r}
+  + \log\tfrac1\delta\Big]\Big)
+  \end{equation}\]
+  <p>samples. The graph-selection term is \(O(N\,r\log(e(d+N)/r))\) — logarithmic in \(d\); the
+  ambient dimension never enters exponentially. <em>Proof.</em> Lemma 1 + Lemma 3.
+  \(\square\)</p></div>
+
+  <h3>3.3 Arity mismatch</h3>
+
+  <div class="theorem"><p><strong>Theorem T3 (monotone cost above, floor below — scope
+  pinned).</strong> <strong>(a)</strong> For \(k \ge r\): the fan-in-\(\le k\) class contains the
+  fan-in-\(\le r\) class outright, so realizability transfers unconditionally; if additionally
+  \(\min_v M_v \ge k\) (every campaign cell satisfies it, \(M_v = d \ge k\)), T2 applies at arity
+  \(k\):</p>
+  \[\begin{equation}\label{eq:t3k}
+  n \;=\; O\!\Big(\tfrac1\epsilon\Big[N D^{k}\log D + \sum_v k\log\tfrac{eM_v}{k}
+  + \log\tfrac1\delta\Big]\Big),
+  \end{equation}\]
+  <p>monotone increasing in \(k\) on the admissible range \(k \le \min_v M_v\).
+  <strong>(b)</strong> For \(k \lt r\), an approximation floor — for the <em>node-matched</em>
+  single-node class (\(N{=}1\): \(k\)-juntas \(\mathcal J_k\), \(D{=}2\), uniform inputs,
+  exact-arity essential targets):</p>
+  \[\begin{equation}\label{eq:floor}
+  \inf_{h\in\mathcal J_k}\mathrm{err}(h;f) \;\ge\; 2^{-r}\ \ \text{for every essential
+  exact-arity-}r\ f,\qquad\text{hence}\quad c_{r,k} \;\ge\; 2^{-r} \;\gt\; 0,
+  \end{equation}\]
+  <p>where \(c_{r,k}\) is the expected best-in-class error over uniform essential targets. At
+  \(k{=}1\) the floor holds at <em>any</em> \(N\) (fan-in-1 compositions are 1-juntas at any
+  size). The intermediate case — fixed node set, \(N \ge 2\), \(2 \le k \lt r\) — is declared
+  <em>open</em>: no cell tests it and nothing downstream depends on it.</p></div>
+
+  <p>The floor <em>cannot</em> hold for the unrestricted-\(N\) fan-in-\(k\) class once
+  \(k \ge 2\): 2-ary tables include AND/OR/NOT, so fan-in-2 table-DAGs with enough nodes compute
+  every Boolean function (two-input-gate universality — indeed T5(a)'s own construction is
+  literally a fan-in-2 Boolean DAG). That is why A01 pinned the floor to the node-matched class —
+  which is exactly the class the arity-sweep cells always enumerated.</p>
+
+  <p><em>Proof of \eqref{eq:floor}.</em> <em>Flip Lemma:</em> for \(D{=}2\), \(P\) uniform, and
+  \(h\) not depending on coordinate \(i\), \(\mathrm{err}(h;f) \ge \tfrac12\mathrm{Inf}_i(f)\)
+  where \(\mathrm{Inf}_i(f) = \Pr_x[f(x) \ne f(x \oplus e_i)]\): pair the inputs
+  \(\{x, x\oplus e_i\}\); on a pair where \(f\) differs, \(h\) (equal on both) errs on at least
+  one of the two equally likely points. Any \(h \in \mathcal J_k\) with \(k \lt r\) ignores some
+  essential parent \(i\); essentiality gives at least one differing pair among the \(2^{r-1}\)
+  co-assignments of the other parents, and the \(d-r\) non-parents are dummies, so
+  \(\mathrm{Inf}_i(f) \ge 2^{-(r-1)}\). Under arbitrary \(P\) no distribution-free floor exists
+  (an \(r\)-ary target can look \(k\)-ary on the support), which is why the theorem pins \(P\)
+  uniform. \(\square\)</p>
+
+  <p><strong>Anchor, computed exactly.</strong> At \((r,k) = (2,1)\), \(D{=}2\): the 16 two-bit
+  tables split into 6 non-essential and 10 essential; a best 1-junta (constants included) errs
+  \(1/4\) on each of the 8 AND/OR-type essential functions and \(1/2\) on XOR/XNOR, so
+  \(c_{2,1} = (8\cdot\tfrac14 + 2\cdot\tfrac12)/10 = 0.3\) exactly. The campaign's analysis
+  re-verified this (10 essential tables, mean best-1-junta error \(0.3\), exact match — §6). The
+  adversarial pass additionally pinned \(c_{3,2} = 43/218 \approx 0.197\) and
+  \(c_{3,1} = 55/218 \approx 0.252\), both above the \(2^{-r}\) floor, which is pointwise tight.</p>
+
+  <div class="corollary"><p><strong>Corollary (\(k=r\) minimality — wording part of the
+  contract, scoped per A01).</strong> Among arities \(k \ge r\) the finite-class upper bound
+  \eqref{eq:t3k} is minimized at \(k = r\) — unconditional, by T3(a) monotonicity. That \(k = r\)
+  is moreover the smallest <em>realizable</em> arity is established at \(N{=}1\) by the floor
+  \eqref{eq:floor} (and at \(k{=}1\) for any \(N\)); realizability at \(N \ge 2\),
+  \(2 \le k \lt r\) is the declared open case. This is a statement about the <em>bound</em>, not
+  a universal statistical theorem.</p></div>
+
+  <p>The finite-sample right arm — \(k \gt r\) hurting at fixed \(n\) — is the
+  <em>over-classing effect of the uniform-VS predictor</em> (larger \(k\) leaves more spurious
+  consistent hypotheses), not a property of ERM in general. The Occam-ERM that returns a
+  consistent hypothesis of minimal per-node essential fan-in inside
+  \(\mathcal F_k \supseteq \mathcal F_r\) collapses the right arm exactly: realizability puts
+  \(f^\star\) (per-node essential fan-in \(\le r\)) in the consistent set, so the minimal
+  consistent output has essential fan-in \(\le r\); pruning inessential parents exhibits it in
+  \(\mathcal F_r\), and Lemma 1 applied to \(\mathcal F_r\) gives exactly T2-at-\(r\) for every
+  \(k \ge r\) — the rule's output set is \(k\)-invariant, so its right arm is exactly flat.
+  (Caveat pinned: &ldquo;essential arity&rdquo; means per-node essential fan-in; under the
+  composed-function reading the pruning step fails for \(N \gt 1\); at \(N{=}1\), where the
+  U-shape lives, the two readings coincide.) The right arm as a theorem for the VS predictor
+  (T3&prime;) is a pre-registered high-risk stretch that was <em>not attempted</em>, per its
+  pre-commitment; nothing depends on it (§5.2 reports its numeric probe).</p>
+
+  <h3>3.4 Lower bound at \(D=2\)</h3>
+
+  <div class="theorem"><p><strong>Theorem T4 (junta subclass).</strong> There is a constant
+  \(c \gt 0\) such that any learner (possibly randomized, possibly improper) that, for
+  <em>every</em> distribution \(P\) on \(\{0,1\}^{d}\) and every target in the fan-in-\(r\)
+  class, achieves error at most \(\epsilon\) with probability at least \(1-\delta\)
+  (hypotheses: \(\epsilon \le 1/8\), \(\delta \le 1/8\), \(d \ge 2r\)) requires</p>
+  \[\begin{equation}\label{eq:t4}
+  n \;\ge\; c\,\frac{2^{r} + r\log_2(d/r) + \log_2(1/\delta)}{\epsilon}.
+  \end{equation}\]
+  <p>Already the \(N{=}1\) junta subclass forces this; the \(N\)-linear upper-bound term of
+  T1/T2 is <em>not</em> matched from below, and that gap is left open. (The for-every-\(P\)
+  quantifier matches the distribution-free upper bounds.)</p></div>
+
+  <p><em>Proof.</em> Since the \(r\)-junta class \(\mathcal J_r\) is contained in the
+  fan-in-\(r\) target class (\(N{=}1\)), a minimax lower bound for \(\mathcal J_r\) lower-bounds
+  the larger problem. Both shattering directions are self-contained.
+  <em>VC \(\ge 2^{r}\):</em> fix a support \(S_0\), \(|S_0| = r\); the \(2^{r}\) inputs that are
+  zero off \(S_0\) are shattered by the tables on \(S_0\).
+  <em>VC \(\ge r\lfloor\log_2\lfloor d/r\rfloor\rfloor\) (block-dictator construction,
+  \(d \ge 2r\)):</em> partition the \(d\) coordinates into \(r\) blocks of size
+  \(q = \lfloor d/r\rfloor\) and set \(m_b = \lfloor\log_2 q\rfloor \ge 1\). In block \(b\) pick
+  \(m_b\) points, each supported on block \(b\) only, whose \(q\)-column patterns over the
+  block's coordinates realize all \(2^{m_b}\) binary columns (possible since
+  \(2^{m_b} \le q\)). Given any labeling \(y\), choose in each block the coordinate \(j_b\) whose
+  column equals \(y\) restricted to that block, and set \(f = \bigoplus_b x_{j_b}\) — an XOR of
+  \(r\) dictators, hence an \(r\)-junta. On a block-\(b\) point all other blocks' chosen
+  coordinates read 0, so \(f\) equals the required label: the set is shattered.</p>
+
+  <p><em>(i) \(\Omega(m/\epsilon)\) from a shattered set of size \(m \ge 2\).</em> Define \(P\):
+  \(P(x_0) = 1-8\epsilon\), \(P(x_j) = 8\epsilon/(m-1)\) for \(j \ge 1\); draw the target
+  uniformly among the \(2^{m-1}\) shattered labelings fixing \(f(x_0)\). Suppose
+  \(n \le (m-1)/(64\epsilon)\). Each rare point is unseen with probability
+  \((1 - \tfrac{8\epsilon}{m-1})^{n} \ge 1 - \tfrac{8\epsilon n}{m-1} \ge \tfrac78\), so the
+  expected number unseen is at least \(\tfrac78(m-1)\). Define the rare-mass error</p>
+  \[\begin{equation}\label{eq:raremass}
+  X \;=\; \tfrac{8\epsilon}{m-1}\,\#\{j \ge 1 : \hat h(x_j) \ne f(x_j)\} \;\in\; [0, 8\epsilon],
+  \qquad X \le \mathrm{err}_P(\hat h).
+  \end{equation}\]
+  <p>On an unseen rare point the target label is uniform and independent of the learner's (even
+  randomized) prediction, so it is mispredicted with probability exactly \(\tfrac12\); hence
+  \(\mathbb E X \ge \tfrac12\cdot\tfrac{8\epsilon}{m-1}\cdot\tfrac78(m-1) = 3.5\,\epsilon\)
+  jointly over target, sample, and learner randomness. Reverse Markov on
+  \(X \in [0, 8\epsilon]\): \(\Pr[X \gt \epsilon] \ge (\mathbb E X - \epsilon)/(7\epsilon) \ge
+  \tfrac{5}{14} \gt \tfrac18 \ge \delta\). Averaging over targets, some fixed target fails with
+  probability above \(\delta\) — so \(n \gt (m-1)/(64\epsilon)\), and \(m-1 \ge m/2\).
+  <em>(ii) \(\Omega(\log(1/\delta)/\epsilon)\).</em> Two shattered points:
+  \(P(x_0) = 1-2\epsilon\), \(P(x_1) = 2\epsilon\); shattering supplies \(f_0, f_1\) agreeing at
+  \(x_0\), differing at \(x_1\). With \(E\) = &ldquo;\(x_1\) unseen&rdquo;,
+  \(\Pr[E] = (1-2\epsilon)^{n}\); for \(\epsilon \le 1/8\),
+  \(-\ln(1-2\epsilon) \le 0.576\cdot 4\epsilon\), so at \(n \le \ln(1/\delta)/(4\epsilon)\),
+  \(\Pr[E] \ge \delta^{0.576}\). On \(E\) the sample is identical under both targets, so the
+  prediction at \(x_1\) errs against one of them with conditional probability at least
+  \(\tfrac12\), costing error \(2\epsilon \gt \epsilon\); hence
+  \(\max_i \Pr_{f_i}[\mathrm{err} \gt \epsilon] \ge \tfrac12\delta^{0.576} \ge 1.2\,\delta
+  \gt \delta\) for \(\delta \le \tfrac18\). Combining (i) at
+  \(m = \max(2^{r},\, r\lfloor\log_2\lfloor d/r\rfloor\rfloor)\) with (ii) via
+  \(\max(a,b) \ge \tfrac12(a+b)\) gives \eqref{eq:t4}. \(\square\)</p>
+
+  <p><strong>Consequence.</strong> At \(D{=}2\) the \(k{=}r\) consistent learner of T2 is
+  minimax-near-optimal in the leading \(2^{r}\) and \(r\log(d/r)\) dependencies (up to
+  constants). &ldquo;Sample-optimal&rdquo; is deliberately not claimed beyond this; nothing is
+  claimed for \(D \gt 2\), and the top-level claim's lower-bound clause reads &ldquo;at
+  \(D{=}2\) (i.e. \(2^{r}\))&rdquo; for exactly this reason.</p>
+
+  <h3>3.5 The MLP bridge</h3>
+
+  <p><em>Input-encoding convention, part of every T5 statement:</em> the input layer is the
+  one-hot encoding of the \(d\) symbolic variables (one group of \(D\) coordinates per variable);
+  <strong>scalar fan-in \(k\) counts one-hot coordinates, DAG arity \(r\) counts variable
+  groups</strong> — the two are never conflated. (The scalar-symbol alternative must first build
+  equality indicators and pay their units, depth, and fan-in; it is a remark, not the route
+  taken.)</p>
+
+  <div class="theorem"><p><strong>Theorem T5(a) (realizability at \(k=2\) with depth
+  inflation).</strong> Every computation-graph function (arities \(r_v \le r\), depth
+  \(\Delta\), common alphabet \(D\)) is computed <em>exactly</em> by a ReLU network of scalar
+  fan-in at most 2, integer weights of magnitude at most 1 with biases in \(\{0, -1\}\)
+  (\(b = 2\) bits per parameter), whose output is a designated one-hot group inside the network
+  (no external argmax), with</p>
+  \[\begin{equation}\label{eq:t5size}
+  \begin{aligned}
+  \text{depth} \;&\le\; \Delta\big(\lceil\log_2\max(r,2)\rceil + \lceil r\log_2 D\rceil + 1\big)
+  \ \ \text{ReLU layers},\\
+  \#\text{units} \;&=\; O\!\big(N D^{r} r + N D\,\Delta\, r^{2}\log D\big),
+  \end{aligned}
+  \end{equation}\]
+  <p>where the \(r^{2}\) term carries the live-input factor \(\min(d, Nr)\).</p></div>
+
+  <p><em>Proof.</em> Maintain the invariant (I1) that after processing DAG level \(\ell\), every
+  still-needed node \(u\) owns a group of units whose activations form exactly the one-hot
+  \(\xi_u = e_{z_u} \in \{0,1\}^{D}\); level 0 is the input encoding. For node \(v\) with parents
+  \(p_1 \dots p_{r_v}\): <em>conjunction trees</em> — for each parent-value row \(c\), AND the
+  \(r_v\) bits \(\xi_{p_j}[c_j]\) pairwise with \(\mathrm{AND}(a,b) = \mathrm{ReLU}(a+b-1)\)
+  (exact on \(\{0,1\}\)), reaching the row indicator \(h^v_c\) after
+  \(\lceil\log_2 r_v\rceil\) layers; because each parent group is one-hot, exactly one row unit
+  is active per input. <em>OR trees</em> — for each output symbol \(s\), sum the row units of
+  \(g_v^{-1}(s)\) pairwise with \(\mathrm{SUM}(a,b) = \mathrm{ReLU}(a+b)\); since at most one
+  summand is ever 1 (rows mutually exclusive), all partial sums stay in \(\{0,1\}\) (I3), and
+  after at most \(\lceil r\log_2 D\rceil\) layers the group \(\xi_v\) is one-hot again (I1
+  restored). All nodes of a level run their trees in parallel inside shared physical layers,
+  padding shorter trees and still-needed groups with identity units \(\mathrm{ReLU}(x)\)
+  (fan-in 1) — so depth is per-level, never per-node (I5), with \(+1\) slack covering unary
+  leaf-copy stages. Every unit has scalar fan-in at most 2 (I2) and integer weights
+  \(|w| \le 1\), biases in \(\{0,-1\}\). Units: node \(v\) costs \(O(D^{r_v} r_v)\) tree units
+  (the first AND stage dominates, then geometric decay, plus \(D\) OR roots); carries cost
+  \(O(\text{live groups}\cdot D)\) per physical layer, and live groups never exceed
+  \(N + \min(d, Nr)\) (only hidden nodes and consumed inputs are carried), so carries total
+  \(O\big((N + \min(d, Nr))\,D\,\Delta\,r\log D\big) \subseteq O(N D\,\Delta\,r^{2}\log D)\) —
+  the carried-input factor is not \(O(N)\) alone and is stated explicitly. The output node's
+  group is the network's last-layer one-hot (I4). \(\square\)</p>
+
+  <p><strong>Executable witness (part of Gate A).</strong> <code>src/verify_t5.py</code> builds
+  exactly this construction and asserts, on 80 random graphs (\(D \in \{2,3\}\),
+  \(r \in \{1,2,3\}\), \(N \in \{1,\dots,4\}\), mixed arities with unary nodes, plus the
+  campaign's diamond and chain): exact I/O equality on all \(D^{d}\) inputs, max scalar fan-in
+  \(\le 2\), integer weights \(|w| \le 1\) with biases in \(\{0,-1\}\), the depth bound of
+  \eqref{eq:t5size}, and one-hotness of every carried group at every level boundary. All 80
+  pass; unit counts are reported, not asserted.</p>
+
+  <div class="theorem"><p><strong>Theorem T5(b) (fan-in-1 impossibility — output mechanism
+  pinned).</strong> (i) If every unit including the designated output unit has fan-in at most 1,
+  then by induction every unit's activation is a function of at most one input coordinate; the
+  output therefore cannot equal any target essential on 2 or more coordinates. (ii) Relaxed
+  variant — unrestricted linear readout, or argmax over scores, over fan-in-1 features: every
+  feature depends on at most one coordinate, so each score is additive across single-coordinate
+  functions; for two scores, argmax is the sign of an additive score against a threshold. For
+  XOR (\(D{=}2\)): \(s(00) + s(11) = s(01) + s(10)\), hence
+  \(\min(s_{01}, s_{10}) \le \tfrac12(s_{01}+s_{10}) = \tfrac12(s_{00}+s_{11})
+  \le \max(s_{00}, s_{11})\) — correctness would need the strict opposite under either tie rule.
+  Additive scores cannot decide XOR, so generic \(r \ge 2\)-ary interactions are excluded in both
+  variants. \(\square\)</p></div>
+
+  <div class="theorem"><p><strong>Theorem T5(&zwnj;c) (capacity — quantized vs equally-quantized,
+  never mixed).</strong> The class \(\mathcal F_{k,b}\) of ReLU networks with architecture
+  \(\{m_\ell\}_{\ell=1}^{L}\), per-unit fan-in at most \(k\), and integer parameters in \(b\)
+  bits satisfies</p>
+  \[\begin{equation}\label{eq:cap}
+  \log_2|\mathcal F_{k,b}| \;\le\; \sum_{\ell} m_\ell\Big[k\log_2\tfrac{e\,m_{\ell-1}}{k}
+  + (k+1)\,b\Big]
+  \end{equation}\]
+  <p>(each unit: a \(\le k\)-subset of the previous layer — subsumed by exactly-\(k\) subsets
+  with zero weights, \(\binom{m_{\ell-1}}{k} \le (e m_{\ell-1}/k)^{k}\) by \eqref{eq:binom} —
+  plus \(k\) weights and a bias at \(b\) bits; the output group is WLOG the first \(D\) units of
+  the last layer). The equally-quantized <em>dense</em> class at the same architecture and \(b\)
+  has description count \(\Theta\big(b\sum_\ell m_\ell(m_{\ell-1}+1)\big) = \Theta(\Delta' m^{2} b)\)
+  at width \(m\), depth \(\Delta'\) (functions at most descriptions; the function-count lower
+  bound is not claimed). At T5(a)'s realizing sizes — \(b = 2\),
+  \(\sum_\ell m_\ell = \tilde O(N D^{r})\) <em>under the explicit regime hypothesis
+  \(\Delta = O(r D^{r-1})\)</em> (Note&nbsp;0's regime, which absorbs the carry term), with
+  \(\tilde O\) hiding \(\mathrm{polylog}(N D^{r})\) — the fan-in-2 class costs
+  \(\log_2|\mathcal F| = \tilde O(N r D^{r})\) against the dense description count
+  \(\Theta(\Delta' m^{2} b)\) with \(m = \tilde O(N D^{r})\): near-linear in \(N D^{r}\) versus
+  quadratic in the width, at equal architecture, both sides quantized at the same \(b\).
+  <em>Real-valued remark (separate; the import [B]):</em> sparse real-valued ReLU networks with
+  \(W\) weights and \(L\) layers have VC/pseudo-dimension \(\tilde O(WL)\); with
+  \(W = k\sum_\ell m_\ell\) this is the real-valued analogue and is never combined with the
+  counting bound in one inequality.</p></div>
+
+  <div class="theorem"><p><strong>Theorem T5(d) (flat comparison).</strong> Arbitrary
+  \(f : \Sigma^{d} \to \Sigma\) form a class of \(\log_2\)-size \(D^{d}\log_2 D\); T2's class
+  costs \(N D^{r}\log_2 D + O(N r\log\frac{e(d+N)}{r})\) — exponentially separated once
+  \(r \ll d\) and \(N = \mathrm{poly}(d)\). \(\square\)</p></div>
+
+  <h3>3.6 A bad ERM on the flat class</h3>
+
+  <div class="theorem"><p><strong>Theorem T6 (bad-ERM separation — stretch, included).</strong>
+  There exists an ERM over the flat class needing \(n = \Omega(D^{d})\) samples to reach error
+  at most \(\tfrac14(1-1/D)\) on a fan-in-\(r\) realizable target under uniform inputs, while by
+  T1/T2 every consistent learner over the matched class needs only
+  \(\tilde O(N D^{r})/\epsilon\).</p></div>
+
+  <p><em>Proof.</em> The adversarial consistent rule \(\hat h\): on seen inputs predict the seen
+  label; on every unseen input predict \(f^\star(x) + 1 \pmod D\). It is an ERM for the flat
+  class — the returned hypothesis is in the class with empirical risk exactly 0; the ERM
+  <em>principle</em> does not forbid this tie-break, which is the point: the principle alone
+  gives no rate for the flat class. The rule is wrong on every unseen input, and \(n\) samples
+  cover at most \(n\) distinct inputs, so</p>
+  \[\begin{equation}\label{eq:t6}
+  \mathrm{err}(\hat h) \;\ge\; 1 - n\,D^{-d}\qquad\text{deterministically};
+  \end{equation}\]
+  <p>error at most \(\tfrac14(1-1/D) \le \tfrac14\) forces \(n \ge \tfrac34 D^{d}\) on every
+  realization. \(\square\)</p>
+
+  <h2>4. The enumeration campaign</h2>
+
+  <p>The campaign's role is the one §1 fixed: sanity checks and mechanism evidence, never the
+  logical foundation (§8). Exact enumeration over the discrete classes removes SGD as a
+  confound; it cannot and does not validate SGD-trained MLP behavior (out of scope, §9).</p>
+
+  <p><strong>Learners.</strong> <code>L-flat</code>: all functions on \(\Sigma^{d}\) (its VS
+  error has a closed form, \eqref{eq:flat} below). <code>L-known</code>: true graph, tables
+  unknown. <code>L-unk</code>: fan-in-\(r\) structures + tables; in the \(N \ge 2\) cells the
+  wiring <em>shape</em> is known and the input assignment + tables are unknown (recorded
+  realization, mirroring the diamond restriction below). <code>L-k</code> for
+  \(k \in \{1,2,3,4\}\): the fan-in-\(k\) class (at \(N{=}1\), \(k\)-juntas with per-mask closed
+  forms). <code>L-tables-oracle</code>: true tables, graph unknown — the complementary oracle.
+  <code>L-unk-diamond</code>: wiring shape and \(x_e\) known, the two disjoint leaf pairs and all
+  tables unknown. Every learner is the VS predictor in both weightings where feasible, with the
+  empty-VS rule of §2.</p>
+
+  <p><strong>Cells.</strong> Eleven cells at \(D{=}2\) unless stated, 20 target draws each
+  (50 for the arity sweep):</p>
+
+  <div class="tablewrap"><table>
+    <thead><tr><th>cell</th><th>family</th><th>\(N\)</th><th>\(r\)</th><th>\(d\)</th>
+    <th>learners</th></tr></thead>
+    <tbody>
+      <tr><td>main grid (3 cells)</td><td>single node</td><td>1</td><td>1 / 2 / 3</td>
+      <td>6, 9, 12</td><td><code>L-flat</code>, <code>L-known</code>, <code>L-unk</code></td></tr>
+      <tr><td>arity sweep (2 cells)</td><td>single node</td><td>1</td><td>2; 3</td><td>9</td>
+      <td><code>L-k</code>, \(k \in \{1..4\}\); \(k \in \{2,3,4\}\)</td></tr>
+      <tr><td>chain</td><td>2-node chain</td><td>2</td><td>2</td><td>6, 9</td>
+      <td><code>L-known</code>, <code>L-unk</code>, <code>L-tables-oracle</code></td></tr>
+      <tr><td>diamond, known</td><td>branch + merge</td><td>4</td><td>2</td><td>6, 9</td>
+      <td><code>L-known</code> (\(16^4 = 65{,}536\) descriptions)</td></tr>
+      <tr><td>diamond, unknown leaves</td><td>branch + merge</td><td>4</td><td>2</td><td>6, 9</td>
+      <td><code>L-unk-diamond</code> (90 / 756 skeletons at \(d = 6/9\))</td></tr>
+      <tr><td>alphabet (\(D{=}3\))</td><td>single node</td><td>1</td><td>2</td><td>6</td>
+      <td><code>L-known</code>, <code>L-unk</code></td></tr>
+      <tr><td>basis-mixing control</td><td>single node</td><td>1</td><td>2</td><td>9</td>
+      <td><code>L-k=2</code> (uniform-min-ERM)</td></tr>
+      <tr><td>label-shuffle control</td><td>single node</td><td>1</td><td>2</td><td>9</td>
+      <td><code>L-flat</code>, <code>L-known</code>, <code>L-unk</code></td></tr>
+    </tbody>
+  </table></div>
+
+  <p>The compositional diamond is the \(N{=}4\) branching-and-merging family</p>
+  \[\begin{equation}\label{eq:diamond}
+  z_1 = g_1(x_a, x_b),\quad z_2 = g_2(x_c, x_d),\quad z_3 = g_3(z_1, z_2),\quad
+  y = g_4(z_3, x_e),
+  \end{equation}\]
+  <p>with \(a,b,c,d,e\) pairwise distinct (targets violating this are rejected). The learner's
+  skeleton class deliberately remains \(e\)-inclusive — leaf pairs drawn from all \(d\)
+  coordinates, a stated superclass (this is what the 90/756 skeleton counts enumerate) — and the
+  \(x_e\)-known restriction is an enumeration-cost concession. <strong>Targets</strong> are drawn
+  uniformly conditioned on <em>global essentiality</em>: every local table uses every parent,
+  the composed truth table has every intended input observationally essential, and (for
+  \(N \ge 2\)) every internal node has interventional influence on \(y\) — the two criteria are
+  deliberately different, observational for inputs, interventional for latent nodes, the cleaner
+  choice there. Rejection rates are recorded in the shards. <strong>Pairing:</strong> each outer
+  seed draws its essential core (wiring + tables) once and embeds it at every \(d\) in the grid
+  with canonical parent coordinates (class permutation-symmetry + uniform inputs make the
+  embedding choice immaterial), so every cross-\(d\) comparison below is a within-target paired
+  ratio or gap.</p>
+
+  <p><strong>Sample-complexity readout.</strong> Errors are evaluated on the grid
+  \(n \in \{8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096\}\); \(n_i(\epsilon)\) is the
+  crossing of target \(i\)'s log-linearly interpolated error curve with \(\epsilon = 0.1\).
+  Wherever a gated crossing-ratio prediction's crossing (P1, P6a; §5.1) fell between grid
+  points with \(n\)-ratio above \(\sqrt2\), one integer-rounded log-midpoint was inserted into
+  that gap — the exact \(\sqrt2\) point in log space, though rounding to integer sample counts
+  leaves the realized bracketing ratio at \(\le 1.46\) rather than exactly \(\le \sqrt2\)
+  (inserted: \(n = 11\) for P1, \(n = 23, 45\) for P6a; identical grids across each
+  prediction's compared cells, logged in shard metadata); no other densification, and the
+  gated ratios are insensitive to the residual at their observed margins (\(1.25\) against
+  threshold \(2.0\), walls \(514\times\)/\(27\times\) against \(3\); §5.1). The U-shape's
+  reference point (P3, §5.2) was instead read on the base grid — \(n^\ast\) is the
+  integer-rounded median of <code>L-k=2</code>'s interpolated crossings (\(12.30 \to 12\); the
+  enriched-grid median \(11.64\) rounds to the same value) — then inserted as an exact
+  evaluation grid point, so the error readouts at \(n^\ast\) (P3, and later P4 and M3) are
+  measured directly at \(n = 12\), not interpolated. <em>Censoring (pre-registered):</em> a curve not crossing by
+  \(n_{\max} = 4096\) reports \(n(\epsilon) \gt 4096\) (right-censored; ratios involving it
+  become bounds, and a flat-wall clause passes if the censored bound already exceeds its
+  threshold); a curve already below \(\epsilon\) at \(n_{\min} = 8\) reports
+  \(n(\epsilon) \lt 8\) (left-censored; bounds propagate in the direction unfavorable to
+  passing), and a gate undecidable on censored intervals is reported &ldquo;not resolved at
+  these scales&rdquo;, never silently passed. The flat class needs no enumeration: under w-fun
+  its VS predictor guesses each unseen input uniformly (wrong with probability \(1 - 1/D\)),
+  giving the closed form</p>
+  \[\begin{equation}\label{eq:flat}
+  \mathbb E\,\mathrm{err}_n(\text{L-flat}) = \Big(1-\tfrac1D\Big)\big(1 - D^{-d}\big)^{n},
+  \qquad
+  n_{\text{flat}}(\epsilon) = \frac{\ln\!\big(\epsilon/(1-\tfrac1D)\big)}{\ln(1 - D^{-d})}.
+  \end{equation}\]
+
+  <p><strong>Statistics.</strong> Intervals are bootstrap 95% percentile CIs over target draws
+  (10,000 seeded resamples; the resampling unit is the target draw). Tests are one-sided
+  exact-binomial sign tests on within-target paired differences (ties dropped). Gated
+  ratio/threshold clauses are CI-aware: they pass only if the 95% CI excludes the violating
+  side. Replication: 20 target draws per cell (outer seeds 0&ndash;19; 50, seeds 0&ndash;49, for
+  the arity sweep); 50 nested sample draws per (target, \(n\)) — prefixes of one master stream
+  per (target, draw); the VS predictor's own randomness is integrated exactly wherever closed
+  forms exist (all \(N{=}1\) cells and <code>L-flat</code>) and folded into 64 tie draws
+  otherwise (\(N \ge 2\) cells). Reported curves are medians over targets of per-target means
+  over sample draws. There is no training loop: every learner is a parameter-free exact
+  procedure over a pre-registered class with the identical prediction rule and empty-VS
+  fallback, so there are no hyperparameters anywhere and HP-trial parity is a justified
+  omission. All randomness derives from
+  <code>seed = SHA256(cell_id, target_seed, n, draw_idx) &amp; 0xFFFFFFFF</code>, recorded in
+  the shards.</p>
+
+  <p><strong>Pilot and execution.</strong> The mandatory feasibility pilot ran the worst planned
+  cell (diamond, unknown leaves, \(d{=}9\): 756 skeletons, \(49{,}545{,}216\) descriptions,
+  asserted under the \(6\times10^{7}\) runtime cap) and measured setup cost 21.6&nbsp;s,
+  marginal cost 8.3&nbsp;ms per (target &times; sample-draw &times; \(n\)-point), projected full
+  cell cost <strong>0.03&nbsp;h against the 8&nbsp;h cap</strong> and peak RSS
+  <strong>0.07&nbsp;GB against the 16&nbsp;GB cap</strong> — pass on both, so the whole campaign
+  ran in-process on CPU (0 SLURM jobs) and the pre-registered downgrade cascade was never
+  engaged: every cell, including the diamond at \(d{=}9\), ran at full pre-registered scope.
+  Descriptions were streamed in chunks against bit-packed truth tables with precomputed sample
+  masks; per-cell duplicate rates were recorded (§2).</p>
+  <h2>5. Signatures</h2>
+
+  <h3>5.1 d-flatness</h3>
+
+  <p><strong>P1 (gating).</strong> Pre-registered clauses, for <code>L-unk</code> at
+  \((r{=}2, N{=}1)\): the within-target ratio \(n_i(0.1;\,d{=}12)/n_i(0.1;\,d{=}6)\) has median
+  at most \(2.0\) with CI upper bound at most \(2.0\) (the theory expectation from
+  \eqref{eq:t2} is \(\approx 1.3\times\)); and the <em>flat wall</em>, the within-target ratio
+  \(n_{\text{flat}}(0.1;\,d{=}12)/n_i(0.1;\,d{=}12)\) with \(n_{\text{flat}}\) from
+  \eqref{eq:flat}, has median at least \(3\) with CI lower bound at least \(3\) (theory: far
+  above \(10\times\)). <strong>Result: pass.</strong> Growing \(d\) from 6 to 12 — which squares
+  the flat class's \(2^{d}\) domain — moved <code>L-unk</code>'s crossing by a median factor of
+  only \(1.25\) (CI \([1.23, 1.29]\); 0/20 targets censored), under even the \(1.3\times\)
+  theory expectation, while the flat wall at \(d{=}12\) stands \(514\times\) away (CI
+  \([495, 532]\)). Figure&nbsp;1 shows the three learners' curves: the class learners fall
+  before the flat curve has moved.</p>
+
+  <figure>
+    <img class="fig" src="fig/fig_dflat.png" alt="Error curves for L-flat, L-unk, L-known at d = 6, 9, 12: the class learners cross 0.1 near n = 10-30 at every d while L-flat needs roughly 100 at d=6 and about 1000 at d=9, far beyond at d=12"/>
+    <figcaption><strong>Figure 1 — P1, d-flatness (\(r{=}2\), \(N{=}1\); w-fun).</strong>
+    Median exact error over 20 targets (bands: interquartile range over targets) vs sample count
+    \(n\). Ambient dimension barely moves <code>L-unk</code> (blue) and <code>L-known</code>
+    (green); the flat class (grey) pays the \(D^{d}\) wall. Dotted line:
+    \(\epsilon = 0.1\).</figcaption>
+  </figure>
+
+  <p><strong>P6a (gating) — the same signature survives composition.</strong> For the diamond
+  \eqref{eq:diamond} with unknown leaf pairs, the same two clauses at \(d \in \{6, 9\}\):
+  within-target ratio median/CI at most \(2.0\) (theory \(\approx 1.15\times\)); flat wall at
+  \(d{=}9\) median/CI at least \(3\) (theory \(\approx 4.6\times\)). <strong>Result:
+  pass.</strong> The paired ratio is \(1.25\) (CI \([1.21, 1.27]\), 0/20 censored) and the wall
+  is \(27.0\times\) (CI \([26.5, 28.2]\)) against \(n_{\text{flat}}(0.1;\,d{=}9) \approx 823\)
+  — Figure&nbsp;2. The pilot cascade was never engaged, so P6a gates at its full pre-registered
+  scope. <strong>P6b (descriptive)</strong> — the \(N\)-scaling ratio
+  \(n_{\text{diamond,known}}(0.1)/n_{N=1,\text{known}}(0.1)\) against the \([2,8]\) band — is
+  <em>not resolvable at these scales</em>: the \(N{=}1\) known-structure curves sit below
+  \(\epsilon\) already at \(n_{\min} = 8\) for every target (left-censored denominator), so the
+  ratio is only bounded below — and a lower bound cannot decide the two-sided \([2, 8]\)
+  band.</p>
+
+  <figure>
+    <img class="fig" src="fig/fig_diamond.png" alt="Diamond error curves: L-unk-diamond at d=6 and d=9 nearly coincide and cross 0.1 near n = 25-31; L-known slightly earlier; the flat wall marker sits at n ~ 823"/>
+    <figcaption><strong>Figure 2 — P6, compositional diamond (\(N{=}4\), branch + merge;
+    w-fun).</strong> Median exact error (bands: IQR over 20 targets). Raising \(d\) from 6 to 9
+    (distractor coordinates \(1 \to 4\), candidate skeletons \(90 \to 756\)) barely moves the
+    curve; the flat wall (dash-dot, \(n \approx 823\) by \eqref{eq:flat}) is \(27\times\)
+    away.</figcaption>
+  </figure>
+
+  <h3>5.2 The over-classing U-shape</h3>
+
+  <p><strong>P3 (gating; w-fun arm, 50 targets).</strong> Let \(\mathrm{err}_i(k)\) be target
+  \(i\)'s exact error of <code>L-k</code> at the cell's pre-registered reference point
+  \(n^\ast\) — <code>L-k=2</code>'s median interpolated crossing \(n(0.1)\), which the campaign
+  fixed at \(n^\ast = 12\) and evaluated as an exact grid point (§4). Clauses: \(\mathrm{median}_i[\mathrm{err}_i(1) -
+  \mathrm{err}_i(2)] \ge 0.05\) and \(\mathrm{median}_i[\mathrm{err}_i(3) -
+  \mathrm{err}_i(2)] \ge 0.02\), each with a one-sided sign test on (difference − margin) at
+  \(p \lt 0.05\); \(\mathrm{median}_i[\mathrm{err}_i(4) - \mathrm{err}_i(3)] \ge 0\); and at
+  \(r{=}3\), median error minimal at \(k{=}3\) over \(k \in \{2,3,4\}\). <strong>Result:
+  pass.</strong> Median errors at \(n^\ast\) are \(0.282,\ 0.090,\ 0.237,\ 0.316\) for
+  \(k = 1,2,3,4\) — the U bottoms exactly at \(k = r = 2\) (Figure&nbsp;3). The paired
+  differences are decisive: \(0.191\) (\(k{=}1\) vs 2) and \(0.147\) (\(k{=}3\) vs 2), with
+  every one of the 50 targets clearing its margin (sign tests \(p = 2^{-50} \approx
+  9\times10^{-16}\)); the right arm keeps rising, \(0.079\) (\(k{=}4\) vs 3). At \(r{=}3\) the
+  medians are \(0.298, 0.249, 0.349\) for \(k = 2,3,4\) — minimal at \(k = r = 3\). The w-rep
+  sensitivity arm agrees (\(0.275, 0.094, 0.204, 0.313\)): no parameterization-dependence to
+  report.</p>
+
+  <figure>
+    <img class="fig" src="fig/fig_ushape.png" alt="Median exact error at n* versus class arity k: V-shaped with minimum at k=2 for r=2 and at k=3 for r=3, in both weightings"/>
+    <figcaption><strong>Figure 3 — P3, the VS predictor's U-shape at \(n^\ast = 12\).</strong>
+    Median exact error vs class arity \(k\) for targets of true arity \(r{=}2\) (left; 50
+    targets) and \(r{=}3\) (right). Solid: w-fun (the gating arm); dashed: w-rep. The dotted
+    vertical line marks \(k = r\).</figcaption>
+  </figure>
+
+  <p><strong>M3 — U-shape anatomy (descriptive).</strong> The pre-registered diagnostic — the
+  direct measurement of T3's claimed mechanism — decomposes each arm's error at \(n^\ast\) into
+  <em>approximation</em>, the error still present at \(n_{\max} = 4096\) (read under the
+  empty-VS rule where the version space empties), plus <em>estimation</em>, the per-target
+  difference \(\mathrm{err}(n^\ast) - \mathrm{err}(n_{\max})\), in both weightings. Measured
+  (w-fun medians), the two arms have the anatomy the theory assigns them. The left arm is
+  approximation-driven: at \(k{=}1\) the approximation arm is \(0.250\) against an estimation
+  share of \(0.022\) — per-target best-1-junta floors of \(1/4\) or \(1/2\), with empirical mean
+  \(0.315\) against the anchor expectation \(c_{2,1} = 0.3\) of \eqref{eq:floor}, which the
+  analysis re-verified exactly over the essential class (10 essential two-bit tables, mean
+  best-1-junta error \(0.300\)). The right arm is estimation-driven: for \(k \ge r\) the class
+  contains the target and the approximation arm vanishes (median
+  \(\mathrm{err}(n_{\max}) = 0.000\) at \(k = 2, 3, 4\)), so the excess at \(n^\ast\) —
+  \(0.090,\ 0.237,\ 0.316\) — is entirely finite-sample: the spurious-consistency effect the
+  corollary of §3.3 attributes to the uniform-VS predictor specifically, the effect a
+  deterministic Occam-ERM collapses exactly. The same anatomy holds at \(r{=}3\) (approximation
+  \(0.250\) vs estimation \(0.089\) at \(k{=}2\); \(0.000\) vs \(0.249,\ 0.349\) at
+  \(k = 3, 4\)) and under w-rep. The pre-registered numeric probe for T3&prime; (the right arm
+  as a theorem) found 97.7% of paired \((k \to k{+}1)\) comparisons monotone — suggestive, but
+  the theorem was not attempted, per the pre-commitment.</p>
+
+  <h3>5.3 Alphabet direction</h3>
+
+  <p><strong>P7 (descriptive, non-gating; unpaired — different domains and target laws, so no
+  sign test).</strong> At \((N{=}1, r{=}2, d{=}6)\), the ratio of median crossings
+  \(n_{D=3}(0.1)/n_{D=2}(0.1)\) is \(1.76\) (bootstrap 95% CI \([1.61, 1.86]\)) — above the
+  pre-registered directional line \(1.5\), below the \([2, 6]\) theory band (point prediction
+  \(\approx 3.6\times\) from the \(D^{r}\) law). The direction is present; its magnitude did not
+  resolve to the band at this scale. Per the contract, P7 neither gates nor forces an
+  amendment.</p>
+
+  <h2>6. Controls</h2>
+
+  <p><strong>P4 — basis-mixing (gating for the mechanism story).</strong> The class is defined
+  in a basis (§2), so composing each target with a random invertible GF(2) linear map should
+  move it <em>out</em> of the axis-aligned class and erase the advantage — if it does not, the
+  axis-alignment story is wrong. One map per target at \((r{=}2, d{=}9, k{=}2)\); the mixed
+  version space is typically empty, so the learner is the uniform-min-ERM predictor (§2).
+  Clauses: median mixed error at \(n^\ast\) at least \(0.25\), against the unmixed median at
+  most \(0.10\). <strong>Result: pass.</strong> Median error \(0.404\) mixed vs \(0.090\)
+  unmixed. Reported distributionally (Figure&nbsp;4): the pre-registered decomposition separates
+  approximation from estimation via the post-mixing best-in-class error
+  \(\inf_{h\in\mathcal F_{k=2}}\mathrm{err}(h)\), computed per target in closed form — it is
+  \(0.25\) for 15/20 targets and \(0.5\) for the other 5, so the collapse is
+  approximation-driven: the target genuinely leaves the class. The fraction of mixed targets
+  coincidentally re-entering a low-arity axis-aligned class (best-in-class error below
+  \(0.10\)) is \(0/20\).</p>
+
+  <figure>
+    <img class="fig" src="fig/fig_mixing.png" alt="Histogram of per-target mixed errors clustered near 0.4-0.5 and best-in-class errors at 0.25 and 0.5, far from the unmixed median 0.09 marked by a dotted line"/>
+    <figcaption><strong>Figure 4 — P4, GF(2) basis-mixing (20 targets).</strong> Per-target
+    exact error of the uniform-min-ERM predictor at \(n^\ast\) on mixed targets (blue) and the
+    post-mixing best-in-class error (orange), against the unmixed median (dotted). No mixed
+    target re-enters the class.</figcaption>
+  </figure>
+
+  <p><strong>Label-shuffle smoke.</strong> With labels resampled independently per distinct
+  training input (keeping <code>L-flat</code> single-valued) and error still measured against
+  the true function, every learner should sit at chance at \(n = 512\): pass band
+  \(0.5 \pm 0.05\). All three do — medians \(0.501\) (<code>L-flat</code>), \(0.496\)
+  (<code>L-known</code>), \(0.504\) (<code>L-unk</code>) — so nothing in the pipeline leaks
+  labels. The campaign's anchor re-verification (\(c_{2,1} = 0.300\) exactly, §5.2) doubles as a
+  correctness check of the closed-form junta machinery.</p>
+
+  <h2>7. Mechanism</h2>
+
+  <p><strong>M1/P5 — the counting engine, made visible (descriptive).</strong> Every
+  finite-class bound above runs on one quantity: how fast the version space shrinks. The
+  campaign measures \(\log_2|\text{version space}|\) directly (min-disagreement set when empty).
+  At \(n^\ast\), the pre-registered strict ordering holds:
+  \(0.13\) (<code>L-known</code>) \(\lt\) \(0.84\) (<code>L-unk</code>) \(\lt\) \(500.0\)
+  (<code>L-flat</code>) — Figure&nbsp;5, which renders M1 as \(\log_2|\text{VS}|\) vs \(n\):
+  M1's pre-registered rendering, &ldquo;plotted against error&rdquo;, is delivered numerically
+  — this ordering and the slope check at \(n^\ast\) — rather than as an
+  error-vs-\(|\text{VS}|\) panel. P5's second clause, verbatim &ldquo;shrinkage slope
+  within \(2\times\) of the counting prediction&rdquo;, is instantiated as a value-at-\(n^\ast\)
+  agreement on the flat arm (the one with an exact counting prediction): \(\log_2|\text{VS}|\)
+  starts at the known \(2^{d} = 512\), so the value at \(n^\ast\) fixes the average slope over
+  \([0, n^\ast]\), and the measured \(500.0\) against the analytic
+  \(2^{d}(1 - 2^{-d})^{n^\ast} = 500.13\) is a slope ratio of \(1.01\) — well within the
+  \(2\times\) band — tying the measured curves back to the counting arguments of §3.</p>
+
+  <figure>
+    <img class="fig" src="fig/fig_vs_size.png" alt="Median log2 version-space size versus n at r=2, d=9: L-flat starts near 500 and decays slowly; L-unk and L-known start near 3 and 0.4 and hit zero by n around 30"/>
+    <figcaption><strong>Figure 5 — M1/P5, version-space size (\(r{=}2\), \(d{=}9\);
+    w-fun).</strong> Median \(\log_2|\text{VS}|\) vs \(n\) (symlog axis). The class learners
+    burn their few bits of ambiguity within tens of samples; the flat class starts with
+    \(2^{d}\) free bits.</figcaption>
+  </figure>
+
+  <p><strong>P2 — the graph-selection gap (pre-registered consequence, non-gating).</strong>
+  T2's two-term structure predicts a positive, slowly growing cost for not knowing the wiring:
+  \(\mathrm{gap}_i(d) = n_{i,\text{L-unk}}(0.1; d) - n_{i,\text{L-known}}(0.1; d)\). Clauses: at
+  each \(d \in \{6,9,12\}\), median gap positive with one-sided sign test \(p \lt 0.05\);
+  growth, \(\mathrm{median}[\mathrm{gap}(12)]\) between \(1\times\) and \(2.5\times\)
+  \(\mathrm{median}[\mathrm{gap}(6)]\) (log-like, not polynomial). <strong>Result:
+  positivity holds; growth is not resolvable at these scales.</strong> <code>L-known</code>'s
+  crossings are left-censored at \(n_{\min} = 8\) for 20/20 targets at every \(d\) (a 16-entry
+  table class pins down almost immediately), so per the censoring rules the gaps enter as
+  conservative lower bounds \(\mathrm{gap}_i \gt n_{i,\text{L-unk}} - 8\): their medians are
+  \(1.9,\ 3.7,\ 4.8\) samples at \(d = 6, 9, 12\) (CIs \([1.5, 2.4]\), \([2.8, 4.1]\),
+  \([4.4, 5.3]\); all 20 targets positive at each \(d\), sign tests
+  \(p = 2^{-20} \approx 9.5\times10^{-7}\); Figure&nbsp;6, left). The growth clauses cannot be
+  decided on lower bounds, so P2 as a whole takes its pre-registered non-fatal downgrade:
+  <em>T2's graph term is positive but not separately resolvable at these scales beyond
+  positivity.</em></p>
+
+  <p><strong>M2 — additivity of the two costs (descriptive).</strong> On the \(N{=}2\) chain,
+  the complementary oracles decompose the total cost: at \(d{=}6\), median
+  \(n_{\text{L-known}}(0.1) + n_{\text{L-tables-oracle}}(0.1) = 9.7 + 9.8 = 19.5\) vs
+  \(n_{\text{L-unk}}(0.1) = 16.9\) (ratio \(1.16\)); at \(d{=}9\), \(9.7 + 13.1 = 22.8\) vs
+  \(20.7\) (ratio \(1.10\)) — both within the pre-registered descriptive band of \(1.5\times\)
+  (Figure&nbsp;6, right). Table-learning and graph-selection costs superpose approximately
+  additively, as the two-term bound \eqref{eq:t2} suggests they should. One scope note carries
+  from §4: the chain's <code>L-unk</code> knows the wiring shape — a narrowing, recorded at run
+  time rather than pre-registered, of the locked learner spec's full fan-in-\(r\) structure
+  class — so its graph-selection component measures input-assignment selection under a known
+  shape, and the additivity reading carries that scope.</p>
+
+  <figure>
+    <img class="fig" src="fig/fig_graphcost.png" alt="Left: boxplots of paired gap lower bounds rising from about 2 at d=6 to about 5 at d=12. Right: chain error curves with L-unk above L-tables-oracle above L-known, all crossing 0.1 by n around 20"/>
+    <figcaption><strong>Figure 6 — P2 and M2 (w-fun).</strong> Left: per-target
+    graph-selection gap at each \(d\), as conservative lower bounds
+    (<code>L-known</code> left-censored at \(n_{\min} = 8\) throughout). Right: the \(N{=}2\)
+    chain's three learners (medians, IQR bands) — <code>L-unk</code> sits above both oracles;
+    its crossing lands between the larger oracle's and the oracles' sum (M2
+    additivity).</figcaption>
+  </figure>
+
+  <h2>8. Verdict</h2>
+
+  <p>The pre-registered verdict is two-layer, and the layers are deliberately asymmetric:
+  <strong>Layer 1</strong> — the study's verdict, which sets the registry status — is decided by
+  the proofs alone. It reads <em>supported</em> iff Gate&nbsp;A holds: T1&ndash;T5 fully proved
+  (T3&prime;/T6 optional) with every assumption stated, imports limited to the pre-authorized
+  citation-grade list, T5's invariants discharged with its output mechanism pinned and
+  <code>src/verify_t5.py</code> passing, and capacity regimes never mixed — with each theorem
+  surviving a fresh-context adversarial proof-check and the Stage-X audit (the workflow's
+  independent pre-publication audit of the drafted report) passing with no blocker-grade
+  (evidence-breaking) gap. It could read <em>refuted</em> only on an
+  irreparable proof gap; failing Gate&nbsp;A without a disproof means amend or park, never
+  publish. <em>No enumeration outcome can refute Layer 1.</em> <strong>Layer 2</strong> — the
+  empirical-signature verdict, decided entirely by <code>results/analysis.json</code> — gates on
+  the core signatures P1, P3 (w-fun), P6a: all three passing reads <em>supported</em>; P1
+  passing with exactly one of P3/P6a failing reads <em>partially supported</em>; P1 failing, or
+  both P3 and P6a failing, reads <em>does not support</em>.</p>
+
+  <div class="tldr"><p><strong>Layer 1 (theory):</strong>
+  <span class="status supported">supported</span> — T1&ndash;T6 proved (§3), each through an
+  adversarial proof-check pass (five refuter passes + a contract-fit pass; the repairs were
+  re-pinned as A01 before dispatch); the Stage-X audit found no blocker-grade gap; the
+  executable witness passes all 80 graphs; the only citation-grade import is [B] (T5(c)'s
+  real-valued remark); T3&prime; was not attempted, per its pre-commitment.</p>
+  <p><strong>Layer 2 (signatures):</strong> <span class="status supported">supported</span> —
+  in the pre-registered wording: &ldquo;the enumeration supports the proposed finite-sample
+  signatures&rdquo; — at full pre-registered scope. Core: P1 ✓, P3 ✓, P6a ✓.</p></div>
+
+  <div class="tablewrap"><table>
+    <thead><tr><th>prediction</th><th>pre-registered clause</th><th>result</th>
+    <th>outcome</th></tr></thead>
+    <tbody>
+      <tr><td>P1 d-flatness</td><td>ratio med/CI \(\le 2.0\); wall med/CI \(\ge 3\)</td>
+      <td>\(1.25\) \([1.23, 1.29]\); wall \(514\times\) \([495, 532]\)</td>
+      <td><strong>pass</strong> (gating)</td></tr>
+      <tr><td>P2 graph cost</td><td>gap \(\gt 0\) at each \(d\); growth \(1{-}2.5\times\)</td>
+      <td>positive at all \(d\) (\(p = 9.5\times10^{-7}\)); growth on censored bounds</td>
+      <td>positivity <strong>pass</strong>; growth <strong>not resolvable</strong>
+      (pre-registered non-fatal downgrade)</td></tr>
+      <tr><td>P3 U-shape</td><td>margins \(0.05 / 0.02\) at \(p \lt .05\); right arm
+      \(\ge 0\); \(r{=}3\) spot</td>
+      <td>\(0.191 / 0.147\) (\(p \approx 9\times10^{-16}\)); \(0.079\); \(k{=}3\) minimal</td>
+      <td><strong>pass</strong> (gating)</td></tr>
+      <tr><td>P4 basis-mixing</td><td>mixed med \(\ge 0.25\) vs unmixed \(\le 0.10\)</td>
+      <td>\(0.404\) vs \(0.090\); re-entry \(0/20\)</td>
+      <td><strong>pass</strong> (mechanism control)</td></tr>
+      <tr><td>P5 VS ordering</td><td>strict order; &ldquo;shrinkage slope within \(2\times\)
+      of the counting prediction&rdquo;</td>
+      <td>\(0.13 \lt 0.84 \lt 500.0\); slope ratio \(1.01\) (\(500.0\) vs \(500.13\) at
+      \(n^\ast\))</td>
+      <td><strong>pass</strong> (descriptive)</td></tr>
+      <tr><td>P6a diamond d-flatness</td><td>ratio med/CI \(\le 2.0\); wall med/CI \(\ge 3\)</td>
+      <td>\(1.25\) \([1.21, 1.27]\); wall \(27\times\) \([26.5, 28.2]\)</td>
+      <td><strong>pass</strong> (gating; cascade not engaged)</td></tr>
+      <tr><td>P6b N-scaling</td><td>ratio vs \([2, 8]\) band</td>
+      <td>denominator left-censored at \(n_{\min}\)</td>
+      <td><strong>not resolvable</strong> (descriptive)</td></tr>
+      <tr><td>P7 alphabet</td><td>directional \(\ge 1.5\); band \([2, 6]\)</td>
+      <td>\(1.76\) \([1.61, 1.86]\)</td>
+      <td>direction <strong>yes</strong>; below band (descriptive)</td></tr>
+      <tr><td>M2 additivity</td><td>sum vs total within \(1.5\times\)</td>
+      <td>\(1.16\) (\(d{=}6\)), \(1.10\) (\(d{=}9\))</td>
+      <td><strong>pass</strong> (descriptive)</td></tr>
+      <tr><td>M3 U-shape anatomy</td><td>left arm approximation-driven; right arm
+      estimation-driven</td>
+      <td>\(k{=}1\): approx \(0.250\) vs est \(0.022\); \(k \gt r\): approx \(0.000\),
+      est \(0.237 / 0.316\)</td>
+      <td><strong>pass</strong> (descriptive; both weightings)</td></tr>
+      <tr><td>shuffle smoke</td><td>all learners \(0.5 \pm 0.05\) at \(n{=}512\)</td>
+      <td>\(0.501, 0.496, 0.504\)</td>
+      <td><strong>pass</strong> (control)</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>9. Scope and limitations</h2>
+
+  <p>What the theorems do <em>not</em> say. Per-neuron fan-in does not imply module-level
+  fan-in — the plan's own pre-registered guard, quoted verbatim from the intake: &ldquo;A module
+  with many neurons can collectively read many upstream variables even if every scalar neuron
+  only reads (k) inputs. So per-neuron fan-in does not mathematically imply module
+  fan-in.&rdquo; All statements are hypothesis-class statements: SGD-trained
+  fan-in-limited MLPs are an explicitly deferred successor study, and nothing here validates
+  their behavior. Dense networks can represent everything in this note — the claim is
+  statistical complexity (inductive bias), never expressivity. And the advantage is
+  <em>class-membership relative to a basis</em>: under GF(2) mixing the target leaves the
+  axis-aligned class and the advantage must — and does (§6) — vanish. This is consonant with
+  <a class="xref" href="../sample_efficiency_foundations/">the foundations node</a>: there the
+  representation varies with the class fixed; here the class membership itself is
+  basis-relative.</p>
+
+  <p>Open, by declaration rather than oversight: the \(N\)-linear term of T1/T2 is not matched
+  from below (T4 forces only the \(N{=}1\) subclass's \(2^{r} + r\log(d/r)\)); realizability at
+  \(N \ge 2\), \(2 \le k \lt r\) is the floor's declared open case; and T3&prime; — the VS
+  right arm as a theorem — was left unattempted under its pre-commitment, with a 97.7%-monotone
+  numeric probe on record. The capacity separation holds under the explicit regime
+  \(\Delta = O(r D^{r-1})\) with the dense side counted by descriptions; the lower bound is
+  claimed at \(D{=}2\) only.</p>
+
+  <p>Empirically, exact enumeration buys exactness and pays reach: \(d \le 12\), description
+  counts under \(5\times10^{7}\), and a grid floor \(n_{\min} = 8\) that left-censors the
+  known-structure baselines — which is why P2's growth clause and P6b could not resolve
+  (§7, §5.1); the \(D^{r}\) magnitude check P7 ran at a single small scale and landed below its
+  band (§5.3). These are scale limits of the illustration, not of the theorems. The natural
+  next rung — SGD-trained fan-in-limited MLPs on the same targets — is the deferred successor
+  study, and it decides one falsifiable question: do SGD-trained fan-in-\(k\) MLPs at matched
+  budget reproduce the \(k{=}r\) U-shape and the \(d\)-flatness signatures on these same
+  targets? Failure would mean the class-level advantage does not transfer to training
+  dynamics.</p>
+
+  <div class="repro"><p><span class="git">git <code>84d947b</code></span> (analysis + figures;
+  enumeration shards @ <code>3bf8e15</code>) &middot; seeds
+  SHA256-derived per <code>configs/enum_v1.yaml</code> &middot;
+  <code>src/run_enum.py --pilot</code> → <code>src/run_enum.py --all</code> →
+  <code>src/analyze.py</code> (writes <code>results/analysis.json</code> + all figures) &middot;
+  witness <code>src/verify_t5.py</code> &middot; proof source <code>report/theory_proofs.md</code>
+  &middot; contract <code>plan/contract.json</code> (locked 2026-07-04) + amendment
+  <code>plan/amendments/A01.md</code>.</p></div>
+
+</article></main>
+</body>
+</html>

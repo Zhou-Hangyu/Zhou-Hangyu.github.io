@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow"><title>Local fan-in selectivity across species — neurep</title><link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%234b2e63'/%3E%3C/svg%3E"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"><script>window.MathJax={tex:{tags:'ams',inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]'],['$$','$$']]},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']},chtml:{displayAlign:'center'}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><style>/* ========================================================================== *
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow"><title>Local connection selectivity across species — neurep</title><link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%234b2e63'/%3E%3C/svg%3E"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"><script>window.MathJax={tex:{tags:'ams',inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]'],['$$','$$']]},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']},chtml:{displayAlign:'center'}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><style>/* ========================================================================== *
  *  research-site theme — the single source of truth for the visual language.
  *  The builder INLINES this file into every generated page's <head>, so each
  *  report renders standalone (open the .html directly) and is depth-proof.
@@ -358,18 +358,19 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
 </style>
 </head>
 <body>
-<header class="nav"><a class="brand" href="../index.html"><span>neurep</span></a></header><main class="study"><header class="study-head"><h1>Local fan-in selectivity across species</h1><p class=sub>A neuron contacts a small, cell-type-structured fraction of the partners it could reach nearby — and the fraction you measure depends entirely on the denominator you choose.</p><div class="rule"></div></header><div class="context"><span class="crumb"><a href="../studies.html#thread-reference">Reference</a></span><span class="status reference">reference</span><span class="repro">reproduce: <a href="https://github.com/Zhou-Hangyu/neurep/commit/33df169"><code>33df169</code></a> <span class="git">· master</span></span></div><article>
+<header class="nav"><a class="brand" href="../index.html"><span>neurep</span></a></header><main class="study"><header class="study-head"><h1>Local connection selectivity across species</h1><p class=sub>A neuron connects to only a small, structured fraction of the partners it could reach nearby &mdash; on both the input and output side &mdash; and how selective it is varies from one cell type to the next and from one species to another.</p><div class="rule"></div></header><div class="context"><span class="crumb"><a href="../studies.html#thread-reference">Reference</a></span><span class="status reference">reference</span><span class="repro">reproduce: <a href="https://github.com/Zhou-Hangyu/neurep/commit/ed6da8a"><code>ed6da8a</code></a> <span class="git">· master</span></span></div><article>
 
   <div class="tldr"><p><strong>Summary.</strong> A cortical neuron carries thousands of synapses yet
-  connects to only a minority of the neurons it could reach locally. Measured as a <em>local connection
-  probability</em> — connected pairs divided by nearby tested pairs — that selectivity is real and
-  reasonably consistent (predominantly \(\sim\)1&ndash;20% for excitatory cortical pairs), but the number
-  is governed by the denominator: widen the eligible set from a local neighbourhood to the whole brain and
-  it falls by more than an order of magnitude. Local wiring is also <em>structured</em>, not merely sparse
-  — neurons of like feature or cell type connect preferentially, beyond what physical proximity predicts —
-  though the fly <a href="https://en.wikipedia.org/wiki/Mushroom_bodies">mushroom body</a> shows that
-  sparsity can be nearly random. Across species, this local selectivity does not track cognitive ability,
-  which instead scales with the number of neurons.</p></div>
+  connects to only a minority of the neurons it could reach locally &mdash; on both the input (fan-in) and
+  output (fan-out) side. Measured as a <em>local connection probability</em> — connected pairs among nearby
+  eligible pairs — that selectivity sits predominantly at \(\sim\)1&ndash;20% for excitatory cortical pairs,
+  is <em>structured</em> rather than random (like-tuned and same-type cells connect preferentially, beyond
+  what proximity predicts), and <em>varies</em> markedly &mdash; across cell types, from \(\sim\)5% excitatory
+  recurrence to 50&ndash;75% for pyramidal&ndash;fast-spiking pairs, and across species, from
+  \(\sim\)5&ndash;10% in mouse to the upper teens in human layer&nbsp;2/3. Whether this local selectivity bears
+  any relation to a species' cognitive ability is, as of this writing, simply <em>unexamined</em>: no study has
+  entered a local wiring-selectivity measure into a cross-species cognitive comparison. What cognition does
+  track is the number of neurons.</p></div>
 
   <h2>1. The measure</h2>
 
@@ -383,27 +384,27 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
     \phi \;=\; \frac{\#\,\text{connected pairs}}{\#\,\text{nearby tested pairs}}.
   \end{equation}\]
 
-  <p>This is the right measure for three reasons. It is what
+  <p>Because it counts connected pairs, \(\phi\) captures selectivity on both sides at once: how few of its
+  available partners a neuron receives from (its fan-in) and how few it sends to (its fan-out). It is what
   <a href="https://en.wikipedia.org/wiki/Patch_clamp">paired-recording</a> experiments measure directly, by
-  patching two nearby neurons and testing for a synapse. It normalises out sheer neuron count — a cell with
-  thousands of synapses can still have a low \(\phi\), whereas a synapse total mostly reflects brain size.
-  And it is comparable across circuits <em>once the denominator is fixed</em> — which nearby pairs count as
-  &ldquo;plausible partners.&rdquo; That denominator dominates the number: widen it from the local
-  neighbourhood to the whole brain and \(\phi\) drops by more than an order of magnitude — in the fly
-  <a href="https://en.wikipedia.org/wiki/Connectome">connectome</a>, 71% of connections fall among the
-  &lt;3% of neuron pairs within 50&nbsp;&micro;m (<a href="https://doi.org/10.1038/s41586-024-07968-y">Lin&nbsp;2024</a>) —
-  so a &ldquo;fraction of all neurons&rdquo; figure says more about brain size than about wiring.</p>
+  patching two nearby neurons and testing for a synapse, and it normalises out sheer neuron count &mdash; a cell
+  with thousands of synapses can still have a low \(\phi\), whereas a synapse total mostly reflects brain size.
+  The one thing to hold fixed is the denominator &mdash; which nearby pairs count as &ldquo;plausible
+  partners.&rdquo; The fraction is defined against a <em>local</em> eligible set, not the whole brain, and is
+  only comparable across circuits once that set is fixed; every number below uses nearby tested pairs.</p>
 
-  <h2>2. Selective, not dense</h2>
+  <h2>2. Selective, and variable</h2>
 
   <p>Across rodent and human neocortex, and across recording methods, the excitatory
   <a href="https://en.wikipedia.org/wiki/Pyramidal_cell">pyramidal</a>-to-pyramidal \(\phi\) among nearby
-  cells sits predominantly at \(\sim\)1&ndash;20%, with the bulk in the single digits. In rat layer&nbsp;2/3
-  it falls from \(0.09\) to \(0.01\) as the distance between cell bodies grows from 25 to 200&nbsp;&micro;m
-  (<a href="https://doi.org/10.1113/jphysiol.2003.044784">Holmgren&nbsp;2003</a>); a large mouse-and-human
-  survey reports an overall \(7.3\%\) with peak recurrent excitation near \(5\%\)
-  (<a href="https://doi.org/10.1126/science.abj5861">Campagnola&nbsp;2022</a>); human layer&nbsp;2/3 rises to
-  the upper teens but stays under \(20\%\).</p>
+  cells sits predominantly at \(\sim\)1&ndash;20%, with the bulk in the single digits &mdash; a small minority
+  of the locally available partners. But it is not one number: it varies with cell type and with species. In
+  rat layer&nbsp;2/3 it falls from \(0.09\) to \(0.01\) as the distance between cell bodies grows from 25 to
+  200&nbsp;&micro;m (<a href="https://doi.org/10.1113/jphysiol.2003.044784">Holmgren&nbsp;2003</a>); a large
+  mouse-and-human survey reports an overall \(7.3\%\) with peak recurrent excitation near \(5\%\)
+  (<a href="https://doi.org/10.1126/science.abj5861">Campagnola&nbsp;2022</a>); and in one study, method, and
+  distance window, human layer&nbsp;2/3 (\(\sim\)19%) sits several-fold above mouse visual cortex
+  (\(\sim\)5&ndash;10%) (<a href="https://doi.org/10.7554/eLife.37349">Seeman&nbsp;2018</a>).</p>
 
   <div class="tablewrap"><table>
     <thead><tr><th>Circuit</th><th>Nearby-pair \(\phi\)</th><th>Method</th><th>Source</th></tr></thead>
@@ -450,7 +451,12 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
   (<a href="https://doi.org/10.1038/s41586-024-07780-8">Schneider-Mizell&nbsp;2024</a>) — differential targeting
   of equally-available, same-depth cells is proximity control by construction. And at matched \(\lt\)100&nbsp;&micro;m,
   excitatory neurons contact fast-spiking interneurons at \(46\%\) versus other pyramidal cells at \(6\%\)
-  (<a href="https://doi.org/10.7554/eLife.71103">Oldenburg&nbsp;2022</a>).</p>
+  (<a href="https://doi.org/10.7554/eLife.71103">Oldenburg&nbsp;2022</a>). This targeting is an
+  <em>output-side</em> selectivity — which cells an axon picks out among equally available partners — and it
+  too differs by species: a dense-<a href="https://en.wikipedia.org/wiki/Electron_microscope">EM</a> comparison
+  of mouse and human cortex finds an expanded interneuron-to-interneuron network in human, driven by
+  interneuron-targeting interneuron types with heightened synaptic selectivity for interneuron partners
+  (<a href="https://doi.org/10.1126/science.abo0924">Loomba&nbsp;2022</a>).</p>
 
   <p><strong>The counterpoint: sparse need not mean structured.</strong> Each
   <a href="https://en.wikipedia.org/wiki/Kenyon_cell">Kenyon cell</a> of the fly mushroom body integrates about
@@ -458,25 +464,38 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
   (<a href="https://doi.org/10.1038/nature12063">Caron&nbsp;2013</a>) — sparsity carrying no identity structure at
   all. Sparse and structured are separate claims, and both are needed to describe cortex.</p>
 
-  <h2>4. Selectivity and cognition</h2>
+  <h2>4. Cognition: an open question</h2>
 
-  <p>Local selectivity does not track cognitive ability across species. A targeted search finds
-  <strong>no</strong> study relating a local-connectivity measure to cognition between species; what the
-  comparative literature relates cognition to is <em>scale</em>: across 36 species, absolute brain volume best
-  predicts self-control (<a href="https://doi.org/10.1073/pnas.1323533111">MacLean&nbsp;2014</a>); across 111
-  birds, the number of neurons in the forebrain tracks behavioural innovation
-  (<a href="https://doi.org/10.1038/s41559-022-01815-x">Sol&nbsp;2022</a>). It also refutes the idea that
-  cleverer species wire more sparsely: within a single study, method, and distance window,
-  human layer&nbsp;2/3 connectivity (\(\sim\)19%) <em>exceeds</em> mouse visual cortex (\(\sim\)5&ndash;10%)
-  (<a href="https://doi.org/10.7554/eLife.37349">Seeman&nbsp;2018</a>): whatever local selectivity buys, it is not
-  a monotone dial on intelligence.</p>
+  <p>Does any of this bear on how cognitively able a species is? No one has checked. A targeted search across
+  fifteen query variants &mdash; spanning <a href="https://pubmed.ncbi.nlm.nih.gov/">PubMed</a>, Semantic
+  Scholar, and the primary literature &mdash; finds <strong>no</strong> study that enters a local
+  wiring-selectivity measure (connection probability, fan-in, or filling fraction) into a cross-species
+  cognitive comparison with the usual confound controls. The two literatures that would have to meet do not:
+  microcircuit-connectivity studies measure local selectivity but stop at one to three species and never
+  introduce a cognitive variable, while comparative-cognition studies regress cognition on global
+  <em>scale</em> &mdash; absolute brain volume across 36 species
+  (<a href="https://doi.org/10.1073/pnas.1323533111">MacLean&nbsp;2014</a>), forebrain neuron number across 111
+  birds (<a href="https://doi.org/10.1038/s41559-022-01815-x">Sol&nbsp;2022</a>) &mdash; but never on a local
+  wiring measure. The one connectivity variable compared broadly, synapse density, is roughly invariant across
+  primates, so it cannot be what cognition tracks. On present evidence cognition scales with the
+  <em>number</em> of neurons, not with how selectively each one wires.</p>
+
+  <p>Nor do the stray fragments point the intuitive way. Were &ldquo;cleverer species wire more
+  sparsely&rdquo; true, human local connectivity should undercut a mouse's; in the one matched comparison it
+  does the opposite &mdash; human layer&nbsp;2/3 exceeds mouse visual cortex
+  (<a href="https://doi.org/10.7554/eLife.37349">Seeman&nbsp;2018</a>) &mdash; but that is a by-product of a
+  circuit-cartography study, not a test of the question. The honest position is not that local selectivity
+  fails to predict cognition, but that the correlation has never been examined.</p>
 
   <h2>5. Conclusion</h2>
 
-  <p>A neuron's selectivity has no single value; it exists only against a stated local opportunity set —
-  nearby tested pairs, arbor-overlapping pairs, or potential synaptic sites, never the whole brain. Local
-  sparsity is therefore a design constraint on cortical wiring, not a proxy for cognitive ability: across
-  species, cognition scales with the number of neurons, not with how selectively each one wires.</p>
+  <p>A neuron connects to only a small fraction of the partners available to it locally, on both the input and
+  output side; that selectivity is structured rather than random, and it varies substantially &mdash; from a
+  few per cent of excitatory recurrence to the majority of pyramidal&ndash;fast-spiking pairs, and from mouse
+  to human. What it does not yet connect to is cognition: no study has related a species' local wiring
+  selectivity to its cognitive ability, and what cross-species cognition tracks instead is the number of
+  neurons. Whether local selectivity is merely a design constraint on wiring or also a lever on cognition is,
+  for now, an open and unexamined question.</p>
 
 </article></main>
 </body>

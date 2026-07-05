@@ -1,9 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow"><title>The axon–dendrite wiring prior
-(nr.axdn-euc-abs) on
-flat_modular — neurep</title><link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%234b2e63'/%3E%3C/svg%3E"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false},{left:'$$',right:'$$',display:true}],throwOnError:false});"></script><style>/* ========================================================================== *
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow"><title>The axon–dendrite wiring prior (nr.axdn-euc-abs) on flat_modular — neurep</title><link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%234b2e63'/%3E%3C/svg%3E"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"><script>window.MathJax={tex:{tags:'ams',inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]'],['$$','$$']]},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']},chtml:{displayAlign:'center'}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><style>/* ========================================================================== *
  *  research-site theme — the single source of truth for the visual language.
  *  The builder INLINES this file into every generated page's <head>, so each
  *  report renders standalone (open the .html directly) and is depth-proof.
@@ -360,538 +358,118 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
 </style>
 </head>
 <body>
-<header class="nav"><a class="brand" href="../index.html"><span>neurep</span></a></header><main class="study"><header class="study-head"><h1>The axon–dendrite wiring prior
-(<code>nr.axdn-euc-abs</code>) on
-<code>flat_modular</code></h1><div class="rule"></div></header><div class="context"><span class="crumb"><a href="../studies.html#thread-wiring">Axon–dendrite wiring prior</a></span><span class="status refuted">refuted</span><span class="dep">builds on: <a href="../collapse_review/">What is the Separator regularizer actually
-doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou-Hangyu/neurep/commit/3394642"><code>3394642</code></a> <span class="git">· feature/runstore-pipeline</span></span></div><article>
-<p>A forensic study of a proposed regularizer — one axon and <span
-class="math inline">\(M\)</span> dendrite positions per neuron, weights
-priced by axon-to-nearest-dendrite distance — on the flat winning-ticket
-bench: what it does, which of its three terms do it, and why its
-geometry looks the way it does. The recurring character is a fact it
-shares with Separator’s codes and the symmetric WiringPrior: <strong>the
-learned geometry receives no gradient from task performance</strong>.
-Companion: <a class="xref" href="../flat_forensics_report/">The flat winning ticket under the
-microscope</a>; executable figures:.</p>
-<h2 id="setup">Setup</h2>
-<h5 id="task-model-training.">Task, model, training.</h5>
-<p>As in the companion report: <code>flat_modular</code> (4 disjoint
-sinusoidal modules on <span
-class="math inline">\(z\in\mathbb{R}^8\)</span> + 16 nuisance dims,
-<span class="math inline">\(y\)</span> standardized, <span
-class="math inline">\(n{=}2048\)</span>, train range <span
-class="math inline">\(r{=}0.7\)</span>); MLP <span
-class="math inline">\(24\!\to\!64\!\to\!64\!\to\!1\)</span>, GELU, <span
-class="math inline">\(5{,}825\)</span> parameters; AdamW (<span
-class="math inline">\(\eta{=}10^{-3}\)</span>, weight decay <span
-class="math inline">\(0.01\)</span>), batch 200, 20k steps,
-deterministic. Two benches, never mixed within a figure panel: the
-<em>final</em> task (<code>task_seed</code>=4242, extrapolate split) for
-headline numbers; the disjoint <em>selection</em> task
-(<code>task_seed</code>=2026, extrapolate split — the HP bench) for the
-ablation, attribution, and transfer experiments. Train seed 1, with
-seeds 2–3 added for the headline.</p>
-<h5 id="method.">Method.</h5>
-<p>Every neuron <span class="math inline">\(i\)</span> owns one
-<strong>axon</strong> <span
-class="math inline">\(a_i\in\mathbb{R}^d\)</span> (output port) and
-<span class="math inline">\(M\)</span> <strong>dendrites</strong> <span
-class="math inline">\(D_i\in\mathbb{R}^{M\times d}\)</span> (input
-ports); <span class="math inline">\(d{=}2\)</span>, <span
-class="math inline">\(M{=}5\)</span>. Inputs only send (no dendrites),
-the output only receives (no axon); hidden neurons own both. The
-directed edge <span class="math inline">\(j\!\to\!i\)</span> costs the
-distance from <span class="math inline">\(j\)</span>’s axon to <span
-class="math inline">\(i\)</span>’s <em>nearest</em> dendrite, and the
-wiring penalty prices the actual weights by it: <span
-class="math display">\[c(j\!\to\!i)=\min_{m\le M}\,\lVert
-a_j-D_{i,m}\rVert_2,\qquad
-\mathcal{R}_{\mathrm{wire}}=\frac1L\sum_{\ell}\operatorname*{mean}_{i,j}\,\bigl|W^{(\ell)}_{ij}\bigr|\;c(j\!\to\!i).\]</span>
-One axon can serve any number of receivers (free fan-out); the <span
-class="math inline">\(\min\)</span> over <span
-class="math inline">\(M\)</span> dendrites means a receiver reads
-cheaply from at most <span class="math inline">\(M\)</span> distinct
-axon clusters (bounded fan-in): the cost is deliberately not a metric.
-Two auxiliary priors act on the hidden boundaries — <em>consistency</em>
-(close axons must carry similar dendrite sets; <span
-class="math inline">\(\mathrm{Cham}\)</span> = symmetrized directed
-Hausdorff) and <em>density</em> (Gaussian repulsion on axons; the
-anti-collapse term, since <span
-class="math inline">\(\mathcal{R}_{\mathrm{wire}}\)</span> is a pure
-alignment objective whose global minimum includes
-all-positions-coincident): <span class="math display">\[\begin{gathered}
-\mathcal{R}_{\mathrm{con}}=\operatorname*{mean}_{b\,\in\,\mathrm{hidden}}\
-\operatorname*{mean}_{i\ne j}\,
-e^{-\lVert a_i-a_j\rVert/\gamma}\,\mathrm{Cham}(D_i,D_j),\qquad
-\mathcal{R}_{\mathrm{dens}}=\operatorname*{mean}_{b\,\in\,\mathrm{hidden}}\
-\operatorname*{mean}_{i\ne j}\,
-e^{-\lVert a_i-a_j\rVert^2/2\sigma^2},\\[1pt]
-\mathrm{loss}=\mathrm{MSE}\bigl(f_W(x),\,y\bigr)
-+
-c\,\bigl[\,\mathcal{R}_{\mathrm{wire}}+\lambda_c\mathcal{R}_{\mathrm{con}}+\lambda_d\mathcal{R}_{\mathrm{dens}}\,\bigr],
-\qquad c=3{\times}10^{-2},\ \lambda_c=0.1,\ \lambda_d=1,\
-\gamma=\sigma=1.
-\end{gathered}\]</span> Positions are ordinary parameters in the same
-AdamW, initialized <span
-class="math inline">\(\mathcal{N}(0,0.5^2)\)</span>. At <span
-class="math inline">\(M{=}1\)</span> the family degenerates to the
-symmetric single-position WiringPrior (verified to <span
-class="math inline">\(10^{-7}\)</span>). <strong>The structural
-fact</strong>: predictions are <span
-class="math inline">\(f_W(x)\)</span> — positions never enter the
-forward pass, so <span
-class="math inline">\(\partial\,\mathrm{MSE}/\partial(a,D)\equiv0\)</span>;
-the only forces on the geometry are <span
-class="math inline">\(c\,\nabla\mathcal{R}\)</span> and the decay step.
-(Separator’s codes obey the same equation; §<a href="#sec:pack"
-data-reference-type="ref" data-reference="sec:pack">3</a> turns this
-into an experiment.)</p>
-<h5 id="hps-and-budget.">HPs and budget.</h5>
-<p>The axdn op-point comes from a <span
-class="math inline">\({\sim}\)</span>22-configuration <em>local</em>
-search on the selection bench (spanning <span
-class="math inline">\(c\)</span>, <span
-class="math inline">\(M\)</span>, <span
-class="math inline">\(d\)</span>, <code>pen</code>, soft-min <span
-class="math inline">\(\tau\)</span>, <span
-class="math inline">\(\sigma\)</span>, <span
-class="math inline">\(\lambda_d\)</span>, <span
-class="math inline">\(\lambda_c\)</span>); it keeps the proposal’s
-default <span class="math inline">\(M{=}5\)</span> (<span
-class="math inline">\(M{=}3\)</span> and <span
-class="math inline">\(c{=}0.1\)</span> scored within single-seed noise
-of it: <span class="math inline">\(0.0074\)</span>/<span
-class="math inline">\(0.0078\)</span> vs. <span
-class="math inline">\(0.0082\)</span>). The baselines carry their
-winners from the <em>larger</em> production HP grid, so budgets are not
-equal: the NoReg comparison is robust to this (NoReg has no regularizer
-HPs and shares all training HPs), but the ranking against L1/Separator
-is not an equal-budget claim.</p>
-<h2 id="it-works-as-a-capacity-governor-not-a-decomposer">It works — as
-a capacity governor, not a decomposer</h2>
-<p><strong>Headline (final bench, Fig. <a href="#fig:works"
-data-reference-type="ref" data-reference="fig:works">1</a>a):</strong>
-axdn@64 reaches <span class="math inline">\(0.0276\)</span> (seeds 2–3:
-<span class="math inline">\(0.033\)</span>, <span
-class="math inline">\(0.037\)</span>) vs. NoReg@64 <span
-class="math inline">\(0.0417\)</span> (<span
-class="math inline">\(0.039\)</span>, <span
-class="math inline">\(0.042\)</span>) — the win holds at every seed (3/3
-paired, mean gap <span class="math inline">\(0.009\)</span>), though
-seed 1 flatters its size — and it beats the symmetric WiringPrior@64
-(<span class="math inline">\(0.0416\)</span>), which collapses to a
-point and becomes NoReg in every metric we measure (Table <a
-href="#tab:gov" data-reference-type="ref"
-data-reference="tab:gov">1</a>). Mid-pack overall: below L1 (<span
-class="math inline">\(0.0226\)</span>) and Separator (<span
-class="math inline">\(0.0151\)</span>), <span
-class="math inline">\({\approx}\)</span> NoReg@16 (<span
-class="math inline">\(0.0285\)</span>). Three mechanisms behind the
-number. <em>(i) The geometry stays engaged — because the density term
-holds it open</em>: <span class="math inline">\(B_1\)</span> axon spread
-(mean <span class="math inline">\(\lVert a\rVert\)</span>)
-<em>grows</em> <span class="math inline">\(0.6\!\to\!5.1\)</span> and
-the mean edge cost <span class="math inline">\(0.46\!\to\!1.23\)</span>
-(Fig. <a href="#fig:works" data-reference-type="ref"
-data-reference="fig:works">1</a>b; final axon-density kernel <span
-class="math inline">\(0.05\)</span>, collapse <span
-class="math inline">\(=1\)</span>) — unlike Separator’s dissolving
-codes, this geometry is alive at 20k; remove the density term and the
-familiar failure returns (spread <span
-class="math inline">\(0.62\!\to\!0.30\)</span>, MSE at NoReg level, §<a
-href="#sec:dens" data-reference-type="ref"
-data-reference="sec:dens">4</a>). <em>(ii) Bounded fan-in is genuine and
-binding</em> (Fig. <a href="#fig:works" data-reference-type="ref"
-data-reference="fig:works">1</a>d): receivers route <span
-class="math inline">\({\sim}30\)</span> active in-edges through <span
-class="math inline">\(4.6\)</span>/<span
-class="math inline">\(5.0\)</span> distinct dendrites (<span
-class="math inline">\(B_1\)</span>/<span
-class="math inline">\(B_2\)</span>) — the constraint saturates at <span
-class="math inline">\(M\)</span>; the asymmetry also pays (<span
-class="math inline">\(M{=}1\)</span>, i.e. WiringPrior <span
-class="math inline">\(+\)</span> density: <span
-class="math inline">\(0.0132\)</span> vs. <span
-class="math inline">\(0.0082\)</span> for <span
-class="math inline">\(M{=}5\)</span>, selection bench). <em>(iii) The
-value is concentrated in the over-parameterized regime</em> (Fig. <a
-href="#fig:works" data-reference-type="ref"
-data-reference="fig:works">1</a>c; HPs held at their width-64 values for
-all widths, so axdn’s off-64 points are un-tuned; NoReg has no method
-HPs): at widths 4–32 axdn tracks NoReg (<span
-class="math inline">\(0.197\)</span> vs. <span
-class="math inline">\(0.192\)</span> at width 4; <span
-class="math inline">\(0.031\)</span> vs. <span
-class="math inline">\(0.029\)</span> at 16), then separates exactly
-where NoReg’s U-curve degrades (<span
-class="math inline">\(0.0276\)</span> vs. <span
-class="math inline">\(0.0417\)</span> at 64, <span
-class="math inline">\(0.0557\)</span> vs. <span
-class="math inline">\(0.0609\)</span> at 128) — the companion’s
-capacity-governor profile, but milder at both ends: no damage at width 4
-(Separator: <span class="math inline">\(0.62\)</span>), less compression
-at 64 (participation ratio <span
-class="math inline">\(h_1\!\approx\!15\)</span> vs. Separator’s <span
-class="math inline">\(6.4\)</span>; nuisance suppression <span
-class="math inline">\(2.2\)</span> vs. <span
-class="math inline">\(3.9\)</span>, L1 <span
-class="math inline">\(\approx27\)</span>).</p>
-<figure id="fig:works" data-latex-placement="h">
-<img class="fig" src="fig/fig_ax1_works.svg" alt="fig_ax1_works" loading="lazy" />
-<figcaption><span class="fignum">Figure 1.</span> (a) Final-bench MSE (dots: seeds 2–3). (b) Geometry over
-training: engaged, not dissolving. (c) Width sweep (HPs tuned @64). (d)
-Effective fan-in at 20k.</figcaption>
-</figure>
-<p><strong>What it does <em>not</em> do is decompose.</strong> Same
-subspace pipeline as the companion (causal input-block perturbations
-<span class="math inline">\(\to\)</span> PCA <span
-class="math inline">\(\to\)</span> patching): per-module dimensionality
-<span class="math inline">\(q^{90}{=}(10,9,9,10)\)</span> and
-cross-module overlap <span class="math inline">\(0.278\)</span> are
-indistinguishable from NoReg@64 (<span
-class="math inline">\((12,9,9,11)\)</span>, <span
-class="math inline">\(0.284\)</span>), far from Separator’s compact
-<span class="math inline">\((3,4,3,3)\)</span>, <span
-class="math inline">\(0.026\)</span>; patching <span
-class="math inline">\(R^2\)</span> <span
-class="math inline">\(0.56\)</span> vs. NoReg’s <span
-class="math inline">\(0.54\)</span>. The axons are not the variables:
-same-module neurons do <em>not</em> share axon locations
-(within/between-module axon-distance ratio <span
-class="math inline">\(0.94\)</span>–<span
-class="math inline">\(0.95\)</span>). Functional additivity (Sobol <span
-class="math inline">\(\sum_k S_k=0.957\)</span>) matches every well-fit
-model — task-forced, not method-specific. The proposal’s “axon <span
-class="math inline">\(=\)</span> emitted variable” intuition fails for
-the same reason the companion’s codes read ARI <span
-class="math inline">\(\approx0\)</span>: the modules live in
-<em>rotated</em> subspaces, which no per-neuron point (or code) can
-express — and with no task gradient, the geometry has no channel through
-which the modules could reach it even in principle.</p>
-<div class="tablewrap"><table id="tab:gov">
-<caption>Final bench, seed 1 (L1/Separator rows: companion’s pipeline;
-budgets unequal, §1). axdn beats NoReg on MSE but its geometry is
-NoReg-like; the collapsed WiringPrior <em>is</em> NoReg.</caption>
-<thead>
-<tr>
-<th style="text-align: left;">model</th>
-<th style="text-align: center;">test MSE</th>
-<th style="text-align: center;">Sobol <span class="math inline">\(\sum_k
-S_k\)</span></th>
-<th style="text-align: center;"><span
-class="math inline">\(q^{90}\)</span> (<span
-class="math inline">\(S_1..S_4\)</span>)</th>
-<th style="text-align: center;">h1 overlap</th>
-<th style="text-align: center;">sig/nuis <span
-class="math inline">\(|W_0|\)</span></th>
-<th style="text-align: center;"></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">axon–dendrite @64</td>
-<td style="text-align: center;"><span
-class="math inline">\(0.0276\)</span></td>
-<td style="text-align: center;"><span
-class="math inline">\(0.957\)</span></td>
-<td style="text-align: center;"><span
-class="math inline">\(10,9,9,10\)</span></td>
-<td style="text-align: center;"><span
-class="math inline">\(0.278\)</span></td>
-<td style="text-align: center;"><span
-class="math inline">\(2.2\)</span></td>
-<td style="text-align: center;"></td>
-</tr>
-<tr>
-<td style="text-align: left;">WiringPrior @64 (M<span>=</span>1,
-collapsed)</td>
-<td style="text-align: center;"><span
-class="math inline">\(0.0416\)</span></td>
-<td style="text-align: center;"><span
-class="math inline">\(0.958\)</span></td>
-<td style="text-align: center;"><span
-class="math inline">\(12,9,9,11\)</span></td>
-<td style="text-align: center;"><span
-class="math inline">\(0.284\)</span></td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;"></td>
-</tr>
-<tr>
-<td style="text-align: left;">NoReg @64</td>
-<td style="text-align: center;"><span
-class="math inline">\(0.0417\)</span></td>
-<td style="text-align: center;"><span
-class="math inline">\(0.958\)</span></td>
-<td style="text-align: center;"><span
-class="math inline">\(12,9,9,11\)</span></td>
-<td style="text-align: center;"><span
-class="math inline">\(0.284\)</span></td>
-<td style="text-align: center;"><span
-class="math inline">\(\approx2.5\)</span></td>
-<td style="text-align: center;"></td>
-</tr>
-<tr>
-<td style="text-align: left;">NoReg @16</td>
-<td style="text-align: center;"><span
-class="math inline">\(0.0285\)</span></td>
-<td style="text-align: center;"><span
-class="math inline">\(0.965\)</span></td>
-<td style="text-align: center;"><span
-class="math inline">\(1,2,2,2\)</span></td>
-<td style="text-align: center;"><span
-class="math inline">\(0.043\)</span></td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;"></td>
-</tr>
-<tr>
-<td style="text-align: left;">L1 @64</td>
-<td style="text-align: center;"><span
-class="math inline">\(0.0226\)</span></td>
-<td style="text-align: center;"><span
-class="math inline">\(0.961\)</span></td>
-<td style="text-align: center;"><span
-class="math inline">\(3,3,3,2\)</span></td>
-<td style="text-align: center;"><span
-class="math inline">\(0.043\)</span></td>
-<td style="text-align: center;"><span
-class="math inline">\(\approx27\)</span></td>
-<td style="text-align: center;"></td>
-</tr>
-<tr>
-<td style="text-align: left;">Separator @64</td>
-<td style="text-align: center;"><span
-class="math inline">\(0.0151\)</span></td>
-<td style="text-align: center;"><span
-class="math inline">\(0.959\)</span></td>
-<td style="text-align: center;"><span
-class="math inline">\(3,4,3,3\)</span></td>
-<td style="text-align: center;"><span
-class="math inline">\(\mathbf{0.026}\)</span></td>
-<td style="text-align: center;"><span
-class="math inline">\(3.9\)</span></td>
-<td style="text-align: center;"></td>
-</tr>
-</tbody>
-</table></div>
-<h2 id="sec:pack">The transient packing — and what causes it</h2>
-<p><strong>The observation</strong> (Fig. <a href="#fig:orth"
-data-reference-type="ref" data-reference="fig:orth">2</a>a): the
-winner’s axons start as a Gaussian blob, snap into <em>four</em> tight
-clusters by step <span class="math inline">\({\sim}1\)</span>k, then
-blur away (silhouette <span
-class="math inline">\(0.80\!\to\!0.46\)</span>). Four clusters, four
-task modules — module discovery? No, on three counts. <em>Timing</em>:
-the packing peaks while the task is still unlearned (test MSE <span
-class="math inline">\(0.29\)</span> at step 1k vs. <span
-class="math inline">\(0.0276\)</span> final, Fig. <a href="#fig:orth"
-data-reference-type="ref" data-reference="fig:orth">2</a>b), and each
-axon’s cluster identity is sign-locked by step 200. <em>Content</em>: at
-the peak, ARI between cluster membership and the neurons’ module
-assignment is <span class="math inline">\(-0.18\)</span> (<span
-class="math inline">\(\approx\)</span> chance); patching the clusters’
-subspaces explains nothing (<span
-class="math inline">\(R^2{&lt;}0\)</span>). <em>Causes</em>: retrain
-with <span class="math inline">\(w\in\{2,3,4,6,8\}\)</span> modules —
-the count stays exactly 4 (Fig. <a href="#fig:orth"
-data-reference-type="ref" data-reference="fig:orth">2</a>c); change the
-position dimension and it tracks <span
-class="math inline">\(2^d\)</span>: the clusters sit on the
-<em>sign-orthants</em> of position space, ARI <span
-class="math inline">\(=1.0\)</span> for <span
-class="math inline">\(d{=}2,3,4\)</span> (Fig. <a href="#fig:orth"
-data-reference-type="ref" data-reference="fig:orth">2</a>d; at <span
-class="math inline">\(d{=}5\)</span> the 64 axons dilute over 32
-orthants, ARI <span class="math inline">\(0.36\)</span>). “Four clusters
-<span class="math inline">\(=\)</span> four modules” was a coincidence
-between <span class="math inline">\(2^d\)</span> at <span
-class="math inline">\(d{=}2\)</span> and <span
-class="math inline">\(w{=}4\)</span>.</p>
-<figure id="fig:orth" data-latex-placement="h">
-<img class="fig" src="fig/fig_ax2_orthants.svg" alt="fig_ax2_orthants" loading="lazy" />
-<figcaption><span class="fignum">Figure 2.</span> (a) <span class="math inline">\(B_1\)</span> axons over
-training, colored by sign-quadrant: blob <span
-class="math inline">\(\to\)</span> four corners <span
-class="math inline">\(\to\)</span> blur. (b) The packing (red) peaks
-before the task is learned (black). (c) Count vs. task modules: flat at
-4. (d) Count vs. position dimension: <span
-class="math inline">\(2^d\)</span>.</figcaption>
-</figure>
-<p><strong>Attribution by replay.</strong> If the task doesn’t set the
-geometry, what does? Because <span
-class="math inline">\(\partial\,\mathrm{MSE}/\partial(a,D)\equiv0\)</span>,
-the geometry is a <em>closed</em> system given the weights: <span
-class="math inline">\((a,D)\leftarrow\mathrm{opt}(c\,\nabla\mathcal{R}(a,D;W(t)))\)</span>.
-So we replay the recorded <span class="math inline">\(W(t)\)</span>
-through the real <code>compute</code> from the run’s own step-0
-positions, toggling each term (wire <span
-class="math inline">\(\Leftrightarrow\)</span> replayed vs. zeroed <span
-class="math inline">\(W\)</span>; <span
-class="math inline">\(\lambda_c,\lambda_d\)</span>) and the optimizer.
-The full replay reproduces the live run <em>exactly</em> — peak step 900
-vs. 900, silhouette <span class="math inline">\(0.806\)</span> vs. <span
-class="math inline">\(0.807\)</span>, final spread <span
-class="math inline">\(3.28\)</span> vs. <span
-class="math inline">\(3.28\)</span> — validating the approach and
-proving the decoupling: <em>nothing the task does reaches the geometry
-except through <span class="math inline">\(W\)</span></em>. The matrix
-(Fig. <a href="#fig:replay" data-reference-type="ref"
-data-reference="fig:replay">3</a>) then decomposes the phenomenon:</p>
-<p><strong>Density alone recreates the packing</strong> (peak sil <span
-class="math inline">\(0.81\)</span>, ARI <span
-class="math inline">\(1.0\)</span>) — wire and consistency are
-unnecessary. <strong>AdamW is necessary</strong>: step-size-matched SGD
-on the same density objective spreads the axons but never quantizes them
-(sil <span class="math inline">\(0.43\)</span>, late ARI <span
-class="math inline">\(0.34\)</span>); Adam’s per-coordinate <span
-class="math inline">\(\pm\eta\)</span> steps turn any sustained outward
-force into motion along the <span class="math inline">\(2^d\)</span>
-diagonal sign directions <span
-class="math inline">\((\pm1,\dots,\pm1)/\sqrt d\)</span> — the
-<em>corners</em> of position space, one per sign-orthant.
-<strong>Without density nothing spreads</strong>: wire-only collapses
-into duplicate micro-clumps (spread <span
-class="math inline">\(0.36\)</span>; its silhouette <span
-class="math inline">\({\approx}1.0\)</span> is the degenerate
-duplicate-point value), consistency-only yields faint fuzz (sil <span
-class="math inline">\(0.57\)</span>) — and Adam <em>erases the force’s
-magnitude</em>: <span class="math inline">\(\lambda_c{=}0.1\)</span> and
-<span class="math inline">\(\lambda_c{=}1.0\)</span> produce
-<em>identical</em> trajectories (Fig. <a href="#fig:replay"
-data-reference-type="ref" data-reference="fig:replay">3</a>, right); the
-form of the force field matters, its strength almost does not.
-<strong>The dissolution is density’s own second act</strong>: with
-density alone the tight corners still blur (late sil <span
-class="math inline">\(0.40\)</span>) as the uniformity drive fans points
-out within their quadrants (sign identity stays locked, ARI <span
-class="math inline">\(0.9\)</span>–<span
-class="math inline">\(1.0\)</span>); wire <em>re-concentrates</em> late
-(<span class="math inline">\(0.63\)</span> vs. <span
-class="math inline">\(0.40\)</span>); weight decay is a bystander. So
-the packing is <strong>created by density <span
-class="math inline">\(\times\)</span> AdamW and dissolved by density
-itself</strong> — optimizer geometry end to end. Density emerges as the
-one term with a real job; the next two sections take that lead.</p>
-<figure id="fig:replay" data-latex-placement="h">
-<img class="fig" src="fig/fig_ax3_replay.svg" alt="fig_ax3_replay" loading="lazy" />
-<figcaption><span class="fignum">Figure 3.</span> Attribution by replay against the recorded <span
-class="math inline">\(W(t)\)</span>. Top: each configuration at its
-peak, colored by sign-quadrant. Bottom: silhouette/spread, all eight
-sims (full replay dashed, on the real run); right: <span
-class="math inline">\(10\times\)</span> the consistency force, same
-trajectory.</figcaption>
-</figure>
-<h2 id="sec:dens">In vivo, density is also the only term that earns
-MSE</h2>
-<p>Selection bench, one knob at a time (Fig. <a href="#fig:abl"
-data-reference-type="ref" data-reference="fig:abl">4</a>).
-<strong>Density</strong> shows a clean dose-response: <span
-class="math inline">\(\lambda_d{=}0\to0.0162\)</span>–<span
-class="math inline">\(0.0164\)</span> (<span
-class="math inline">\(=\)</span> NoReg@64’s <span
-class="math inline">\(0.0168\)</span> — the regularizer switches off),
-<span class="math inline">\(0.1\to0.0148\)</span>, <span
-class="math inline">\(0.3\to0.0101\)</span>, <span
-class="math inline">\(1\to0.0082\)</span>, <span
-class="math inline">\(3\to0.0089\)</span>; final spread rises <span
-class="math inline">\(0.5\to8.3\)</span> in lockstep.
-<strong>Consistency</strong> is the instructive null: geometrically it
-works <em>perfectly</em> — at <span
-class="math inline">\(\lambda_c{\ge}1\)</span> the ungated dendrite-set
-Chamfer drops <span class="math inline">\(4.13\to0.00\)</span>, i.e. all
-64 neurons carry <em>identical</em> dendrite sets, one shared 5-port bus
-— yet MSE (<span
-class="math inline">\(0.0103/0.0082/0.0082/0.0105\)</span> across <span
-class="math inline">\(\lambda_c\in\{0,0.1,1,10\}\)</span>) and effective
-fan-in (4–5) do not move beyond single-seed noise. A constraint can bind
-geometrically and still be functionally vacuous. Nor can it replace
-density: at <span class="math inline">\(\lambda_d{=}0\)</span> the
-collapse proceeds for every <span
-class="math inline">\(\lambda_c\)</span> (spread <span
-class="math inline">\(\le0.49\)</span>; Fig. <a href="#fig:abl"
-data-reference-type="ref" data-reference="fig:abl">4</a>c) — its gate
-<span class="math inline">\(e^{-\lVert\Delta a\rVert/\gamma}\)</span> is
-weakly axon-repulsive, but §<a href="#sec:pack"
-data-reference-type="ref" data-reference="sec:pack">3</a> showed why
-that cannot help: under Adam only the <em>form</em> of the force
-matters, and the gate’s repulsion dies as soon as it opens.</p>
-<figure id="fig:abl" data-latex-placement="h">
-<img class="fig" src="fig/fig_ax4_ablate.svg" alt="fig_ax4_ablate" loading="lazy" />
-<figcaption><span class="fignum">Figure 4.</span> Term ablation (selection bench, seed 1). (a) Density
-dose-response with anchors. (b) Consistency: geometry obeys (purple)
-while MSE stays flat (red). (c) No <span
-class="math inline">\(\lambda_c\)</span> rescues the <span
-class="math inline">\(\lambda_d{=}0\)</span> collapse.</figcaption>
-</figure>
-<h2 id="the-density-term-transfers-to-separator">The density term
-transfers to Separator</h2>
-<p>Density’s job is anti-collapse — and Separator’s codes collapse on
-this very bench (the companion’s subject), under the same
-no-task-gradient equation. So we port the term: <code>Separator</code>
-now accepts the identical Gaussian kernel on its multihot <span
-class="math inline">\(\sigma\)</span>-codes (<code>w_dens</code>, per
-hidden boundary and channel), compared against stock dchn at <span
-class="math inline">\(\lambda_d\in\{0.3,1,3\}\)</span> on the selection
-bench (Fig. <a href="#fig:transfer" data-reference-type="ref"
-data-reference="fig:transfer">5</a>). It works: the collapse stops (mean
-pairwise <span class="math inline">\(\sigma\)</span>-distance <span
-class="math inline">\(0.94\!\to\!1.30\)</span>–<span
-class="math inline">\(1.45\)</span> vs. stock’s <span
-class="math inline">\(\to0.33\)</span>) at <em>zero or negative</em>
-task cost (<span class="math inline">\(0.0070\)</span> at <span
-class="math inline">\(\lambda_d{=}0.3\)</span> vs. stock <span
-class="math inline">\(0.0079\)</span>; <span
-class="math inline">\(0.0122\)</span> at the overdosed <span
-class="math inline">\(\lambda_d{=}3\)</span>). And the
-corner-quantization of §<a href="#sec:pack" data-reference-type="ref"
-data-reference="sec:pack">3</a> reappears in code space — here a
-<em>corner</em> is a vertex <span
-class="math inline">\(b\in\{0,1\}^8\)</span> of the code hypercube,
-every coordinate of <span class="math inline">\(\sigma\)</span>
-saturated to exactly <span class="math inline">\(0\)</span> or <span
-class="math inline">\(1\)</span> — and it is <em>persistent</em>: mean
-<span class="math inline">\(\min(\sigma,1{-}\sigma)\to0.000\)</span>
-with only <span class="math inline">\({\sim}9\)</span> distinct binary
-codes across the 64 neurons, because saturation freezes the wire pull
-(<span
-class="math inline">\(\partial\mathcal{R}_{\mathrm{wire}}/\partial
-z\propto\sigma&#39;(z)\to0\)</span> at the corners) while position space
-has no such freeze. Same force, same optimizer, different fixed-point
-structure — set by the representation’s bounded vs. unbounded geometry,
-and in neither case by the task.</p>
-<figure id="fig:transfer" data-latex-placement="h">
-<img class="fig" src="fig/fig_ax5_transfer.svg" alt="fig_ax5_transfer" loading="lazy" />
-<figcaption><span class="fignum">Figure 5.</span> The density term on Separator’s codes (selection bench, seed
-1). (a) Stock codes collapse; density holds them open. (b–c)
-Crystallization onto <span class="math inline">\({\sim}9\)</span> exact
-corners of <span class="math inline">\(\{0,1\}^8\)</span>. (d) Free (or
-better) at <span class="math inline">\(\lambda_d{=}0.3\)</span>–<span
-class="math inline">\(1\)</span>.</figcaption>
-</figure>
-<h2 id="conclusion">Conclusion</h2>
-<p>A coherent proposal that does real work — a correct asymmetric
-generalization of WiringPrior with genuinely binding fan-in, whose
-density term solves the collapse by construction and even transfers to
-Separator — but as a <strong>mild capacity governor, not a
-decomposer</strong>: NoReg-like subspaces, axons that never encode the
-modules, and a cluster structure that is the optimizer’s <span
-class="math inline">\(2^d\)</span> sign-orthants. The root cause is
-shared across the family (axdn/WiringPrior positions, Separator codes):
-<strong>the representation receives no gradient from task
-performance</strong> (<span
-class="math inline">\(\partial\,\mathrm{MSE}/\partial\pi\equiv0\)</span>),
-so its organization can only ever be the fixed-point geometry of
-regularizer force <span class="math inline">\(\times\)</span> optimizer
-— sign-orthants in <span class="math inline">\(\mathbb{R}^d\)</span>,
-hypercube corners in <span class="math inline">\([0,1]^K\)</span> — with
-the task reaching <span class="math inline">\(\pi\)</span> only through
-the slow shadow of <span class="math inline">\(W\)</span>. Such a <span
-class="math inline">\(\pi\)</span> can <em>price</em> <span
-class="math inline">\(W\)</span> (the MSE gains) but cannot
-<em>discover</em> structure; a geometry meant to express the task must
-sit in the gradient path — positions in the forward pass (cf. NeuroPos,
-where <span class="math inline">\(w_{ij}=1/\lVert p_i-p_j\rVert\)</span>
-<em>is</em> the weight) or codes that gate activations rather than price
-weights.</p>
+<header class="nav"><a class="brand" href="../index.html"><span>neurep</span></a></header><main class="study"><header class="study-head"><h1>The axon–dendrite wiring prior (<code>nr.axdn-euc-abs</code>) on <code>flat_modular</code></h1><p class=sub>An asymmetric multi-prototype wiring prior, dissected on the flat winning-ticket bench: what it does, which of its terms do it, and why its geometry looks the way it does.</p><div class="rule"></div></header><div class="context"><span class="crumb"><a href="../studies.html#thread-wiring">Axon–dendrite wiring prior</a></span><span class="status refuted">refuted</span><span class="dep">builds on: <a href="../neurep_mlp_encoding/">An Exact MLP Encoding of Computation Graphs</a>, <a href="../collapse_review/">What is the Separator regularizer actually
+doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou-Hangyu/neurep/commit/3394642"><code>3394642</code></a> <span class="git">· master</span></span></div><article>
+
+  <div class="tldr"><p><strong>TL;DR.</strong> The axon–dendrite prior — one axon and \(M\) dendrite positions per neuron, weights priced by axon-to-nearest-dendrite distance — is a correct asymmetric generalization of WiringPrior (it reduces to it at \(M{=}1\)). On <code>flat_modular</code> it <strong>works as a mild capacity governor</strong>: it beats <code>NoReg@64</code> (\(0.0276\) vs \(0.0417\)) and its always-on density term keeps the geometry from collapsing. But it is <strong>not the decomposer the proposal imagined</strong>. Its coordinates never enter the forward pass, so they get no gradient from the task (\(\partial\,\mathrm{MSE}/\partial(a,D)\equiv0\)); their organization is set by regularizer force × optimizer, not by the task. The axons quantize onto the \(2^d\) sign-orthants (optimizer geometry, not modules); the module subspaces are rotated and distributed (axis-mass \(0.25\), not neuron-aligned); the fan-in cap binds geometrically yet its stringency earns no MSE. <span class="status refuted">refuted</span> as a disentangler — retained as a baseline.</p></div>
+
+  <p>The recurring character in this forensic study is a fact the prior shares with Separator's codes and the symmetric WiringPrior: <strong>the learned geometry receives no gradient from task performance</strong>. Companion: the <a class="xref" href="../collapse_review/">flat-forensics report</a>; executable figures live in the study's <code>analysis.ipynb</code>. (“axon”/“dendrite” are ML labels for output/input ports — not the biological objects.)</p>
+
+  <h2>1. Setup</h2>
+  <p><strong>Task, model, training.</strong> <code>flat_modular</code>: four disjoint sinusoidal modules on \(z\in\mathbb{R}^8\) plus 16 nuisance dims, \(y\) standardized, \(n{=}2048\), train range \(r{=}0.7\). MLP \(24\!\to\!64\!\to\!64\!\to\!1\), GELU, \(5{,}825\) parameters; AdamW (\(\eta{=}10^{-3}\), weight decay \(0.01\)), batch \(200\), \(20\text{k}\) steps, deterministic. Two benches, never mixed within a figure: the <em>final</em> task (<code>task_seed=4242</code>, extrapolate split) for headline numbers; the disjoint <em>selection</em> task (<code>task_seed=2026</code>, extrapolate split — the HP bench) for the ablation, attribution, and transfer experiments. Train seed 1, with seeds 2–3 added for the headline.</p>
+
+  <p><strong>Method.</strong> Every neuron \(i\) owns one <strong>axon</strong> \(a_i\in\mathbb{R}^d\) (output port) and \(M\) <strong>dendrites</strong> \(D_i\in\mathbb{R}^{M\times d}\) (input ports); \(d{=}2\), \(M{=}5\). Inputs only send, the output only receives; hidden neurons own both. The directed edge \(j\!\to\!i\) costs the distance from \(j\)'s axon to \(i\)'s <em>nearest</em> dendrite, and the wiring penalty prices the actual weights by it:</p>
+  \[\begin{equation}\label{eq:wire}
+    c(j\!\to\!i)=\min_{m\le M}\,\lVert a_j-D_{i,m}\rVert_2,\qquad
+    \mathcal{R}_{\mathrm{wire}}=\frac1L\sum_{\ell}\operatorname*{mean}_{i,j}\,\bigl|W^{(\ell)}_{ij}\bigr|\;c(j\!\to\!i).
+  \end{equation}\]
+  <p>One axon can serve any number of receivers (free fan-out); the \(\min\) over \(M\) dendrites means a receiver reads cheaply from at most \(M\) distinct axon clusters (bounded fan-in) — the cost is deliberately not a metric. Two auxiliary priors act on the hidden boundaries: <em>consistency</em> (close axons carry similar dendrite sets; \(\mathrm{Cham}\) is the symmetrized directed Hausdorff distance) and <em>density</em> (Gaussian repulsion on axons — the anti-collapse term, since \(\mathcal{R}_{\mathrm{wire}}\) is a pure alignment objective whose global minimum includes all-positions-coincident):</p>
+  \[\begin{align}\label{eq:aux}
+    \mathcal{R}_{\mathrm{con}}&=\operatorname*{mean}_{b\,\in\,\mathrm{hidden}}\ \operatorname*{mean}_{i\ne j}\,
+      e^{-\lVert a_i-a_j\rVert/\gamma}\,\mathrm{Cham}(D_i,D_j),\qquad
+    \mathcal{R}_{\mathrm{dens}}=\operatorname*{mean}_{b\,\in\,\mathrm{hidden}}\ \operatorname*{mean}_{i\ne j}\,
+      e^{-\lVert a_i-a_j\rVert^2/2\sigma^2},\\[2pt]
+    \mathrm{loss}&=\mathrm{MSE}\bigl(f_W(x),\,y\bigr)
+      + c\,\bigl[\,\mathcal{R}_{\mathrm{wire}}+\lambda_c\mathcal{R}_{\mathrm{con}}+\lambda_d\mathcal{R}_{\mathrm{dens}}\,\bigr],
+      \quad c=3{\times}10^{-2},\ \lambda_c=0.1,\ \lambda_d=1,\ \gamma=\sigma=1 .
+  \end{align}\]
+  <p>Positions are ordinary parameters in the same AdamW, initialized \(\mathcal{N}(0,0.5^2)\). At \(M{=}1\) the family degenerates to the symmetric single-position WiringPrior (verified to \(10^{-7}\)). <strong>The structural fact:</strong> predictions are \(f_W(x)\) — positions never enter the forward pass, so \(\partial\,\mathrm{MSE}/\partial(a,D)\equiv0\); the only forces on the geometry are \(c\,\nabla\mathcal{R}\) and the decay step. Separator's codes obey the same equation; §3 turns this into an experiment.</p>
+
+  <p><strong>HPs and budget.</strong> The axdn op-point comes from a ~22-configuration <em>local</em> search on the selection bench (spanning \(c\), \(M\), \(d\), <code>pen</code>, soft-min \(\tau\), \(\sigma\), \(\lambda_d\), \(\lambda_c\)); it keeps the proposal's default \(M{=}5\) (\(M{=}3\) and \(c{=}0.1\) scored within single-seed noise of it: \(0.0074/0.0078\) vs \(0.0082\)). The baselines carry their winners from the <em>larger</em> production HP grid, so budgets are not equal: the NoReg comparison is robust to this (NoReg has no regularizer HPs and shares all training HPs), but the ranking against L1/Separator is not an equal-budget claim.</p>
+
+  <h2>2. It works — as a capacity governor, not a decomposer</h2>
+  <p><strong>Headline (final bench, Fig. 1a).</strong> axdn@64 reaches \(0.0276\) (seeds 2–3: \(0.033\), \(0.037\)) vs <code>NoReg@64</code> \(0.0417\) (\(0.039\), \(0.042\)) — the win holds at every seed (3/3 paired, mean gap \(0.009\)), though seed 1 flatters its size — and it beats the symmetric WiringPrior@64 (\(0.0416\)), which collapses to a point and becomes NoReg in every metric we measure (Table 1). Mid-pack overall: below L1 (\(0.0226\)) and Separator (\(0.0151\)), \(\approx\) NoReg@16 (\(0.0285\)). Three mechanisms lie behind the number.</p>
+  <p><em>(i) The geometry stays engaged — because the density term holds it open.</em> The \(B_1\) axon spread (mean \(\lVert a\rVert\)) <em>grows</em> \(0.6\!\to\!5.1\) and the mean edge cost \(0.46\!\to\!1.23\) (Fig. 1b; final axon-density kernel \(0.05\), collapse \(=1\)) — unlike Separator's dissolving codes, this geometry is alive at 20k. Remove the density term and the familiar failure returns (spread \(0.62\!\to\!0.30\), MSE at NoReg level, §4).</p>
+  <p><em>(ii) Bounded fan-in binds geometrically — but its degree is inert</em> (Fig. 1d). Receivers route ~30 active in-edges through \(4.6/5.0\) distinct dendrites (\(B_1/B_2\)), the constraint saturating at \(M\). The asymmetry pays a one-time gain over the symmetric case (\(M{=}1\), WiringPrior + density: \(0.0132\) vs \(0.0082\) for \(M{=}5\), selection bench), but the <em>amount</em> of fan-in headroom does not: sweeping \(M\in\{2,\dots,8\}\) tightens the constraint yet leaves MSE flat (§5) — binding is real, its stringency is not load-bearing.</p>
+  <p><em>(iii) The value is concentrated in the over-parameterized regime</em> (Fig. 1c; HPs held at their width-64 values for all widths, so axdn's off-64 points are un-tuned). At widths 4–32 axdn tracks NoReg (\(0.197\) vs \(0.192\) at width 4; \(0.031\) vs \(0.029\) at 16), then separates exactly where NoReg's U-curve degrades (\(0.0276\) vs \(0.0417\) at 64, \(0.0557\) vs \(0.0609\) at 128) — the companion's capacity-governor profile, milder at both ends: no damage at width 4 (Separator: \(0.62\)), less compression at 64 (participation ratio \(h_1\approx15\) vs Separator's \(6.4\); nuisance suppression \(2.2\) vs \(3.9\), L1 \(\approx27\)).</p>
+
+  <figure id="fig:works">
+    <img class="fig" src="fig/fig_ax1_works.png" alt="axdn works: final-bench MSE, geometry over training, width sweep, and effective fan-in"/>
+    <figcaption><span class="fignum">Figure 1.</span> (a) Final-bench MSE (dots: seeds 2–3). (b) Geometry over training: engaged, not dissolving. (c) Width sweep (HPs tuned @64). (d) Effective fan-in at 20k.</figcaption>
+  </figure>
+
+  <p><strong>What it does <em>not</em> do is decompose.</strong> Same subspace pipeline as the companion (causal input-block perturbations → PCA → patching): per-module dimensionality \(q^{90}{=}(10,9,9,10)\) and cross-module overlap \(0.278\) are indistinguishable from NoReg@64 (\((12,9,9,11)\), \(0.284\)), far from Separator's compact \((3,4,3,3)\), \(0.026\); patching \(R^2\) \(0.56\) vs NoReg's \(0.54\). The axons are not the variables: same-module neurons do <em>not</em> share axon locations (within/between-module axon-distance ratio \(0.94\)–\(0.95\)). And on the hidden-unit basis — the neuron basis the proposal is really claiming — the modules' <strong>axis-mass</strong> (mean over each module subspace's principal axes of the largest single-neuron energy share: \(1\) if a module is borne by one neuron, \(1/64{=}0.016\) if spread evenly over all units) is \(0.25\) (per module \(0.20\)–\(0.30\)): a factor \(\sim4\) below the \(1.0\) of a neuron-aligned module, and only \(\sim2.3\times\) the \(0.11\) of a same-rank <em>random</em> rotation — the modules are rotated, distributed mixtures of \(\sim9\)–\(10\) neurons, not written along neuron axes (the hidden-basis twin of the axon-space \(\mathrm{ARI}\approx0\)). Functional additivity (Sobol \(\sum_k S_k=0.957\)) matches every well-fit model — task-forced, not method-specific. The proposal's “axon = emitted variable” intuition fails for the same reason the companion's codes read \(\mathrm{ARI}\approx0\): the modules live in <em>rotated</em> subspaces, which no per-neuron point (or code) can express — and with no task gradient, the geometry has no channel through which the modules could reach it even in principle.</p>
+
+  <figure>
+    <div class="tablewrap">
+    <table>
+      <thead><tr><th>model</th><th>test MSE</th><th>Sobol \(\sum_k S_k\)</th><th>\(q^{90}\) (\(S_1..S_4\))</th><th>h1 overlap</th><th>sig/nuis \(|W_0|\)</th></tr></thead>
+      <tbody>
+        <tr><td>axon–dendrite @64</td><td>\(0.0276\)</td><td>\(0.957\)</td><td>\(10,9,9,10\)</td><td>\(0.278\)</td><td>\(2.2\)</td></tr>
+        <tr><td>WiringPrior @64 (\(M{=}1\), collapsed)</td><td>\(0.0416\)</td><td>\(0.958\)</td><td>\(12,9,9,11\)</td><td>\(0.284\)</td><td>—</td></tr>
+        <tr><td>NoReg @64</td><td>\(0.0417\)</td><td>\(0.958\)</td><td>\(12,9,9,11\)</td><td>\(0.284\)</td><td>\(\approx2.5\)</td></tr>
+        <tr><td>NoReg @16</td><td>\(0.0285\)</td><td>\(0.965\)</td><td>\(1,2,2,2\)</td><td>\(0.043\)</td><td>—</td></tr>
+        <tr><td>L1 @64</td><td>\(0.0226\)</td><td>\(0.961\)</td><td>\(3,3,3,2\)</td><td>\(0.043\)</td><td>\(\approx27\)</td></tr>
+        <tr><td>Separator @64</td><td>\(0.0151\)</td><td>\(0.959\)</td><td>\(3,4,3,3\)</td><td>\(\mathbf{0.026}\)</td><td>\(3.9\)</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <figcaption><span class="fignum">Table 1.</span> Final bench, seed 1 (L1/Separator rows: companion's pipeline; budgets unequal, §1). axdn beats NoReg on MSE but its geometry is NoReg-like; the collapsed WiringPrior <em>is</em> NoReg.</figcaption>
+  </figure>
+
+  <h2>3. The transient packing — and what causes it</h2>
+  <p><strong>The observation</strong> (Fig. 2a): the winner's axons start as a Gaussian blob, snap into <em>four</em> tight clusters by step ~1k, then blur away (silhouette \(0.80\!\to\!0.46\)). Four clusters, four task modules — module discovery? No, on three counts. <em>Timing</em>: the packing peaks while the task is still unlearned (test MSE \(0.29\) at step 1k vs \(0.0276\) final, Fig. 2b), and each axon's cluster identity is sign-locked by step 200. <em>Content</em>: at the peak, ARI between cluster membership and the neurons' module assignment is \(-0.18\) (\(\approx\) chance); patching the clusters' subspaces explains nothing (\(R^2\lt0\)). <em>Causes</em>: retrain with \(w\in\{2,3,4,6,8\}\) modules — the count stays exactly 4 (Fig. 2c); change the position dimension and it tracks \(2^d\): the clusters sit on the <em>sign-orthants</em> of position space, ARI \(=1.0\) for \(d{=}2,3,4\) (Fig. 2d; at \(d{=}5\) the 64 axons dilute over 32 orthants, ARI \(0.36\)). “Four clusters = four modules” was a coincidence between \(2^d\) at \(d{=}2\) and \(w{=}4\).</p>
+
+  <figure id="fig:orth">
+    <img class="fig" src="fig/fig_ax2_orthants.png" alt="Transient sign-orthant packing of the axons"/>
+    <figcaption><span class="fignum">Figure 2.</span> (a) \(B_1\) axons over training, colored by sign-quadrant: blob → four corners → blur. (b) The packing (red) peaks before the task is learned (black). (c) Count vs task modules: flat at 4. (d) Count vs position dimension: \(2^d\).</figcaption>
+  </figure>
+
+  <p><strong>Attribution by replay.</strong> If the task doesn't set the geometry, what does? Because \(\partial\,\mathrm{MSE}/\partial(a,D)\equiv0\), the geometry is a <em>closed</em> system given the weights: \((a,D)\leftarrow\mathrm{opt}(c\,\nabla\mathcal{R}(a,D;W(t)))\). So we replay the recorded \(W(t)\) through the real <code>compute()</code> from the run's own step-0 positions, toggling each term (wire ⇔ replayed vs zeroed \(W\); \(\lambda_c,\lambda_d\)) and the optimizer. The full replay reproduces the live run <em>exactly</em> — peak step 900 vs 900, silhouette \(0.806\) vs \(0.807\), final spread \(3.28\) vs \(3.28\) — validating the approach and proving the decoupling: nothing the task does reaches the geometry except through \(W\). The matrix (Fig. 3) then decomposes the phenomenon.</p>
+  <p><strong>Density alone recreates the packing</strong> (peak sil \(0.81\), ARI \(1.0\)) — wire and consistency are unnecessary. <strong>AdamW is necessary</strong>: step-size-matched SGD on the same density objective spreads the axons but never quantizes them (sil \(0.43\), late ARI \(0.34\)); Adam's per-coordinate \(\pm\eta\) steps turn any sustained outward force into motion along the \(2^d\) diagonal sign directions \((\pm1,\dots,\pm1)/\sqrt d\) — the <em>corners</em> of position space, one per sign-orthant. <strong>Without density nothing spreads</strong>: wire-only collapses into duplicate micro-clumps (spread \(0.36\); its silhouette \(\approx1.0\) is the degenerate duplicate-point value), consistency-only yields faint fuzz (sil \(0.57\)) — and Adam <em>erases the force's magnitude</em>: \(\lambda_c{=}0.1\) and \(\lambda_c{=}1.0\) produce <em>identical</em> trajectories (Fig. 3, right); the form of the force field matters, its strength almost does not. <strong>The dissolution is density's own second act</strong>: with density alone the tight corners still blur (late sil \(0.40\)) as the uniformity drive fans points out within their quadrants (sign identity stays locked, ARI \(0.9\)–\(1.0\)); wire <em>re-concentrates</em> late (\(0.63\) vs \(0.40\)); weight decay is a bystander. So the packing is <strong>created by density × AdamW and dissolved by density itself</strong> — optimizer geometry end to end. Density emerges as the one term with a real job; the next two sections take that lead.</p>
+
+  <figure id="fig:replay">
+    <img class="fig" src="fig/fig_ax3_replay.png" alt="Attribution-by-replay matrix decomposing the packing into density, optimizer, and other terms"/>
+    <figcaption><span class="fignum">Figure 3.</span> Attribution by replay against the recorded \(W(t)\). Top: each configuration at its peak, colored by sign-quadrant. Bottom: silhouette/spread, all eight sims (full replay dashed, on the real run); right: \(10\times\) the consistency force, same trajectory.</figcaption>
+  </figure>
+
+  <h2>4. In vivo, density is also the only term that earns MSE</h2>
+  <p>Selection bench, one knob at a time (Fig. 4). <strong>Density</strong> shows a clean dose-response: \(\lambda_d{=}0\to0.0162\)–\(0.0164\) (\(=\) NoReg@64's \(0.0168\) — the regularizer switches off), \(0.1\to0.0148\), \(0.3\to0.0101\), \(1\to0.0082\), \(3\to0.0089\); final spread rises \(0.5\to8.3\) in lockstep. <strong>Consistency</strong> is the instructive null: geometrically it works <em>perfectly</em> — at \(\lambda_c\ge1\) the ungated dendrite-set Chamfer drops \(4.13\to0.00\), i.e. all 64 neurons carry <em>identical</em> dendrite sets, one shared 5-port bus — yet MSE (\(0.0103/0.0082/0.0082/0.0105\) across \(\lambda_c\in\{0,0.1,1,10\}\)) and effective fan-in (4–5) do not move beyond single-seed noise. A constraint can bind geometrically and still be functionally vacuous. Nor can it replace density: at \(\lambda_d{=}0\) the collapse proceeds for every \(\lambda_c\) (spread \(\le0.49\); Fig. 4c) — its gate \(e^{-\lVert\Delta a\rVert/\gamma}\) is weakly axon-repulsive, but §3 showed why that cannot help: under Adam only the <em>form</em> of the force matters, and the gate's repulsion dies as soon as it opens.</p>
+
+  <figure id="fig:abl">
+    <img class="fig" src="fig/fig_ax4_ablate.png" alt="Term ablation: density dose-response, consistency null, and no lambda_c rescues collapse"/>
+    <figcaption><span class="fignum">Figure 4.</span> Term ablation (selection bench, seed 1). (a) Density dose-response with anchors. (b) Consistency: geometry obeys (purple) while MSE stays flat (red). (c) No \(\lambda_c\) rescues the \(\lambda_d{=}0\) collapse.</figcaption>
+  </figure>
+
+  <h2>5. Fewer dendrites tighten the fan-in constraint — and change nothing</h2>
+  <p>A natural worry about the op-point: \(M{=}5\) dendrites on a task with only four subfunctions (four \(2^d\) axon clusters at \(d{=}2\)) may leave the fan-in cap <em>slack</em> — a receiver drops one dendrite near every cluster, the \(\min\)-over-\(M\) wiring cost is met for free, and the regularizer quietly reduces to NoReg; if so, \(M{=}2,3\) (which cannot cover four clusters) should bite. We re-ran the op-point across \(M\in\{2,3,4,5,8\}\) on both benches (final: seeds 1–3 for \(M{=}2,3\); selection: the extrapolate re-eval). The worry is <em>half right</em>. The constraint does tighten monotonically as \(M\) shrinks — the achieved \(|W|\)-weighted wiring cost \(\mathcal{R}_{\mathrm{wire}}\) rises \(0.0025\!\to\!0.0062\) and effective fan-in falls \(6.2\!\to\!2.0\) from \(M{=}8\) to \(M{=}2\) (Table 2) — so at \(M{=}5\) the cap <em>is</em> nearly non-binding and at \(M{=}2\) it binds hard. But the payoff does not respond: test MSE is flat across the whole range, within single-seed noise on both benches (\(0.027\)–\(0.032\) final, \(0.0074\)–\(0.0103\) selection), with no trend and no advantage at the tight end. Forcing fan-in to bind buys nothing. This is the fan-in twin of the consistency null (§4): a wiring constraint can bind geometrically — here, with fan-in provably tracking \(M\) — and still be functionally vacuous, because the geometry it shapes never sees the task gradient (\(\partial\,\mathrm{MSE}/\partial(a,D)\equiv0\)). Stringency is not the missing ingredient; a gradient path is.</p>
+
+  <figure>
+    <div class="tablewrap">
+    <table>
+      <thead><tr><th>\(M\) (dendrites/neuron)</th><th>2</th><th>3</th><th>4</th><th>5</th><th>8</th></tr></thead>
+      <tbody>
+        <tr><td>\(\mathcal{R}_{\mathrm{wire}}\) (achieved, \(\downarrow{=}\) slacker)</td><td>\(0.0062\)</td><td>\(0.0052\)</td><td>\(0.0045\)</td><td>\(0.0033\)</td><td>\(0.0025\)</td></tr>
+        <tr><td>effective fan-in (\(B_2\))</td><td>\(2.0\)</td><td>\(3.0\)</td><td>\(3.8\)</td><td>\(4.6\)</td><td>\(6.2\)</td></tr>
+        <tr><td>MSE, selection (extrapolate)</td><td>\(0.0099\)</td><td>\(0.0074\)</td><td>\(0.0103\)</td><td>\(0.0082\)</td><td>\(0.0093\)</td></tr>
+        <tr><td>MSE, final (seed-mean)</td><td>\(0.0286\)</td><td>\(0.0283\)</td><td>\(0.0273\)</td><td>\(0.0324\)</td><td>\(0.0288\)</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <figcaption><span class="fignum">Table 2.</span> Dendrite-count sweep at the axdn op-point (\(c{=}3{\times}10^{-2}\), \(d{=}2\), \(\lambda_d{=}1\), \(\lambda_c{=}0.1\)). Fewer dendrites tighten the constraint (\(\mathcal{R}_{\mathrm{wire}}\!\uparrow\), fan-in \(\downarrow\), saturating at \(M\) for \(M\le4\) and source-capped above) yet leave MSE flat — fan-in <em>stringency</em> is not load-bearing. Effective fan-in is the mean number of distinct active-edge dendrites at the median-\(|W|\) cut (the sweep estimator; Fig. 1d uses a fixed-threshold cut, hence a slightly higher \(M{=}5\) reading). Final MSE is the seed-mean (\(M{=}2,3\): 3 seeds; \(M{=}4,8\): 1 seed; \(M{=}5\): seeds 1–3, matching the headline). Source: <code>analyze_dendsweep.py</code>.</figcaption>
+  </figure>
+
+  <h2>6. The density term transfers to Separator</h2>
+  <p>Density's job is anti-collapse — and Separator's codes collapse on this very bench (the companion's subject), under the same no-task-gradient equation. So we port the term: <code>Separator</code> now accepts the identical Gaussian kernel on its multihot \(\sigma\)-codes (<code>w_dens</code>, per hidden boundary and channel), compared against stock dchn at \(\lambda_d\in\{0.3,1,3\}\) on the selection bench (Fig. 5). It works: the collapse stops (mean pairwise \(\sigma\)-distance \(0.94\!\to\!1.30\)–\(1.45\) vs stock's \(\to0.33\)) at <em>zero or negative</em> task cost (\(0.0070\) at \(\lambda_d{=}0.3\) vs stock \(0.0079\); \(0.0122\) at the overdosed \(\lambda_d{=}3\)). And the corner-quantization of §3 reappears in code space — here a <em>corner</em> is a vertex \(b\in\{0,1\}^8\) of the code hypercube, every coordinate of \(\sigma\) saturated to exactly \(0\) or \(1\) — and it is <em>persistent</em>: mean \(\min(\sigma,1{-}\sigma)\to0.000\) with only ~9 distinct binary codes across the 64 neurons, because saturation freezes the wire pull (\(\partial\mathcal{R}_{\mathrm{wire}}/\partial z\propto\sigma'(z)\to0\) at the corners) while position space has no such freeze. Same force, same optimizer, different fixed-point structure — set by the representation's bounded vs unbounded geometry, and in neither case by the task.</p>
+
+  <figure id="fig:transfer">
+    <img class="fig" src="fig/fig_ax5_transfer.png" alt="Density term ported to Separator: stops code collapse at zero task cost, crystallizes onto hypercube corners"/>
+    <figcaption><span class="fignum">Figure 5.</span> The density term on Separator's codes (selection bench, seed 1). (a) Stock codes collapse; density holds them open. (b–c) Crystallization onto ~9 exact corners of \(\{0,1\}^8\). (d) Free (or better) at \(\lambda_d{=}0.3\)–\(1\).</figcaption>
+  </figure>
+
+  <h2>7. Conclusion</h2>
+  <p>A coherent proposal that does real work — a correct asymmetric generalization of WiringPrior whose fan-in binds geometrically (though its stringency earns no MSE, §5), whose density term solves the collapse by construction and even transfers to Separator — but as a <strong>mild capacity governor, not a decomposer</strong>: NoReg-like subspaces, axons that never encode the modules, and a cluster structure that is the optimizer's \(2^d\) sign-orthants. The root cause is shared across the family (axdn/WiringPrior positions, Separator codes): <strong>the representation receives no gradient from task performance</strong> (\(\partial\,\mathrm{MSE}/\partial\pi\equiv0\)), so its organization can only ever be the fixed-point geometry of regularizer force × optimizer — sign-orthants in \(\mathbb{R}^d\), hypercube corners in \([0,1]^K\) — with the task reaching \(\pi\) only through the slow shadow of \(W\). Such a \(\pi\) can <em>price</em> \(W\) (the MSE gains) but cannot <em>discover</em> structure; a geometry meant to express the task must sit in the gradient path — positions in the forward pass (cf. NeuroPos, where \(w_{ij}=1/\lVert p_i-p_j\rVert\) <em>is</em> the weight) or codes that gate activations rather than price weights.</p>
+
 </article></main>
 </body>
 </html>

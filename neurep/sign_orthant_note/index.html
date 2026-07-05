@@ -1,8 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow"><title>Fan-in, then fan-out: the density prior’s two-act
-dynamics on axon positions — neurep</title><link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%234b2e63'/%3E%3C/svg%3E"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false},{left:'$$',right:'$$',display:true}],throwOnError:false});"></script><style>/* ========================================================================== *
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow"><title>Fan-in, then fan-out: the density prior&#x27;s two-act dynamics on axon positions — neurep</title><link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%234b2e63'/%3E%3C/svg%3E"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"><script>window.MathJax={tex:{tags:'ams',inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]'],['$$','$$']]},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']},chtml:{displayAlign:'center'}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><style>/* ========================================================================== *
  *  research-site theme — the single source of truth for the visual language.
  *  The builder INLINES this file into every generated page's <head>, so each
  *  report renders standalone (open the .html directly) and is depth-proof.
@@ -359,240 +358,68 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
 </style>
 </head>
 <body>
-<header class="nav"><a class="brand" href="../index.html"><span>neurep</span></a></header><main class="study"><header class="study-head"><h1>Fan-in, then fan-out: the density prior’s two-act
-dynamics on axon positions</h1><div class="rule"></div></header><div class="context"><span class="crumb"><a href="../studies.html#thread-wiring">Axon–dendrite wiring prior</a></span><span class="status supported">supported</span><span class="dep">builds on: <a href="../axdn_forensics_report/">The axon–dendrite wiring prior
-(nr.axdn-euc-abs) on
-flat_modular</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou-Hangyu/neurep/commit/3394642"><code>3394642</code></a> <span class="git">· feature/runstore-pipeline</span></span></div><article>
-<p>A mechanism note, companion to <a class="xref" href="../axdn_forensics_report/">The axon–dendrite wiring prior
-(nr.axdn-euc-abs) on
-flat_modular</a>
-§3. On <code>flat_modular</code> the axon positions of
-<code>nr.axdn-euc-abs</code> do something striking and entirely
-optimizer-driven (Fig. <a href="#fig:fan" data-reference-type="ref"
-data-reference="fig:fan">1</a>). Early in training they <strong>fan
-in</strong>: a diffuse cloud packs into exactly <span
-class="math inline">\(2^d\)</span> tight clusters sitting on the
-<em>sign-orthant corners</em> of position space (four, at the default
-<span class="math inline">\(d{=}2\)</span>). Then they <strong>fan
-out</strong>: the clusters melt back into a diffuse spread — yet no axon
-ever leaves its orthant. One regularizer term drives both acts, and the
-data drives neither.</p>
-<p>The data is absent for a structural reason: <strong>positions get no
-gradient from the loss</strong>, <span
-class="math inline">\(\partial\,\mathrm{MSE}/\partial(a,D)\equiv0\)</span>
-— predictions are <span class="math inline">\(f_W(x)\)</span>, and
-positions only <em>price</em> <span class="math inline">\(W\)</span>.
-Given the weights, the geometry is a closed system of (regularizer force
-field) <span class="math inline">\(\times\)</span> (optimizer). Below we
-derive both acts from the one load-bearing term, the anti-collapse
-<em>density</em> prior, and check each step against the run
-( and, under
-). The whole story is one sentence:
-<em>a short-range repulsion, rounded onto the coordinate axes by AdamW,
-builds corners while the cloud is small and dissolves them once it is
-large.</em></p>
-<h2 id="one-force-a-short-range-radial-repulsion">One force: a
-short-range radial repulsion</h2>
-<p>Of the three penalty terms only the density prior is load-bearing
-(report §3–4); on the hidden boundaries it is a Gaussian repulsion on
-the <span class="math inline">\(N\)</span> axons, <span
-class="math display">\[
-\mathcal{R}_{\mathrm{dens}}=\frac{1}{N(N-1)}\sum_{i\ne j} k_{ij},\qquad
-k_{ij}=\exp\!\big(-\lVert a_i-a_j \rVert^2/2\sigma^2\big),\qquad
-\sigma=1. \tag{1}\]</span> Its gradient is <span
-class="math inline">\(\partial\mathcal{R}_{\mathrm{dens}}/\partial
-a_i=-\tfrac{2}{N(N-1)\sigma^2}\sum_{j\ne i}
-k_{ij}(a_i-a_j)\)</span> (the <span class="math inline">\(j{=}i\)</span>
-term vanishes). Name the positive constant <span
-class="math inline">\(\beta\,{=}\,2c\lambda_d/N(N-1)\sigma^2\)</span>,
-the total kernel weight <span
-class="math inline">\(\kappa_i\,{=}\,\sum_{j\ne i}k_{ij}\)</span>, and
-the kernel-weighted neighbor mean <span class="math inline">\(\bar
-a_i\,{=}\,\sum_{j\ne i}k_{ij}a_j/\kappa_i\)</span>. Since the loss
-exerts no force (<span
-class="math inline">\(\partial\,\mathrm{MSE}/\partial a\equiv0\)</span>,
-so only <span
-class="math inline">\(c\lambda_d\nabla\mathcal{R}_{\mathrm{dens}}\)</span>
-acts), the force on <span class="math inline">\(a_i\)</span> is the
-negative scaled gradient; folding in <span
-class="math inline">\(\beta\)</span> and distributing <span
-class="math inline">\(a_i-a_j\)</span>, <span class="eqa" id="eq:force"></span><span
-class="math display">\[
-F_i = -c\lambda_d\frac{\partial \mathcal{R}_{\mathrm{dens}}}{\partial
-a_i}
-=\beta\sum_{j\ne i} k_{ij}(a_i-a_j)
-=\beta\Big[\Big(\textstyle\sum_{j\ne i} k_{ij}\Big)a_i-\sum_{j\ne i}
-k_{ij}a_j\Big]
-=\beta\,\kappa_i\,(a_i-\bar a_i). \tag{2}\]</span> Two properties of <span
-class="math inline">\(F_i\)</span> drive everything below. (i) It is
-<em>short-range</em>: <span class="math inline">\(k_{ij}\)</span> is
-negligible once <span class="math inline">\(\lVert a_i-a_j
-\rVert\gtrsim\sigma\)</span>, so an axon feels only neighbors within a
-kernel width. (ii) While the cloud is small and centered, every <span
-class="math inline">\(\bar a_i\approx0\)</span> (the iid symmetric init
-centers it), so <span class="eqa" id="eq:radial"></span><span class="math display">\[
-\boxed{\,F_i\approx\rho_i\,a_i,\quad\rho_i=\beta\kappa_i&gt;0\,} \tag{3}\]</span> — a <em>radially outward</em> push, a positive
-multiple of <span class="math inline">\(a_i\)</span> (measured <span
-class="math inline">\(\cos(F_i,a_i)=0.99\)</span>).</p>
-<h2
-id="fan-in-adamw-rounds-the-outward-push-onto-the-2d-corners">Fan-in:
-AdamW rounds the outward push onto the <span
-class="math inline">\(2^d\)</span> corners</h2>
-<p>The force direction is the same for any optimizer; AdamW’s role is to
-strip its per-coordinate magnitude. The update is <span
-class="math inline">\(\Delta a_{i,k}=-\eta\,\hat m_{i,k}/(\sqrt{\hat
-v_{i,k}}+\varepsilon)\)</span>, with <span class="math inline">\(\hat
-m,\hat v\)</span> the bias-corrected EMAs of <span
-class="math inline">\(g_{i,k}\)</span> and <span
-class="math inline">\(g_{i,k}^2\)</span>. Here <span
-class="math inline">\(g_{i,k}=-\rho_i a_{i,k}\)</span> holds a steady
-sign and a slowly drifting magnitude, so both EMAs settle (<span
-class="math inline">\(\hat m\!\to\!g\)</span>, <span
-class="math inline">\(\hat v\!\to\!g^2\)</span>) and the ratio keeps
-only the sign: <span class="math display">\[
-\frac{\hat m_{i,k}}{\sqrt{\hat v_{i,k}}+\varepsilon}\longrightarrow
-\frac{g_{i,k}}{\sqrt{g_{i,k}^2}}=\operatorname{sgn}(g_{i,k})
-\qquad\Longrightarrow\qquad
-\Delta
-a_{i,k}\approx-\eta\,\operatorname{sgn}(g_{i,k})=\eta\,\operatorname{sgn}(a_{i,k}). \tag{4}\]</span> Every coordinate moves at the <em>same</em>
-speed <span class="math inline">\(\eta\)</span> in its own sign
-direction: the outward push is rounded onto the diagonal of the axon’s
-orthant (measured <span class="math inline">\(|\Delta
-a|/\eta=1.03\)</span>, and <span
-class="math inline">\(\mathrm{corr}(\text{step},|g|)=0.18\)</span> for
-AdamW vs. <span class="math inline">\(1.00\)</span> for SGD, though
-<span class="math inline">\(|g|\)</span> ranges <span
-class="math inline">\(\times32\)</span>). With orthant label <span
-class="math inline">\(s_i=\operatorname{sgn}(a_i)\in\{\pm1\}^d\)</span>
-the step <span class="math inline">\(\Delta a_i\approx\eta\,s_i\)</span>
-is constant, so <span class="math display">\[
-a_i(t)\approx a_i(0)+\eta\,t\,s_i
-\quad\Longrightarrow\quad
-\frac{a_i(t)}{\lVert a_i(t) \rVert}\to\frac{s_i}{\sqrt d}\quad(\eta
-t\gg\lVert a_i(0) \rVert\sim\sigma): \tag{5}\]</span> the init washes out and every axon drifts onto
-its orthant corner <span class="math inline">\(s_i/\sqrt d\)</span>.
-Axons sharing <span class="math inline">\(s_i\)</span> land on the
-<em>same</em> corner, so the cloud sorts into <span
-class="math inline">\(2^d\)</span> clusters (Fig. <a href="#fig:fan"
-data-reference-type="ref" data-reference="fig:fan">1</a>b; peak
-silhouette <span class="math inline">\(0.81\)</span>, ARI <span
-class="math inline">\(1.0\)</span>). Step-matched SGD (the same force,
-<span class="math inline">\(\eta\)</span> rescaled to match AdamW’s mean
-step) keeps the magnitude, so each axon slides straight out along its
-own ray and the cloud merely inflates — no corners (Fig. <a
-href="#fig:fan" data-reference-type="ref"
-data-reference="fig:fan">1</a>d; peak silhouette <span
-class="math inline">\(0.43\)</span>).</p>
-<h5 id="signs-lock-the-count-is-balls-in-bins.">Signs lock; the count is
-balls-in-bins.</h5>
-<p>The outward step is sign-preserving, so no coordinate recrosses <span
-class="math inline">\(0\)</span>: all signs reach their final value by
-step <span class="math inline">\(63\)</span> and orthant identity is
-thereafter permanent (ARI <span class="math inline">\(\approx1\)</span>
-even after the clusters blur). Each <span
-class="math inline">\(s_i\)</span> is uniform on <span
-class="math inline">\(\{\pm1\}^d\)</span> (independent fair signs) —
-<span class="math inline">\(N\)</span> balls in <span
-class="math inline">\(2^d\)</span> bins, one cluster per occupied bin —
-and a bin is empty with probability <span
-class="math inline">\((1-2^{-d})^N\)</span>, so <span
-class="math display">\[
-\mathbb{E}[\#\text{clusters}]=2^d\big(1-(1-2^{-d})^N\big),\qquad N=64. \tag{6}\]</span> For <span class="math inline">\(2^d\ll
-N\)</span> this <span class="math inline">\(\to2^d\)</span> (all corners
-fill); for <span class="math inline">\(2^d\gg N\)</span> it <span
-class="math inline">\(\to N\)</span> (one axon per corner). Measured
-vs. predicted: <span class="math inline">\(29\)</span> vs. <span
-class="math inline">\(27.8\)</span> at <span
-class="math inline">\(d{=}5\)</span>, <span
-class="math inline">\(46\)</span> vs. <span
-class="math inline">\(40.6\)</span> at <span
-class="math inline">\(d{=}6\)</span>. At <span
-class="math inline">\(d{=}2\)</span> the count is <span
-class="math inline">\(4\)</span>: its match to the four task modules is
-coincidence (cluster-vs-module ARI <span
-class="math inline">\(\approx0\)</span>).</p>
-<h2
-id="fan-out-the-same-force-goes-local-and-melts-the-packing">Fan-out:
-the same force goes local and melts the packing</h2>
-<p>Force <a class="xref" href="#eq:force">(2)</a> never changes form; what
-changes is which neighbors are in range. Split the mean by orthant
-(<span class="math inline">\(j\sim i\)</span>: same orthant as <span
-class="math inline">\(i\)</span>), <span class="math inline">\(\bar
-a_i=\kappa_i^{-1}\big(\sum_{j\sim i}k_{ij}a_j+\sum_{j\not\sim
-i}k_{ij}a_j\big)\)</span>. During fan-in all pairs are within <span
-class="math inline">\(\sigma\)</span>, so <span
-class="math inline">\(\bar a_i\approx0\)</span> and <span
-class="math inline">\(F_i\)</span> is radial <a class="xref" href="#eq:radial">(3)</a>.
-But once the corners reach radius <span class="math inline">\(R=\lVert
-a_i \rVert\gg\sigma\)</span> the two groups separate by scale:
-same-orthant pairs stay <span class="math inline">\(O(\sigma)\)</span>
-apart (<span class="math inline">\(k_{ij}=O(1)\)</span>) while
-cross-orthant pairs are <span class="math inline">\(\Theta(R)\)</span>
-apart (<span class="math inline">\(k_{ij}\sim
-e^{-R^2/2\sigma^2}\to0\)</span>). The cross terms vanish and the mean
-collapses onto the axon’s own corner: <span
-class="math display">\[
-\bar a_i\to\bar a_i^{\mathrm{in}}=\frac{\sum_{j\sim
-i}k_{ij}a_j}{\sum_{j\sim i}k_{ij}}\approx a_i
-\quad\Longrightarrow\quad
-F_i\approx\beta\,\kappa_i^{\mathrm{in}}(a_i-\bar
-a_i^{\mathrm{in}})=\beta\,\kappa_i^{\mathrm{in}}\,\delta_i, \tag{7}\]</span> where <span
-class="math inline">\(\delta_i=a_i-\bar a_i^{\mathrm{in}}\)</span> is
-the small, <em>non-radial</em> offset of <span
-class="math inline">\(a_i\)</span> from its corner’s centre (<span
-class="math inline">\(\lVert \delta_i \rVert\sim\)</span> within-corner
-spread <span class="math inline">\(\ll R\)</span>). The radial drive has
-switched off (its source, the centered cloud, is now out of range); what
-remains is a local repulsion among same-orthant axons. AdamW still
-sign-steps, but along the <em>per-axon</em> direction <span
-class="math inline">\(\operatorname{sgn}(\delta_i)\)</span> instead of
-the shared <span class="math inline">\(s_i\)</span> — so corner-mates
-push <em>apart</em>, the corner fans open, and silhouette falls (Fig. <a
-href="#fig:fan" data-reference-type="ref"
-data-reference="fig:fan">1</a>c). Sign identity survives because <span
-class="math inline">\(\lVert \delta_i \rVert\ll R\)</span> cannot carry
-a coordinate back through <span class="math inline">\(0\)</span>. The
-density-only replay confirms both acts (silhouette <span
-class="math inline">\(0.39\!\to\!0.81\!\to\!0.38\)</span>), whereas a
-wire-only run forms and <em>sharpens</em> to <span
-class="math inline">\(1.0\)</span> and never dissolves: the packing is
-<em>created</em> by density<span
-class="math inline">\(\times\)</span>AdamW and <em>undone</em> by
-density alone.</p>
-<figure id="fig:fan" data-latex-placement="h">
-<img class="fig" src="fig/fig_fan_transition.svg" alt="fig_fan_transition" loading="lazy" />
-<figcaption><span class="fignum">Figure 1.</span> The two acts on the density-only closed system (<span
-class="math inline">\(W{=}0\)</span>, AdamW; <span
-class="math inline">\(d{=}2\)</span>, <span
-class="math inline">\(N{=}64\)</span>). Points are coloured by their
-orthant at the peak and held fixed across (a)–(c). <strong>(a)</strong>
-Init: a centered blob. <strong>(b)</strong> Fan-in: the radial push,
-rounded by AdamW, packs the axons onto the four sign-orthant corners
-(<span class="math inline">\(\langle|a|\rangle\)</span> grows,
-silhouette peaks). <strong>(c)</strong> Fan-out: the now-local repulsion
-fans each corner open — the cloud spreads but every point stays in its
-colour’s quadrant (signs locked). <strong>(d)</strong> Orthant
-silhouette over training: AdamW forms then dissolves; step-matched SGD
-on the <em>same</em> force never forms.</figcaption>
-</figure>
-<h2 class="unnumbered" id="takeaway">Takeaway</h2>
-<p>The geometry is the fixed point of <em>(density force)</em> <span
-class="math inline">\(\times\)</span> <em>(AdamW)</em>: axis-aligned
-because AdamW’s step is axis-aligned, <span
-class="math inline">\(2^d\)</span> in number because the force is
-radially symmetric, and transient because a short-range repulsion that
-builds corners must, once the cloud outgrows <span
-class="math inline">\(\sigma\)</span>, also tear them open. The data
-never enters (<span
-class="math inline">\(\partial\,\mathrm{MSE}/\partial
-a\equiv0\)</span>). A representation that sits off the gradient path is
-shaped by optimizer geometry, not the task; to express the task it must
-enter the forward pass (cf. NeuroPos, where <span
-class="math inline">\(w_{ij}=1/\lVert p_i-p_j \rVert\)</span>
-<em>is</em> the weight). The same equations govern Separator’s codes —
-there the corners are vertices of <span
-class="math inline">\(\{0,1\}^K\)</span> and sigmoid saturation freezes
-the gradient, so the packing is <em>persistent</em> (report §5).</p>
+<header class="nav"><a class="brand" href="../index.html"><span>neurep</span></a></header><main class="study"><header class="study-head"><h1>Fan-in, then fan-out: the density prior's two-act dynamics on axon positions</h1><p class=sub>A mechanism note (companion to the axon–dendrite forensics report, §3): why the axons pack onto \(2^d\) sign-orthant corners and then melt — optimizer geometry, not the task.</p><div class="rule"></div></header><div class="context"><span class="crumb"><a href="../studies.html#thread-wiring">Axon–dendrite wiring prior</a></span><span class="status supported">supported</span><span class="dep">builds on: <a href="../axdn_forensics_report/">The axon–dendrite wiring prior (nr.axdn-euc-abs) on flat_modular</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou-Hangyu/neurep/commit/3394642"><code>3394642</code></a> <span class="git">· master</span></span></div><article>
+
+  <div class="tldr"><p><strong>TL;DR.</strong> On <code>flat_modular</code> the axon positions of <code>nr.axdn-euc-abs</code> do something striking and entirely optimizer-driven. Early in training they <strong>fan in</strong>: a diffuse cloud packs into exactly \(2^d\) tight clusters on the <em>sign-orthant corners</em> of position space (four, at \(d{=}2\)). Then they <strong>fan out</strong>: the clusters melt into a diffuse spread — yet no axon ever leaves its orthant. One term drives both acts (the anti-collapse <em>density</em> prior), and the data drives neither, because positions get no gradient from the loss (\(\partial\,\mathrm{MSE}/\partial(a,D)\equiv0\)). The whole story in one sentence: a short-range repulsion, rounded onto the coordinate axes by AdamW, builds corners while the cloud is small and dissolves them once it is large. <span class="status supported">supported</span></p></div>
+
+  <p>Positions only <em>price</em> \(W\); predictions are \(f_W(x)\), so given the weights the geometry is a closed system of (regularizer force field) × (optimizer). Below we derive both acts from the one load-bearing term and check each step against the run (<code>orthant_math_evidence.py</code> and <code>orthant_attribution.py</code>). This is the mechanism behind §3 of the forensics report.</p>
+
+  <h2>1. One force: a short-range radial repulsion</h2>
+  <p>Of the three penalty terms only the density prior is load-bearing (report §3–4); on the hidden boundaries it is a Gaussian repulsion on the \(N\) axons:</p>
+  \[\begin{equation}\label{eq:dens}
+    \mathcal{R}_{\mathrm{dens}}=\frac{1}{N(N-1)}\sum_{i\ne j} k_{ij},\qquad
+    k_{ij}=\exp\!\big(-\lVert a_i-a_j\rVert^2/2\sigma^2\big),\qquad \sigma=1 .
+  \end{equation}\]
+  <p>Its gradient is \(\partial\mathcal{R}_{\mathrm{dens}}/\partial a_i=-\tfrac{2}{N(N-1)\sigma^2}\sum_{j\ne i} k_{ij}(a_i-a_j)\). Name the positive constant \(\beta=2c\lambda_d/N(N-1)\sigma^2\), the total kernel weight \(\kappa_i=\sum_{j\ne i}k_{ij}\), and the kernel-weighted neighbor mean \(\bar a_i=\sum_{j\ne i}k_{ij}a_j/\kappa_i\). Since the loss exerts no force (only \(c\lambda_d\nabla\mathcal{R}_{\mathrm{dens}}\) acts), the force on \(a_i\) is the negative scaled gradient:</p>
+  \[\begin{equation}\label{eq:force}
+    F_i = -c\lambda_d\frac{\partial \mathcal{R}_{\mathrm{dens}}}{\partial a_i}
+    =\beta\sum_{j\ne i} k_{ij}(a_i-a_j)
+    =\beta\,\kappa_i\,(a_i-\bar a_i).
+  \end{equation}\]
+  <p>Two properties of \(F_i\) drive everything below. (i) It is <em>short-range</em>: \(k_{ij}\) is negligible once \(\lVert a_i-a_j\rVert\gtrsim\sigma\), so an axon feels only neighbors within a kernel width. (ii) While the cloud is small and centered, every \(\bar a_i\approx0\) (the iid symmetric init centers it), so</p>
+  \[\begin{equation}\label{eq:radial}
+    F_i\approx\rho_i\,a_i,\quad\rho_i=\beta\kappa_i\gt0
+  \end{equation}\]
+  <p>— a <em>radially outward</em> push, a positive multiple of \(a_i\) (measured \(\cos(F_i,a_i)=0.99\)).</p>
+
+  <h2>2. Fan-in: AdamW rounds the outward push onto the \(2^d\) corners</h2>
+  <p>The force direction is the same for any optimizer; AdamW's role is to strip its per-coordinate magnitude. The update is \(\Delta a_{i,k}=-\eta\,\hat m_{i,k}/(\sqrt{\hat v_{i,k}}+\varepsilon)\), with \(\hat m,\hat v\) the bias-corrected EMAs of \(g_{i,k}\) and \(g_{i,k}^2\). Here \(g_{i,k}=-\rho_i a_{i,k}\) holds a steady sign and a slowly drifting magnitude, so both EMAs settle (\(\hat m\!\to\!g\), \(\hat v\!\to\!g^2\)) and the ratio keeps only the sign:</p>
+  \[\begin{equation}\label{eq:adam}
+    \frac{\hat m_{i,k}}{\sqrt{\hat v_{i,k}}+\varepsilon}\longrightarrow
+    \frac{g_{i,k}}{\sqrt{g_{i,k}^2}}=\operatorname{sgn}(g_{i,k})
+    \qquad\Longrightarrow\qquad
+    \Delta a_{i,k}\approx-\eta\,\operatorname{sgn}(g_{i,k})=\eta\,\operatorname{sgn}(a_{i,k}).
+  \end{equation}\]
+  <p>Every coordinate moves at the <em>same</em> speed \(\eta\) in its own sign direction: the outward push is rounded onto the diagonal of the axon's orthant (measured \(|\Delta a|/\eta=1.03\), and \(\mathrm{corr}(\text{step},|g|)=0.18\) for AdamW vs \(1.00\) for SGD, though \(|g|\) ranges \(\times32\)). With orthant label \(s_i=\operatorname{sgn}(a_i)\in\{\pm1\}^d\) the step \(\Delta a_i\approx\eta\,s_i\) is constant, so</p>
+  \[\begin{equation}\label{eq:drift}
+    a_i(t)\approx a_i(0)+\eta\,t\,s_i
+    \quad\Longrightarrow\quad
+    \frac{a_i(t)}{\lVert a_i(t)\rVert}\to\frac{s_i}{\sqrt d}\quad(\eta t\gg\lVert a_i(0)\rVert\sim\sigma):
+  \end{equation}\]
+  <p>the init washes out and every axon drifts onto its orthant corner \(s_i/\sqrt d\). Axons sharing \(s_i\) land on the <em>same</em> corner, so the cloud sorts into \(2^d\) clusters (Fig. 1b; peak silhouette \(0.81\), ARI \(1.0\)). Step-matched SGD (the same force, \(\eta\) rescaled to match AdamW's mean step) keeps the magnitude, so each axon slides straight out along its own ray and the cloud merely inflates — no corners (Fig. 1d; peak silhouette \(0.43\)).</p>
+  <p><strong>Signs lock; the count is balls-in-bins.</strong> The outward step is sign-preserving, so no coordinate recrosses \(0\): all signs reach their final value by step \(63\) and orthant identity is thereafter permanent (ARI \(\approx1\) even after the clusters blur). Each \(s_i\) is uniform on \(\{\pm1\}^d\) — \(N\) balls in \(2^d\) bins, one cluster per occupied bin — and a bin is empty with probability \((1-2^{-d})^N\), so</p>
+  \[\begin{equation}\label{eq:count}
+    \mathbb{E}[\#\text{clusters}]=2^d\big(1-(1-2^{-d})^N\big),\qquad N=64 .
+  \end{equation}\]
+  <p>For \(2^d\ll N\) this \(\to2^d\) (all corners fill); for \(2^d\gg N\) it \(\to N\) (one axon per corner). Measured vs predicted: \(29\) vs \(27.8\) at \(d{=}5\), \(46\) vs \(40.6\) at \(d{=}6\). At \(d{=}2\) the count is \(4\): its match to the four task modules is coincidence (cluster-vs-module ARI \(\approx0\)).</p>
+
+  <h2>3. Fan-out: the same force goes local and melts the packing</h2>
+  <p>Force \eqref{eq:force} never changes form; what changes is which neighbors are in range. Split the mean by orthant (\(j\sim i\): same orthant as \(i\)), \(\bar a_i=\kappa_i^{-1}\big(\sum_{j\sim i}k_{ij}a_j+\sum_{j\not\sim i}k_{ij}a_j\big)\). During fan-in all pairs are within \(\sigma\), so \(\bar a_i\approx0\) and \(F_i\) is radial \eqref{eq:radial}. But once the corners reach radius \(R=\lVert a_i\rVert\gg\sigma\) the two groups separate by scale: same-orthant pairs stay \(O(\sigma)\) apart (\(k_{ij}=O(1)\)) while cross-orthant pairs are \(\Theta(R)\) apart (\(k_{ij}\sim e^{-R^2/2\sigma^2}\to0\)). The cross terms vanish and the mean collapses onto the axon's own corner:</p>
+  \[\begin{equation}\label{eq:fanout}
+    \bar a_i\to\bar a_i^{\mathrm{in}}=\frac{\sum_{j\sim i}k_{ij}a_j}{\sum_{j\sim i}k_{ij}}\approx a_i
+    \quad\Longrightarrow\quad
+    F_i\approx\beta\,\kappa_i^{\mathrm{in}}(a_i-\bar a_i^{\mathrm{in}})=\beta\,\kappa_i^{\mathrm{in}}\,\delta_i,
+  \end{equation}\]
+  <p>where \(\delta_i=a_i-\bar a_i^{\mathrm{in}}\) is the small, <em>non-radial</em> offset of \(a_i\) from its corner's centre (\(\lVert\delta_i\rVert\sim\) within-corner spread \(\ll R\)). The radial drive has switched off (its source, the centered cloud, is now out of range); what remains is a local repulsion among same-orthant axons. AdamW still sign-steps, but along the <em>per-axon</em> direction \(\operatorname{sgn}(\delta_i)\) instead of the shared \(s_i\) — so corner-mates push <em>apart</em>, the corner fans open, and silhouette falls (Fig. 1c). Sign identity survives because \(\lVert\delta_i\rVert\ll R\) cannot carry a coordinate back through \(0\). The density-only replay confirms both acts (silhouette \(0.39\!\to\!0.81\!\to\!0.38\)), whereas a wire-only run forms and <em>sharpens</em> to \(1.0\) and never dissolves: the packing is <em>created</em> by density × AdamW and <em>undone</em> by density alone.</p>
+
+  <figure id="fig:fan">
+    <img class="fig" src="fig/fig_fan_transition.png" alt="Two-act dynamics: init blob, fan-in to four corners, fan-out spread, and silhouette over training"/>
+    <figcaption><span class="fignum">Figure 1.</span> The two acts on the density-only closed system (\(W{=}0\), AdamW; \(d{=}2\), \(N{=}64\)). Points are coloured by their orthant at the peak and held fixed across (a)–(c). <strong>(a)</strong> Init: a centered blob. <strong>(b)</strong> Fan-in: the radial push, rounded by AdamW, packs the axons onto the four sign-orthant corners (\(\langle|a|\rangle\) grows, silhouette peaks). <strong>(c)</strong> Fan-out: the now-local repulsion fans each corner open — the cloud spreads but every point stays in its colour's quadrant (signs locked). <strong>(d)</strong> Orthant silhouette over training: AdamW forms then dissolves; step-matched SGD on the <em>same</em> force never forms.</figcaption>
+  </figure>
+
+  <h2>4. Takeaway</h2>
+  <p>The geometry is the fixed point of (density force) × (AdamW): axis-aligned because AdamW's step is axis-aligned, \(2^d\) in number because the force is radially symmetric, and transient because a short-range repulsion that builds corners must, once the cloud outgrows \(\sigma\), also tear them open. The data never enters (\(\partial\,\mathrm{MSE}/\partial a\equiv0\)). A representation that sits off the gradient path is shaped by optimizer geometry, not the task; to express the task it must enter the forward pass (cf. NeuroPos, where \(w_{ij}=1/\lVert p_i-p_j\rVert\) <em>is</em> the weight). The same equations govern Separator's codes — there the corners are vertices of \(\{0,1\}^K\) and sigmoid saturation freezes the gradient, so the packing is <em>persistent</em> (report §6).</p>
+
 </article></main>
 </body>
 </html>
