@@ -499,8 +499,8 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
   <a href="https://jmlr.org/papers/v20/17-612.html">Bartlett et&nbsp;al.'s (2019)</a> \(\tilde O(WL)\)),
   and norm-based control with weight scale and depth
   (<a href="https://arxiv.org/abs/1503.00036">Neyshabur, Tomioka &amp; Srebro, 2015</a>) — none keyed
-  to a discovered local arity, so the \(N D^{r}\log D + \log d\) bound is qualitatively sharper than,
-  and does not follow from, generic capacity theory.</p>
+  to a discovered local arity, so the \(N D^{r}\log D + \log d\) bound is a different, structure-specific
+  accounting from generic capacity theory.</p>
 
   <p><strong>Architectural locality and learned sparsity.</strong> Restricting connectivity to
   reduce statistical burden is the oldest idea in the practice:
@@ -516,8 +516,8 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
   Brain Damage (1989)</a>, <a href="https://arxiv.org/abs/1506.02626">Han et&nbsp;al. (2015)</a>,
   <a href="https://arxiv.org/abs/1712.01312">\(L_0\) regularization (2018)</a>, and the
   <a href="https://arxiv.org/abs/1803.03635">lottery-ticket hypothesis (2019)</a> — each an
-  empirical compression or existence result that supplies no sample bound, which is the gap the
-  present note fills for bounded fan-in.</p>
+  empirical compression or existence result that supplies no sample bound, which is the class-level gap
+  the present note fills for an explicitly restricted bounded-fan-in function class.</p>
 
   <p><strong>Gradient descent and the discovery question.</strong> A class-level sample bound
   does not imply that gradient descent finds the structure, and the sparse-parity literature is
@@ -621,8 +621,8 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
 
   <div class="lemma"><p><strong>Lemma 3 (counting an unknown DAG).</strong> Fix the node set (count
   \(N\), labels), the designated output, the alphabets, and candidate-parent sets of sizes
-  \(r \le M_v \le d+N\) with \(\mathrm{pa}^\star(v) \subseteq\) the candidates for every node
-  (realizability). Let \(\mathcal F\) be all functions computed by choices of parent sets of size at
+  \(1 \le r \le M_v \le d+N\) with \(\mathrm{pa}^\star(v) \subseteq\) the candidates for every node
+  (realizability; arity \(r \ge 1\), so \((eM_v/r)^{r}\) is meaningful). Let \(\mathcal F\) be all functions computed by choices of parent sets of size at
   most \(r\) drawn from the candidates (acyclic) together with tables. Then</p>
   \[\begin{equation}\label{eq:l3}
   \log_2|\mathcal F| \;\le\; \sum_v\Big[r\log_2\tfrac{eM_v}{r} + D^{r}\log_2 D\Big]
@@ -657,8 +657,9 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
 
   <h2>6. Arity mismatch</h2>
 
-  <p>When the learner's assumed arity \(k\) differs from the target's \(r\), the error is U-shaped in
-  \(k\): above the truth the cost only grows, below it the class can no longer fit the target. The two
+  <p>For the version-space predictor studied below, the finite-sample error is U-shaped in the assumed
+  arity \(k\): below the true arity \(r\) the class underfits, while above it the enlarged class leaves
+  more spurious consistent hypotheses. The two
   arms have different characters — one an approximation limit
   that binds every learner, the other a finite-sample effect specific to the version-space
   predictor.</p>
@@ -707,8 +708,8 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
   \(c_{3,2} = 43/218 \approx 0.197\) and \(c_{3,1} = 55/218 \approx 0.252\), both above the
   \(2^{-r}\) floor, which is pointwise tight.</p>
 
-  <div class="corollary"><p><strong>The bound is minimized at the true arity.</strong> Among arities
-  \(k \ge r\) the upper bound \eqref{eq:t3k} is minimized at \(k = r\), by monotonicity; that \(k = r\)
+  <div class="corollary"><p><strong>The finite-class upper bound is minimized at the true arity.</strong> Among arities
+  \(k \ge r\) the finite-class upper bound \eqref{eq:t3k} is minimized at \(k = r\), by monotonicity; that \(k = r\)
   is moreover the smallest <em>realizable</em> arity is established at \(N{=}1\) by the floor
   \eqref{eq:floor} (and at \(k{=}1\) for any \(N\)). This is a statement about the <em>bound</em>, not
   a universal statistical theorem.</p></div>
@@ -727,7 +728,9 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
   <h2>7. A near-matching lower bound at \(D=2\)</h2>
 
   <p>The upper bound's leading terms are not loose: already the single Boolean node forces them from
-  below. The lower bound is the classical junta minimax bound, self-contained here.</p>
+  below. The lower bound is the classical junta minimax bound; the statement and a sketch are here, with
+  the full rare-mass argument — including the constants and the \(\log(1/\delta)/\epsilon\) term — in
+  Appendix&nbsp;C.</p>
 
   <div class="theorem"><p><strong>Junta lower bound.</strong> There is a constant \(c \gt 0\) such
   that any learner (possibly randomized, possibly improper) that, for <em>every</em> distribution
@@ -741,7 +744,7 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
   <em>not</em> matched from below, and that gap is left open. The for-every-\(P\) quantifier matches
   the distribution-free upper bounds.</p></div>
 
-  <p><em>Proof sketch.</em> Since the \(r\)-junta class \(\mathcal J_r\) sits inside the fan-in-\(r\)
+  <p><em>Proof sketch (full argument in Appendix&nbsp;C).</em> Since the \(r\)-junta class \(\mathcal J_r\) sits inside the fan-in-\(r\)
   class (\(N{=}1\)), a minimax lower bound for \(\mathcal J_r\) suffices. Two shattered sets are built
   by hand. <em>VC \(\ge 2^{r}\):</em> fix a support \(S_0\) of size \(r\); the \(2^{r}\) inputs zero off
   \(S_0\) are shattered by the tables on \(S_0\). <em>VC \(\ge r\lfloor\log_2\lfloor d/r\rfloor
@@ -764,8 +767,8 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
   <p>The class is not an abstraction that happens to have small counting complexity: it is realized
   <em>exactly</em> by scalar-fan-in-2 ReLU networks — every unit reads at most two others — after a
   logarithmic depth inflation. This is the bridge from the DAG class to neuron-level architectures,
-  and it refines the encoding of the <a class="xref" href="../neurep_mlp_encoding/">companion note</a> to enforce
-  scalar fan-in at most two.</p>
+  and it refines the construction of <a class="xref" href="../neurep_mlp_encoding/"><em>An Exact MLP Encoding of
+  Computation Graphs</em></a> to enforce scalar fan-in at most two.</p>
 
   <p><em>Encoding convention.</em> The input layer is the one-hot encoding of the \(d\) symbolic
   variables (one group of \(D\) coordinates per variable); <strong>scalar fan-in \(k\) counts one-hot
@@ -827,11 +830,16 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
   \end{equation}\]
   <p>(each unit picks a \(\le k\)-subset of the previous layer, \(\binom{m_{\ell-1}}{k} \le
   (e m_{\ell-1}/k)^{k}\) by \eqref{eq:binom}, plus \(k\) weights and a bias). At the realizing sizes of
-  \eqref{eq:t5size} — \(b = 2\), \(\sum_\ell m_\ell = \tilde O(N D^{r})\) under the depth regime
-  \(\Delta = O(r D^{r-1})\) — the fan-in-2 class costs \(\log_2|\mathcal F| = \tilde O(N r D^{r})\)
-  against the equally-quantized <em>dense</em> class's description count \(\Theta(\Delta' m^{2} b)\) with
-  \(m = \tilde O(N D^{r})\): near-linear in \(N D^{r}\) versus quadratic in the width, at equal
-  architecture and equal quantization. This is a <em>description-count</em> comparison for a structured
+  \eqref{eq:t5size}, with \(b = 2\) and the per-unit bracket \(\tilde O(1)\), the description length is
+  near-linear in the unit count of \eqref{eq:t5size}:
+  \(\log_2|\mathcal F| = \tilde O(N D^{r} r + N D\,\Delta\, r^{2})\), which stays near-linear in the
+  local-table-entry count \(N D^{r}\) whenever \(r\) and \(\Delta\) are bounded or slowly growing
+  (substituting the depth regime \(\Delta = O(r D^{r-1})\) turns the carry term into
+  \(\tilde O(N r^{3} D^{r})\) — still \(N D^{r}\) up to the arity factor, not a clean
+  \(\tilde O(N r D^{r})\)). The comparison to the equally-quantized <em>dense</em> class is qualitative,
+  at equal architecture and equal quantization: the dense description count is \(\Theta(\Delta' m^{2} b)\)
+  at width \(m = \tilde O(N D^{r})\) — quadratic in a width that is itself \(\tilde O(N D^{r})\) — whereas
+  the sparse side stays near-linear in \(N D^{r}\) up to \(\mathrm{poly}(r, \Delta)\) factors. This is a <em>description-count</em> comparison for a structured
   quantized subclass — <strong>not</strong> a claim that dense networks cannot represent these functions,
   and not a generic VC-dimension separation. The real-valued statement is separate and stands on its own:
   by <a href="https://jmlr.org/papers/v20/17-612.html">Bartlett, Harvey, Liaw &amp; Mehrabian (2019)</a>,
@@ -853,7 +861,8 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
   uniform inputs, while every consistent learner over the matched bounded-arity class needs only
   \(\tilde O(N D^{r})/\epsilon\).</p></div>
 
-  <p><em>Proof.</em> Fix the constant target \(f^\star \equiv 1\) (fan-in \(0 \le r\), realizable). Define
+  <p><em>Proof.</em> Assume \(D \ge 2\), so the symbols \(0\) and \(1\) are distinct. Fix the constant
+  target \(f^\star \equiv 1\) (fan-in \(0 \le r\), realizable). Define
   the learner \(\hat h\) by a fixed rule that never references \(f^\star\): predict the observed label on
   each seen input, and a fixed default symbol \(0\) on every unseen input. \(\hat h\) reproduces the
   training labels, so its empirical error is 0 and it is a valid ERM output for the flat class. Since
@@ -881,8 +890,8 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
 
   <p><strong>Ambient dimension is nearly free.</strong> Growing \(d\) from 6 to 12 — which squares the
   flat class's \(2^{d}\) domain — moves the unknown-wiring learner's \(n(0.1)\) crossing by a median
-  within-target factor of only \(1.25\) (CI \([1.23, 1.29]\)), under even the \(\approx 1.3\times\)
-  the two-term bound predicts, while the flat class's own crossing at \(d{=}12\) stands \(514\times\)
+  within-target factor of only \(1.25\) (CI \([1.23, 1.29]\)), below the \(\approx 1.3\times\) change
+  suggested by the two-term bound, while the flat class's own crossing at \(d{=}12\) stands \(514\times\)
   away (CI \([495, 532]\)). The class learners have finished before the flat curve has moved
   (Figure&nbsp;1). The same holds through composition: for the four-node branch-and-merge diamond with
   unknown leaf pairs, the paired ratio is again \(1.25\) and the flat wall \(27\times\)
@@ -902,10 +911,10 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
   medians are \(0.282,\,0.090,\,0.237,\,0.316\) at \(k = 1,2,3,4\), and for \(r{=}3\) they are
   \(0.298,\,0.249,\,0.349\) at \(k = 2,3,4\), minimal at \(k = 3\) (Figure&nbsp;2). Both weightings agree.
   The two arms have the anatomy §6 assigns them, and this is measurable: decomposing each error into an
-  <em>approximation</em> part (the error still present at the largest sample count, where the version
-  space has emptied) and an <em>estimation</em> part (the rest), the left arm at \(k{=}1\) is
+  <em>approximation</em> part (the residual error at the largest evaluated sample count, used as a proxy
+  for approximation error) and an <em>estimation</em> part (the rest), the left arm at \(k{=}1\) is
   approximation-driven (\(0.250\) approximation vs \(0.022\) estimation — the best-1-junta floor, whose
-  empirical mean \(0.315\) matches the exact anchor \(c_{2,1}=0.3\)), while for \(k \ge r\) the
+  empirical mean \(0.315\) is consistent with the exact anchor \(c_{2,1}=0.3\)), while for \(k \ge r\) the
   approximation part vanishes (median \(0.000\)) and the entire excess is the version-space predictor's
   finite-sample ambiguity — the effect a deterministic Occam-ERM would remove.</p>
 
@@ -1052,6 +1061,90 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
   &middot; <code>src/run_enum.py --pilot</code> → <code>src/run_enum.py --all</code> →
   <code>src/analyze.py</code> (writes <code>results/analysis.json</code> + all figures) &middot; witness
   <code>src/verify_t5.py</code> &middot; full proofs <code>report/theory_proofs.md</code>.</p></div>
+
+  <h2>Appendix C. Proof of the junta lower bound</h2>
+
+  <p>This appendix gives the argument §7 sketches, in full: the two shattered sets, the rare-mass and
+  two-point reductions that turn them into a sample lower bound, and the constants and the
+  \(\log(1/\delta)/\epsilon\) term the sketch compresses. Throughout \(D = 2\); it suffices to bound the
+  \(r\)-junta subclass \(\mathcal J_r\) — the \(N{=}1\) fan-in-\(r\) class — since a minimax lower bound for
+  a subclass lower-bounds the whole. The learner may be randomized and improper, and must succeed for
+  <em>every</em> distribution \(P\) on \(\{0,1\}^{d}\), matching the distribution-free upper bounds.</p>
+
+  <p><strong>Two shattered sets.</strong> <em>\(\mathrm{VC} \ge 2^{r}\):</em> fix a support \(S_0\) with
+  \(|S_0| = r\); the \(2^{r}\) inputs that are zero off \(S_0\) are shattered by the arity-\(r\) tables on
+  \(S_0\) — every labeling of them is realized by some table, and functions on other supports can only add
+  labelings, never lower a shattering bound.</p>
+
+  <p><em>\(\mathrm{VC} \ge r\lfloor\log_2\lfloor d/r\rfloor\rfloor\) (block-dictator construction, needs
+  \(d \ge 2r\)):</em> partition the \(d\) coordinates into \(r\) blocks of size \(q = \lfloor d/r\rfloor\)
+  and set \(m_b = \lfloor\log_2 q\rfloor \ge 1\). In block \(b\) place \(m_b\) points, each supported on
+  block \(b\) alone (zero elsewhere), whose column patterns over the block's coordinates realize all
+  \(2^{m_b}\) binary columns — possible since \(2^{m_b} \le q\). Given any labeling \(y\) of the
+  \(\sum_b m_b\) points, choose in each block the coordinate \(j_b\) whose column equals \(y\) restricted to
+  that block, and set \(f = \bigoplus_b x_{j_b}\), an XOR of \(r\) dictators — hence an \(r\)-junta. On a
+  block-\(b\) point every other block's chosen coordinate reads \(0\), so \(f = x_{j_b}\) delivers exactly
+  the required label; the point set is shattered.</p>
+
+  <p>To read the second set as \(\Omega(r\log(d/r))\), handle the floors once. For \(x \ge 2\), writing
+  \(x \in [2^{k}, 2^{k+1})\) with \(k \ge 1\) gives \(\lfloor x\rfloor \in [2^{k}, 2^{k+1})\), so
+  \(\lfloor\log_2\lfloor x\rfloor\rfloor = k \ge \tfrac{k}{k+1}\log_2 x \ge \tfrac12\log_2 x\); at
+  \(x = d/r \ge 2\) (the hypothesis \(d \ge 2r\)),</p>
+  \[\begin{equation}\label{eq:cfloor}
+  r\big\lfloor\log_2\lfloor d/r\rfloor\big\rfloor \;\ge\; \tfrac{r}{2}\log_2\tfrac{d}{r}
+  \;=\; \Omega\!\big(r\log(d/r)\big).
+  \end{equation}\]
+
+  <p><strong>A shattered set of size \(m\) forces \(\Omega(m/\epsilon)\) samples.</strong> Let
+  \(\{x_0, \dots, x_{m-1}\}\) be shattered, \(m \ge 2\). Put \(P(x_0) = 1 - 8\epsilon\) and
+  \(P(x_j) = 8\epsilon/(m-1)\) for \(j \ge 1\), and draw the target uniformly among the \(2^{m-1}\)
+  shattered labelings that fix \(f(x_0)\) — all realizable by shattering, and fixing \(x_0\)'s label leaves
+  the remaining labels i.i.d. uniform. Suppose \(n \le (m-1)/(64\epsilon)\). Each rare point is unseen with
+  probability \((1 - \tfrac{8\epsilon}{m-1})^{n} \ge 1 - \tfrac{8\epsilon n}{m-1} \ge \tfrac78\), so
+  \(\mathbb{E}[\#\text{unseen}] \ge \tfrac78(m-1)\). Define the rare-mass error</p>
+  \[\begin{equation}\label{eq:crare}
+  X \;=\; \tfrac{8\epsilon}{m-1}\,\#\{\,j \ge 1 : \hat h(x_j) \ne f(x_j)\,\} \;\in\; [0, 8\epsilon],
+  \qquad X \;\le\; \mathrm{err}_P(\hat h).
+  \end{equation}\]
+  <p>On an unseen rare point the target label is uniform and independent of the learner's (possibly
+  randomized) prediction, so it is wrong with probability exactly \(\tfrac12\); hence
+  \(\mathbb{E} X \ge \tfrac12\cdot\tfrac{8\epsilon}{m-1}\cdot\tfrac78(m-1) = 3.5\,\epsilon\), the
+  expectation taken jointly over target, sample, and learner randomness. Reverse Markov on
+  \(X \in [0, 8\epsilon]\) gives</p>
+  \[\begin{equation}\label{eq:crevmarkov}
+  \Pr[X \gt \epsilon] \;\ge\; \frac{\mathbb{E} X - \epsilon}{8\epsilon - \epsilon} \;\ge\; \frac{2.5}{7}
+  \;=\; \tfrac{5}{14} \;\gt\; \tfrac18 \;\ge\; \delta,
+  \end{equation}\]
+  <p>so, averaging over targets, some fixed target has
+  \(\Pr_{\text{sample}}[\mathrm{err} \gt \epsilon] \gt \delta\): the learner fails unless
+  \(n \gt (m-1)/(64\epsilon)\), i.e. \(n = \Omega(m/\epsilon)\) since \(m - 1 \ge m/2\).</p>
+
+  <p><strong>The \(\Omega(\log(1/\delta)/\epsilon)\) term.</strong> Take two shattered points with
+  \(P(x_0) = 1 - 2\epsilon\) and \(P(x_1) = 2\epsilon\); shattering supplies targets
+  \(f_0, f_1 \in \mathcal J_r\) agreeing at \(x_0\) and differing at \(x_1\). Let \(E\) be the event
+  &ldquo;\(x_1\) unseen&rdquo;, \(\Pr[E] = (1 - 2\epsilon)^{n}\). For \(\epsilon \le \tfrac18\),
+  \(-\ln(1 - 2\epsilon) \le 2.304\,\epsilon\), so at \(n \le \ln(1/\delta)/(4\epsilon)\),
+  \(\Pr[E] \ge \delta^{0.576}\). On \(E\) the sample is identical under \(f_0\) and \(f_1\), so the
+  learner's prediction at \(x_1\) has the same law under both and errs against at least one with
+  conditional probability \(\ge \tfrac12\); a wrong \(x_1\) costs error \(\ge 2\epsilon \gt \epsilon\).
+  Hence</p>
+  \[\begin{equation}\label{eq:ctwo}
+  \max_i\ \Pr_{f_i}[\mathrm{err} \gt \epsilon] \;\ge\; \tfrac12\,\delta^{0.576} \;\ge\; 1.2\,\delta
+  \;\gt\; \delta \qquad (\delta \le \tfrac18),
+  \end{equation}\]
+  <p>the ratio \(\tfrac12\delta^{0.576-1}\) being \(\ge 1.2\) at \(\delta = \tfrac18\) and larger as
+  \(\delta\) shrinks.</p>
+
+  <p><strong>Combining.</strong> Apply the rare-mass bound with
+  \(m = \max\!\big(2^{r},\, r\lfloor\log_2\lfloor d/r\rfloor\rfloor\big)\) — at least
+  \(\max\!\big(2^{r},\, \tfrac{r}{2}\log_2(d/r)\big)\) by \eqref{eq:cfloor} — together with the two-point
+  bound \eqref{eq:ctwo}, and use \(\max(a, b) \ge \tfrac12(a + b)\) to add the three contributions:</p>
+  \[\begin{equation}\label{eq:clower}
+  n \;\ge\; c\,\frac{2^{r} + r\log_2(d/r) + \log_2(1/\delta)}{\epsilon}
+  \end{equation}\]
+  <p>for an absolute constant \(c \gt 0\), under \(\epsilon \le \tfrac18\), \(\delta \le \tfrac18\),
+  \(d \ge 2r\) — the bound of §7. Only the \(N{=}1\) subclass is used, so the \(N\)-linear upper-bound term
+  is not matched from below; that gap, and any lower bound for \(D \gt 2\), stay open.</p>
 
   <h2>References</h2>
 
