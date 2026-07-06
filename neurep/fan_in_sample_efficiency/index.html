@@ -360,49 +360,191 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
 <body>
 <header class="nav"><a class="brand" href="../index.html"><span>neurep</span></a></header><main class="study"><header class="study-head"><h1>Sample complexity of bounded-arity DAG classes and their fan-in-limited MLP realizations</h1><p class=sub>Local arity sets the rate, ambient dimension only logarithmically; fan-in-2 MLPs realize the class exactly.</p><div class="rule"></div></header><div class="context"><span class="crumb"><a href="../studies.html#thread-theory">Encoding &amp; modularity theory</a></span><span class="status supported">supported</span><span class="dep">builds on: <a href="../neurep_mlp_encoding/">An Exact MLP Encoding of Computation Graphs</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou-Hangyu/neurep/commit/84d947b"><code>84d947b</code></a> <span class="git">· worktree-fan-in-sample-efficiency-plan</span></span></div><article>
 
-  <div class="tldr"><p><strong>TL;DR.</strong> For targets computed by finite, axis-aligned,
-  bounded-fan-in computation DAGs (\(N\) lookup-table nodes of local arity \(r\) over alphabet
-  size \(D\) — the class of <a class="xref" href="../neurep_mlp_encoding/">Note&nbsp;0</a>), every consistent
-  learner over the matched bounded-arity DAG class reaches 0&ndash;1 error \(\epsilon\) from
-  \(n = O\!\big(\tfrac1\epsilon[\,N D^{r}\log D + \sum_v r\log(eM_v/r) + \log(1/\delta)\,]\big)\)
-  samples — table content plus a wiring cost <em>logarithmic</em> in the ambient dimension \(d\),
-  never \(D^{d}\). We prove the full chain (T1&ndash;T6: upper bounds, an arity-mismatch floor, a
-  matching \(2^{r} + r\log(d/r)\) lower bound at \(D{=}2\) — forced already by the \(N{=}1\)
-  subclass; matching the \(N\)-dependence remains open — an exact fan-in-2 MLP realization at
-  depth \(O(\Delta\, r\log D)\), and a quantized capacity separation), and an exact-enumeration
-  campaign illustrates the predicted finite-sample signatures: ambient dimension nearly free
-  (paired \(n(0.1)\) ratio \(1.25\) for \(d\,{=}\,6{\to}12\) against a \(514\times\) flat-class
-  wall), the version-space error U-shape minimized at \(k=r\), and GF(2) basis-mixing collapsing
-  the advantage (median error \(0.404\) vs \(0.090\)).
-  <span class="status supported">theory: supported</span>&ensp;
-  <span class="status supported">signatures: supported</span></p></div>
+  <div class="tldr"><p><strong>Abstract.</strong> We study realizable learning of
+  finite-alphabet functions computed by <em>bounded-arity computation DAGs</em>: \(N\)
+  internal lookup-table nodes, each reading at most \(r\) of its predecessors over an
+  alphabet of size \(D\), wired among \(d\) input variables. A finite-class counting
+  argument bounds the sample complexity by the local table content plus a
+  wiring-selection term, \(N D^{r}\log D + O(N r\log(d/r))\) — set by the local arity
+  \(r\), with the ambient dimension \(d\) entering only <em>logarithmically</em>, never
+  as \(D^{d}\). The single-node Boolean case is exactly junta learning, and it already
+  forces a near-matching \(2^{r} + r\log(d/r)\) lower bound. The same class is realized
+  <em>exactly</em> — not approximated — by scalar fan-in-2 ReLU networks after a
+  logarithmic depth inflation. Exact enumeration over the discrete classes illustrates
+  the finite-sample signatures the bounds predict: ambient dimension is nearly free, the
+  version-space error is smallest when the learner's arity matches the target's, and the
+  advantage is coordinate-relative — a random \(\mathrm{GF}(2)\) change of basis erases
+  it. The results are class-level and realizable; they do not show that gradient descent
+  <em>recovers</em> the bounded-arity structure, only that the structure makes it
+  statistically cheap to recover.</p></div>
 
-  <h2>1. Motivation</h2>
+  <h2>1. Introduction</h2>
 
-  <p>The program this study belongs to asks when per-neuron structure buys statistical
-  efficiency. <a class="xref" href="../neurep_mlp_encoding/">Note&nbsp;0</a> settled the representation side:
-  every finite axis-aligned computation DAG — hidden nodes computing lookup tables
-  \(z_v = g_v(z_{\mathrm{pa}(v)})\) of fan-in at most \(r\) over alphabet-\(D\) variables — embeds
-  exactly into an MLP. <a class="xref" href="../sample_efficiency_foundations/">A companion foundations
-  note</a> pinned the complementary constraint: sample efficiency is a property of the
-  <em>function class</em>, blind to the neuron basis chosen to represent it. Together they leave
-  one question open, and it is this study's: does the bounded-arity DAG <em>class</em> itself have
-  small statistical complexity — small enough to escape the \(D^{d}\) flat-function wall, cheap in
-  the unknown-wiring case, minimized at the true arity, and realizable by architectures whose
-  per-neuron fan-in is bounded?</p>
+  <p>A function of \(d\) symbolic variables, unconstrained, is a table of \(D^{d}\)
+  entries; in the realizable setting learning it to error \(\epsilon\) costs on the order
+  of \(D^{d}\) samples, because an input's label is unconstrained until that input has
+  been seen. Structure is what escapes this wall. This note isolates one structural
+  hypothesis — <em>bounded local arity</em> — and asks precisely how much it buys, for
+  the class of functions that a bounded-fan-in computation graph can compute.</p>
 
-  <p>The study is a theory note first and an experiment second, and its verdict keeps that order
-  (§8): the theorems of §3 stand or fall with their proofs alone, while the exact-enumeration
-  campaign of §4&ndash;§7 illustrates the finite-sample signatures the theory predicts and
-  stress-tests its modeling assumptions, with SGD removed as a confound. Hypotheses, cells,
-  thresholds, seeds, and statistics were locked before any data existed
-  (<code>plan/contract.json</code>, status <code>locked</code>, 2026-07-04); one amendment (A01,
-  locked after the adversarial proof audit but still before dispatch, so before any campaign data)
-  re-pinned <em>theorem statements only</em> — no cell, threshold, seed, or statistic changed.
-  Everything below is pre-registered unless labeled descriptive; theorems are stated in their
-  post-amendment (A01) form.</p>
+  <p>The object is a bounded-arity computation DAG: a directed acyclic graph over the
+  \(d\) input coordinates and \(N\) named internal nodes with one designated output, in
+  which each internal node computes an arbitrary lookup table of at most \(r\) of its
+  parents, all variables ranging over a common alphabet of size \(D\). The target is
+  <em>axis-aligned</em> — its variables are literal input coordinates and named latent
+  nodes — so the class is defined relative to a coordinate system.</p>
 
-  <h2>2. Setting</h2>
+  <p>The result is a synthesis of four steps, each classical on its own. When the DAG is a
+  single Boolean node, learning it is <a href="#related">junta learning</a> — recovering a
+  function of \(r\) unknown relevant variables out of \(d\) — whose sample complexity is
+  governed by \(2^{r}\) and \(\log d\), not \(d\). Lifting the junta table-and-relevant-set
+  accounting to multi-node computation DAGs turns &ldquo;which \(r\) variables&rdquo; into
+  &ldquo;which wiring&rdquo; plus &ldquo;which local tables&rdquo;, and the counting
+  argument survives: the ambient dimension stays logarithmic. Such DAGs are the discrete
+  face of the <em>compositional</em> functions for which deep networks provably beat
+  shallow ones; here they are realized exactly by fan-in-2 ReLU networks. The contribution
+  is the combination — bounded-arity DAGs with unknown wiring, an exact fan-in-limited MLP
+  realization, and the finite-sample signatures — rather than any one of these in
+  isolation.</p>
+
+  <p>The advantage is coordinate-dependent from the outset: a target local in one basis
+  can become global after a linear change of variables, so &ldquo;bounded arity&rdquo; is a
+  property of the function <em>together with</em> its coordinate system, not of the function
+  alone. A control below measures this dependence directly.</p>
+
+  <p>Two companion notes settle the flanks. <a class="xref" href="../neurep_mlp_encoding/">An Exact MLP
+  Encoding of Computation Graphs</a> settles representation: every such DAG embeds exactly
+  into an MLP, so nothing is lost in passing from the graph to a neural network.
+  <a class="xref" href="../sample_efficiency_foundations/">Sample efficiency comes from the function
+  class, not the neuron basis</a> pins the complementary point that statistical efficiency
+  is a property of the function class, blind to the neuron basis chosen to represent it.
+  What neither addresses, and what this note is about, is whether the bounded-arity DAG
+  <em>class itself</em> is statistically small.</p>
+
+  <h2 id="related">2. Related work</h2>
+
+  <p><strong>Juntas and Boolean-function analysis.</strong> The single-node Boolean case is
+  exactly the classical <a href="https://www.cs.columbia.edu/~rocco/papers/stoc03juntas.html">\(r\)-junta</a>
+  problem — learning a function of \(r\) unknown relevant variables among \(d\) — and this is
+  the closest prior art for the note's bound. <a href="https://www.cs.columbia.edu/~rocco/papers/stoc03juntas.html">Mossel,
+  O'Donnell &amp; Servedio (2004)</a> gave the first algorithm beating exhaustive search over
+  relevant sets; the class's information-theoretic sample complexity is \(\Theta(2^{r} +
+  r\log(d/r))\), exactly the quantity our lower bound recovers and our upper bound
+  generalizes. The surrounding toolkit — influences, essential variables, Fourier degree,
+  junta testing — is <a href="https://doi.org/10.1017/CBO9781139814782">O'Donnell's (2014)</a>
+  <em>Analysis of Boolean Functions</em>; <a href="https://doi.org/10.1145/1536414.1536437">Blais
+  (2009)</a> is its tight property-testing counterpart. The Fourier-learning tradition —
+  <a href="https://doi.org/10.1137/0222080">Kushilevitz &amp; Mansour (1993)</a> and
+  <a href="https://doi.org/10.1007/978-1-4615-2696-4_11">Mansour (1994)</a> — learns
+  structured Boolean functions (decision trees, sparse-Fourier targets) with complexity set by
+  the structure rather than \(d\), but via membership queries under the uniform distribution,
+  where our route is realizable ERM over an explicit structure class.</p>
+
+  <p><strong>Finite-class PAC, Occam, and description length.</strong> Mechanically the upper bound
+  is a textbook finite-class argument, not a new theorem. The realizable sample bound
+  \(m = O((\log|\mathcal H| + \log(1/\delta))/\epsilon)\) is
+  <a href="https://doi.org/10.1145/1968.1972">Valiant's (1984)</a> PAC engine, made sound by
+  <a href="https://doi.org/10.1137/1116025">Vapnik &amp; Chervonenkis (1971)</a> uniform convergence
+  and characterized tightly by <a href="https://doi.org/10.1145/76359.76371">Blumer, Ehrenfeucht,
+  Haussler &amp; Warmuth (1989)</a> through the VC dimension (\(\mathrm{VC}(\mathcal H) \le
+  \log_2|\mathcal H|\) for a finite class). Their
+  <a href="https://doi.org/10.1016/0020-0190(87)90114-1">Occam's-razor theorem (1987)</a> gives the
+  reading we use — a consistent learner returning a short-description hypothesis is a PAC learner — so
+  the whole contribution is to compute that description length for bounded-arity DAGs. That length is
+  a two-part code in exactly <a href="https://doi.org/10.1016/0005-1098(78)90005-5">Rissanen's
+  (1978)</a> minimum-description-length sense: integer <em>structure</em> parameters (the wiring,
+  \(\sim N r\log d\) bits) plus <em>table</em> parameters (\(N D^{r}\log D\) bits), the discrete
+  corner of the MDL/BIC model-selection tradition
+  (<a href="https://doi.org/10.1214/aos/1176344136">Schwarz, 1978</a>;
+  <a href="https://doi.org/10.1109/18.720554">Barron, Rissanen &amp; Yu, 1998</a>). The novelty is
+  which code, not the coding theorem.</p>
+
+  <p><strong>Bounded-depth circuits and compositional deep networks.</strong> The
+  computational analogue of the class — what bounded-depth, bounded-fan-in gates can and
+  cannot compute — is the AC\(^0\) lower-bound tradition of
+  <a href="https://doi.org/10.1007/BF01744431">Furst, Saxe &amp; Sipser (1984)</a> and
+  <a href="https://www.csc.kth.se/~johanh/largesmalldepth.pdf">Håstad (1986)</a>, whose
+  switching lemma makes parity exponentially hard for small-depth circuits; its
+  learning-theoretic scion, <a href="https://dl.acm.org/doi/10.1145/174130.174138">Linial,
+  Mansour &amp; Nisan (1993)</a>, converts bounded-depth structure into quasi-polynomial
+  uniform-distribution learnability through Fourier concentration. These bound
+  <em>expressibility and time</em>; our note bounds <em>samples</em>, for targets that are
+  bounded-arity by construction. On the neural side, the closest framing is compositional
+  approximation: <a href="https://arxiv.org/abs/1608.03287">Mhaskar &amp; Poggio (2016)</a> and
+  <a href="https://arxiv.org/abs/1611.00740">Poggio et&nbsp;al. (2017)</a> prove that deep
+  networks escape the curse of dimensionality exactly when the target is a composition of
+  low-dimensional constituents, and <a href="https://arxiv.org/abs/1705.05502">Rolnick &amp;
+  Tegmark (2018)</a> show depth turns local multiplicative structure into linear neuron cost.
+  Our note is the discrete, sample-complexity cousin of this line — a lookup-table DAG in place
+  of a smooth compositional function, and an <em>exact</em> fan-in-2 realization in place of an
+  approximation — with the local arity \(r\) playing the role of the local effective dimension.</p>
+
+  <p><strong>Graphical models, sparse statistics, and the capacity foil.</strong> The probabilistic
+  mirror of the table-plus-wiring accounting is bounded-indegree graphical-model learning:
+  <a href="https://doi.org/10.1109/TIT.1968.1054142">Chow &amp; Liu (1968)</a> recover the optimal
+  indegree-1 wiring exactly, <a href="https://doi.org/10.1023/A:1022623210503">Heckerman, Geiger &amp;
+  Chickering (1995)</a> add explicit structure search, and
+  <a href="https://doi.org/10.1023/A:1007417612269">Dasgupta (1997)</a> proves that with a known
+  bounded-indegree DAG the sample cost tracks the summed local table sizes \(\sum_i D^{k_i}\) — the
+  probabilistic form of our \(N D^{r}\) table term, for distributions rather than deterministic
+  computation. The high-dimension-but-few-active-effects principle is the statistics neighbor — the
+  <a href="https://doi.org/10.1111/j.2517-6161.1996.tb02080.x">Lasso (Tibshirani, 1996)</a>,
+  <a href="https://doi.org/10.1214/aos/1176347963">MARS (Friedman, 1991)</a>, and
+  <a href="https://doi.org/10.1111/j.1467-9868.2009.00718.x">sparse additive models (Ravikumar
+  et&nbsp;al., 2009)</a> all make cost track the relevant coordinates and their low interaction order,
+  not \(d\) — which bounded local arity lifts from first-order effects to arity-\(r\) discrete tables.
+  Generic network capacity is the deliberate foil for what the note is <em>not</em>: VC and
+  pseudodimension bounds scale with weights and layers
+  (<a href="https://www.stat.berkeley.edu/~bartlett/nnl/index.html">Anthony &amp; Bartlett, 1999</a>;
+  <a href="https://jmlr.org/papers/v20/17-612.html">Bartlett et&nbsp;al.'s (2019)</a> \(\tilde O(WL)\)),
+  and norm-based control with weight scale and depth
+  (<a href="https://arxiv.org/abs/1503.00036">Neyshabur, Tomioka &amp; Srebro, 2015</a>) — none keyed
+  to a discovered local arity, so the \(N D^{r}\log D + \log d\) bound is qualitatively sharper than,
+  and does not follow from, generic capacity theory.</p>
+
+  <p><strong>Architectural locality and learned sparsity.</strong> Restricting connectivity to
+  reduce statistical burden is the oldest idea in the practice:
+  <a href="https://doi.org/10.1007/BF00344251">Fukushima's (1980)</a> Neocognitron and
+  <a href="https://doi.org/10.1109/5.726791">LeCun et&nbsp;al.'s (1998)</a> convolutional
+  networks cut free parameters with local receptive fields and weight sharing, and
+  <a href="https://arxiv.org/abs/1602.07576">Cohen &amp; Welling (2016)</a> make the
+  sample-complexity reduction explicit for symmetry groups — but each is tethered to geometric
+  locality or a pre-assumed symmetry, where our bound keeps only the arity restriction. The
+  route to making bounded fan-in <em>emerge</em> in a trained network rather than be hand-coded
+  runs through pruning and learned connectivity —
+  <a href="https://proceedings.neurips.cc/paper/1989/hash/6c9882bbac1c7093bd25041881277658-Abstract.html">Optimal
+  Brain Damage (1989)</a>, <a href="https://arxiv.org/abs/1506.02626">Han et&nbsp;al. (2015)</a>,
+  <a href="https://arxiv.org/abs/1712.01312">\(L_0\) regularization (2018)</a>, and the
+  <a href="https://arxiv.org/abs/1803.03635">lottery-ticket hypothesis (2019)</a> — each an
+  empirical compression or existence result that supplies no sample bound, which is the gap the
+  present note fills for bounded fan-in.</p>
+
+  <p><strong>Gradient descent and the discovery question.</strong> A class-level sample bound
+  does not imply that gradient descent finds the structure, and the sparse-parity literature is
+  the sharp stress test. <a href="https://arxiv.org/abs/1703.07950">Shalev-Shwartz, Shamir &amp;
+  Shammah (2017)</a> exhibit learnable-but-gradient-uninformative targets;
+  <a href="https://arxiv.org/abs/2002.07400">Daniely &amp; Malach (2020)</a> show parities
+  <em>are</em> reachable by SGD under special input distributions; and
+  <a href="https://arxiv.org/abs/2207.08799">Barak et&nbsp;al. (2022)</a> show SGD reaches them
+  only near the \(n^{\Theta(k)}\) computational limit, after long &ldquo;hidden progress&rdquo;
+  invisible to the loss — dissociating statistical efficiency from algorithmic tractability
+  exactly at the boundary of our claim.
+  <a href="https://arxiv.org/abs/1905.11604">Nakkiran et&nbsp;al. (2019)</a> add that SGD follows
+  a simplicity-first trajectory that need not align with a prescribed decomposition. This is the
+  discovery question we deliberately leave open (§11). The contrast that scopes the note from the
+  other side is that unrestricted overparameterized networks
+  <a href="https://arxiv.org/abs/1611.03530">can memorize arbitrary labels</a> and yet
+  <a href="https://doi.org/10.1073/pnas.1903070116">generalize past the interpolation
+  threshold</a>: our advantage is a classical, capacity-controlled sample-complexity story about a
+  restricted class, not an account of modern overparameterized generalization.</p>
+
+  <p>The novelty is therefore the combination, not any single ingredient: the finite-class
+  accounting is standard, the \(N{=}1\) case is junta learning, the deep-vs-shallow intuition is
+  the compositional-approximation line — the note's contribution is to fuse multi-node
+  bounded-arity DAGs with unknown wiring, an exact fan-in-2 MLP realization, and exact-enumeration
+  signatures into one object. References are listed at the end.</p>
+
+  <h2>3. Setting</h2>
 
   <div class="definition"><p><strong>The class.</strong> All variables share a finite alphabet of
   size \(D\); inputs are \(x \in \Sigma^{d}\). A target is computed by a DAG over the \(d\) input
@@ -411,52 +553,34 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
   \(r_v \le r\) parents (the fan-in, or local arity, is \(r = \max_v r_v\)); \(\Delta\) is the
   DAG depth. \(\mathcal F_G\) denotes the functions computable with structure \(G\) fixed and
   tables free; the fan-in-\(r\) class is the union over admissible structures, where node \(v\)
-  draws its parents from a candidate set of size \(M_v \le d + N\). <em>Axis-aligned</em> means
-  the DAG's variables are literal input coordinates and named latent nodes — the class is defined
-  <em>in a basis</em>.</p></div>
+  draws its parents from a candidate set of size \(M_v \le d + N\).</p></div>
 
   <p>Learning is realizable 0&ndash;1 classification on the output symbol: the target \(f^\star\)
   lies in the class, inputs are i.i.d. \(x \sim P\), and the learner sees
-  \(S_n = \{(x_i, f^\star(x_i))\}_{i=1}^{n}\). T1/T2/T5 are distribution-free; T3's floor and all
-  experiments fix \(P\) uniform. In the campaign, test error is always the exact expectation over
-  all \(D^{d}\) inputs — never a sampled test set. (Agnostic remark, not used anywhere: for a
-  finite class, uniform convergence gives the standard
-  \(n = O(\epsilon^{-2}[\ln|\mathcal H| + \ln(1/\delta)])\) rate.)</p>
+  \(S_n = \{(x_i, f^\star(x_i))\}_{i=1}^{n}\). The upper bounds and the realization results are
+  distribution-free; the arity floor and every experiment fix \(P\) uniform, and in the
+  enumeration test error is always the exact expectation over all \(D^{d}\) inputs, not a sampled
+  test set.</p>
 
-  <p>Two learner notions are kept explicit throughout. The theorems hold for <em>every
-  consistent learner (ERM)</em> — any rule returning a hypothesis with zero empirical error. The
-  experiments run the <em>uniform version-space (VS) predictor</em>: predict with a uniform draw
-  from the version space (the hypotheses consistent with \(S_n\)) — a Gibbs-style learner, not
-  deterministic ERM — under two pre-registered weightings: <strong>w-rep</strong>, uniform over
-  (graph, tables) <em>descriptions</em> (functions with many encodings get extra weight), and
-  <strong>w-fun</strong>, uniform over <em>distinct input&ndash;output maps</em>
-  (function-deduplicated via truth-table hashing, or closed forms at \(N{=}1\)). Gates evaluate on
-  w-fun; w-rep is the pre-registered sensitivity, and divergence between the two would itself be a
-  reported finding. When the version space is empty — the deliberately non-realizable regimes:
-  \(k \lt r\) arms, basis-mixing, label-shuffle — the predictor draws uniformly from the
-  minimum-empirical-disagreement set and is then named the <em>uniform-min-ERM predictor</em>
-  (there is no version space).</p>
+  <p>Two learner notions run throughout. The theorems hold for <em>every consistent learner</em>
+  (empirical risk minimizer) — any rule returning a hypothesis with zero empirical error, which
+  realizability guarantees exists. The enumeration instead runs the <em>version-space
+  predictor</em>: predict with a uniform draw from the hypotheses consistent with \(S_n\) (a
+  Gibbs-style learner, not deterministic ERM); where the version space is empty — the non-realizable
+  arity-mismatch and basis-mixing regimes — it draws from the minimum-empirical-disagreement set.
+  Its two weightings, uniform over structural <em>descriptions</em> (graph + tables) and uniform
+  over distinct input&ndash;output <em>functions</em>, agree wherever both are reported, so the
+  choice never carries a conclusion. The finite-class bounds count descriptions, so they are valid
+  under duplicate encodings of a function; deduplication only tightens the empirical predictor
+  (the discrete classes are duplicate-heavy — the diamond class at \(d{=}9\) has \(49{,}545{,}216\)
+  descriptions computing \(376{,}700\) distinct functions).</p>
 
-  <p>A standing remark the contract carries verbatim: &ldquo;the finite-class upper bounds count
-  <strong>descriptions</strong>, so they remain valid under duplicate encodings of the same
-  function; function-deduplication only tightens the empirical VS predictor.&rdquo; The campaign
-  measured the slack: the diamond class at \(d{=}9\) has \(49{,}545{,}216\) descriptions computing
-  only \(376{,}700\) distinct functions — \(99.24\%\) duplicates (\(d{=}6\):
-  \(5{,}898{,}240 \to 37{,}484\), \(99.36\%\)).</p>
+  <h2>4. Known-structure sample complexity</h2>
 
-  <h2>3. Theory</h2>
-
-  <p>&ldquo;Fully proved&rdquo; (Gate&nbsp;A, §8) means complete proofs in this note modulo
-  exactly one citation-grade import: <strong>[B]</strong> Bartlett, Harvey, Liaw &amp; Mehrabian,
-  <em>JMLR</em> 20(63), 2019 — VC/pseudo-dimension \(\tilde O(WL)\) for piecewise-linear networks
-  — used only in T5(c)'s labeled real-valued remark. (A junta-VC import was pre-authorized and
-  went unused: both shattering directions of T4 are self-proved.) Each theorem passed a
-  fresh-context adversarial proof-check before the campaign was dispatched; the statement
-  re-pinnings that audit forced are amendment A01, and the statements below are the A01 ones. The
-  full proof text lives beside this report (<code>report/theory_proofs.md</code>) and is
-  reproduced here in condensed but complete form.</p>
-
-  <h3>3.1 Known structure</h3>
+  <p>Everything rests on the textbook finite-class bound: a hypothesis class of size
+  \(|\mathcal H|\) is learnable from \(\log|\mathcal H|\) samples, and the whole contribution is to
+  count \(\log|\mathcal H|\) for bounded-arity DAGs. The full proofs sit beside this page in the
+  reproducibility material; the statements and their one-paragraph arguments are here.</p>
 
   <div class="lemma"><p><strong>Lemma 1 (finite-class realizable bound).</strong> Let
   \(\mathcal H\) be finite with \(f^\star \in \mathcal H\), and let \(\hat h \in \mathcal H\) be
@@ -472,10 +596,10 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
   at most \(|\mathcal H|\) such \(h\) makes the survival probability of <em>any</em>
   \(\epsilon\)-bad hypothesis below \(|\mathcal H|\,e^{-\epsilon n} \le \delta\) at
   \eqref{eq:l1}; a consistent \(\hat h\) exists by realizability and is then \(\epsilon\)-good.
-  \(\square\) No \(\log(1/\epsilon)\) factor appears; the bound is the plain
-  \(\epsilon^{-1}(\ln|\mathcal H| + \ln(1/\delta))\) form, derived, not imported.</p>
+  \(\square\) The bound is the plain \(\epsilon^{-1}(\ln|\mathcal H| + \ln(1/\delta))\) form, with
+  no \(\log(1/\epsilon)\) factor.</p>
 
-  <div class="lemma"><p><strong>Lemma 2 (counting, known DAG).</strong> For a fixed graph \(G\)
+  <div class="lemma"><p><strong>Lemma 2 (counting a known DAG).</strong> For a fixed graph \(G\)
   with node arities \(r_v \le r\),</p>
   \[\begin{equation}\label{eq:l2}
   \log_2|\mathcal F_G| \;\le\; \sum_{v} D^{r_v}\log_2 D \;\le\; N\,D^{r}\log_2 D.
@@ -483,61 +607,66 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
   <p><em>Proof.</em> A description fixes each node's table (\(\prod_v D^{D^{r_v}}\) choices);
   functions are at most descriptions. \(\square\)</p></div>
 
-  <div class="theorem"><p><strong>Theorem T1 (known DAG).</strong> Every consistent learner over
+  <div class="theorem"><p><strong>Known-structure bound.</strong> Every consistent learner over
   \(\mathcal F_G\) reaches error \(\epsilon\) with probability at least \(1-\delta\) from
-  \(n = O\big(\tfrac1\epsilon[\,N D^{r}\log D + \log(1/\delta)\,]\big)\) samples.
-  <em>Proof.</em> Lemma 1 + Lemma 2. \(\square\)</p></div>
+  \(n = O\big(\tfrac1\epsilon[\,N D^{r}\log D + \log(1/\delta)\,]\big)\) samples — Lemma 1 with
+  Lemma 2.</p></div>
 
-  <h3>3.2 Unknown wiring</h3>
+  <h2>5. Unknown-wiring sample complexity</h2>
 
-  <div class="lemma"><p><strong>Lemma 3 (counting, unknown DAG — scope pinned).</strong> Fix the
-  node set (count \(N\), labels), the designated output, the alphabets, and candidate-parent sets
-  of sizes \(r \le M_v \le d+N\) with \(\mathrm{pa}^\star(v) \subseteq\) the candidates for every
-  node (realizability hypothesis). Let \(\mathcal F\) be all functions computed by choices of
-  parent sets of size at most \(r\) drawn from the candidates (acyclic) together with tables.
-  Then</p>
+  <p>When the wiring is unknown the learner must also pay to <em>select</em> the graph. The point
+  of the bound is that this selection cost is only logarithmic in the ambient dimension: choosing
+  \(r\) parents for each node out of \(M_v \le d+N\) candidates adds \(r\log(eM_v/r)\) per node, not
+  a factor of \(D^{d}\).</p>
+
+  <div class="lemma"><p><strong>Lemma 3 (counting an unknown DAG).</strong> Fix the node set (count
+  \(N\), labels), the designated output, the alphabets, and candidate-parent sets of sizes
+  \(r \le M_v \le d+N\) with \(\mathrm{pa}^\star(v) \subseteq\) the candidates for every node
+  (realizability). Let \(\mathcal F\) be all functions computed by choices of parent sets of size at
+  most \(r\) drawn from the candidates (acyclic) together with tables. Then</p>
   \[\begin{equation}\label{eq:l3}
   \log_2|\mathcal F| \;\le\; \sum_v\Big[r\log_2\tfrac{eM_v}{r} + D^{r}\log_2 D\Big]
   \;=\; N D^{r}\log_2 D + O\!\Big(N r\log\tfrac{e(d+N)}{r}\Big).
   \end{equation}\]</div>
 
   <p><em>Proof.</em> Every \(f \in \mathcal F\) has, by definition, an acyclic description with
-  parent sets of size at most \(r\) — no padding needed — so \(|\mathcal F|\) is at most the
-  number of all (parent-sets, tables) tuples, acyclic or not (dropping acyclicity only enlarges
-  the count): \(|\mathcal F| \le \prod_v \big[\sum_{j \le r}\binom{M_v}{j}\big] D^{D^{r}}\), where
-  a fan-in-\(j\) table with \(j \lt r\) is subsumed by \(D^{D^{j}} \le D^{D^{r}}\). The binomial
-  sum is bounded in two lines: for \(M \ge r\), multiplying term \(j\) by
-  \((r/M)^{j-r} \ge 1\) gives</p>
+  parent sets of size at most \(r\) — no padding needed — so \(|\mathcal F|\) is at most the number
+  of all (parent-sets, tables) tuples, acyclic or not (dropping acyclicity only enlarges the count):
+  \(|\mathcal F| \le \prod_v \big[\sum_{j \le r}\binom{M_v}{j}\big] D^{D^{r}}\), where a fan-in-\(j\)
+  table with \(j \lt r\) is subsumed by \(D^{D^{j}} \le D^{D^{r}}\). The binomial sum is bounded in
+  two lines: for \(M \ge r\), multiplying term \(j\) by \((r/M)^{j-r} \ge 1\) gives</p>
   \[\begin{equation}\label{eq:binom}
   \sum_{j\le r}\binom{M}{j} \;\le\; \Big(\tfrac{M}{r}\Big)^{r}\sum_{j\le M}\binom{M}{j}
   \Big(\tfrac{r}{M}\Big)^{j} \;=\; \Big(\tfrac{M}{r}\Big)^{r}\Big(1+\tfrac{r}{M}\Big)^{M}
   \;\le\; \Big(\tfrac{eM}{r}\Big)^{r}\qquad (M \ge r),
   \end{equation}\]
-  <p>using \(1+x \le e^{x}\); this is where \(M_v \ge r\) is used (for \(M_v \lt r\) it can fail,
-  and the study never needs that regime — full candidate sets have \(M_v = d+N-1 \ge r\) and the
-  diamond leaf pairs have \(M_v = d \ge r\)). Because the relaxed count never uses a topological
-  order, unknown <em>order</em> is covered for free when the candidate sets are order-free
-  (\(M_v\) = all other nodes + inputs); with narrower candidate sets the order-coverage claim is
-  vacuous rather than wrong. Unknown \(N\), unknown output designation, and unknown alphabets are
-  <em>not</em> covered and not claimed. \(\square\)</p>
+  <p>using \(1+x \le e^{x}\) (the study's cells all satisfy \(M_v \ge r\): full candidate sets have
+  \(M_v = d+N-1\), diamond leaf pairs \(M_v = d\)). Because the relaxed count never uses a topological
+  order, unknown <em>order</em> is covered for free when the candidate sets are order-free. Unknown
+  \(N\), unknown output designation, and unknown alphabets are <em>not</em> covered and not claimed.
+  \(\square\)</p>
 
-  <div class="theorem"><p><strong>Theorem T2 (unknown DAG).</strong> Every consistent learner over
+  <div class="theorem"><p><strong>Unknown-wiring bound.</strong> Every consistent learner over
   Lemma 3's class reaches error \(\epsilon\) with probability at least \(1-\delta\) from</p>
   \[\begin{equation}\label{eq:t2}
   n \;=\; O\!\Big(\tfrac1\epsilon\Big[N D^{r}\log D + \sum_v r\log\tfrac{eM_v}{r}
   + \log\tfrac1\delta\Big]\Big)
   \end{equation}\]
   <p>samples. The graph-selection term is \(O(N\,r\log(e(d+N)/r))\) — logarithmic in \(d\); the
-  ambient dimension never enters exponentially. <em>Proof.</em> Lemma 1 + Lemma 3.
-  \(\square\)</p></div>
+  ambient dimension never enters exponentially.</p></div>
 
-  <h3>3.3 Arity mismatch</h3>
+  <h2>6. Arity mismatch</h2>
 
-  <div class="theorem"><p><strong>Theorem T3 (monotone cost above, floor below — scope
-  pinned).</strong> <strong>(a)</strong> For \(k \ge r\): the fan-in-\(\le k\) class contains the
-  fan-in-\(\le r\) class outright, so realizability transfers unconditionally; if additionally
-  \(\min_v M_v \ge k\) (every campaign cell satisfies it, \(M_v = d \ge k\)), T2 applies at arity
-  \(k\):</p>
+  <p>When the learner's assumed arity \(k\) differs from the target's \(r\), the error is U-shaped in
+  \(k\): above the truth the cost only grows, below it the class can no longer fit the target. The two
+  arms have different characters — one an approximation limit
+  that binds every learner, the other a finite-sample effect specific to the version-space
+  predictor.</p>
+
+  <div class="theorem"><p><strong>Monotone cost above, junta floor below.</strong>
+  <strong>(a)</strong> For \(k \ge r\): the fan-in-\(\le k\) class contains the fan-in-\(\le r\)
+  class outright, so realizability transfers unconditionally; if additionally \(\min_v M_v \ge k\)
+  (every cell satisfies it, \(M_v = d \ge k\)), the unknown-wiring bound applies at arity \(k\),</p>
   \[\begin{equation}\label{eq:t3k}
   n \;=\; O\!\Big(\tfrac1\epsilon\Big[N D^{k}\log D + \sum_v k\log\tfrac{eM_v}{k}
   + \log\tfrac1\delta\Big]\Big),
@@ -551,137 +680,101 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
   exact-arity-}r\ f,\qquad\text{hence}\quad c_{r,k} \;\ge\; 2^{-r} \;\gt\; 0,
   \end{equation}\]
   <p>where \(c_{r,k}\) is the expected best-in-class error over uniform essential targets. At
-  \(k{=}1\) the floor holds at <em>any</em> \(N\) (fan-in-1 compositions are 1-juntas at any
-  size). The intermediate case — fixed node set, \(N \ge 2\), \(2 \le k \lt r\) — is declared
-  <em>open</em>: no cell tests it and nothing downstream depends on it.</p></div>
+  \(k{=}1\) the floor holds at <em>any</em> \(N\) (fan-in-1 compositions are 1-juntas at any size).
+  The intermediate case — fixed node set, \(N \ge 2\), \(2 \le k \lt r\) — is left open: no cell
+  tests it and nothing downstream depends on it.</p></div>
 
-  <p>The floor <em>cannot</em> hold for the unrestricted-\(N\) fan-in-\(k\) class once
-  \(k \ge 2\): 2-ary tables include AND/OR/NOT, so fan-in-2 table-DAGs with enough nodes compute
-  every Boolean function (two-input-gate universality — indeed T5(a)'s own construction is
-  literally a fan-in-2 Boolean DAG). That is why A01 pinned the floor to the node-matched class —
-  which is exactly the class the arity-sweep cells always enumerated.</p>
+  <p>The floor <em>cannot</em> hold for the unrestricted-\(N\) fan-in-\(k\) class once \(k \ge 2\):
+  2-ary tables include AND/OR/NOT, so fan-in-2 table-DAGs with enough nodes compute every Boolean
+  function (two-input-gate universality — the fan-in-2 realization of §8 is itself such a DAG). The
+  floor is therefore a statement about the node-matched class, which is exactly the class the
+  arity-sweep enumerates.</p>
 
-  <p><em>Proof of \eqref{eq:floor}.</em> <em>Flip Lemma:</em> for \(D{=}2\), \(P\) uniform, and
-  \(h\) not depending on coordinate \(i\), \(\mathrm{err}(h;f) \ge \tfrac12\mathrm{Inf}_i(f)\)
-  where \(\mathrm{Inf}_i(f) = \Pr_x[f(x) \ne f(x \oplus e_i)]\): pair the inputs
-  \(\{x, x\oplus e_i\}\); on a pair where \(f\) differs, \(h\) (equal on both) errs on at least
-  one of the two equally likely points. Any \(h \in \mathcal J_k\) with \(k \lt r\) ignores some
-  essential parent \(i\); essentiality gives at least one differing pair among the \(2^{r-1}\)
-  co-assignments of the other parents, and the \(d-r\) non-parents are dummies, so
-  \(\mathrm{Inf}_i(f) \ge 2^{-(r-1)}\). Under arbitrary \(P\) no distribution-free floor exists
-  (an \(r\)-ary target can look \(k\)-ary on the support), which is why the theorem pins \(P\)
+  <p><em>Proof of \eqref{eq:floor}.</em> <em>Flip lemma:</em> for \(D{=}2\), \(P\) uniform, and
+  \(h\) not depending on coordinate \(i\), \(\mathrm{err}(h;f) \ge \tfrac12\mathrm{Inf}_i(f)\) where
+  \(\mathrm{Inf}_i(f) = \Pr_x[f(x) \ne f(x \oplus e_i)]\): pair the inputs \(\{x, x\oplus e_i\}\); on
+  a pair where \(f\) differs, \(h\) (equal on both) errs on at least one of the two equally likely
+  points. Any \(h \in \mathcal J_k\) with \(k \lt r\) ignores some essential parent \(i\);
+  essentiality gives at least one differing pair among the \(2^{r-1}\) co-assignments of the other
+  parents, so \(\mathrm{Inf}_i(f) \ge 2^{-(r-1)}\). Under arbitrary \(P\) no distribution-free floor
+  exists (an \(r\)-ary target can look \(k\)-ary on the support), which is why the theorem pins \(P\)
   uniform. \(\square\)</p>
 
   <p><strong>Anchor, computed exactly.</strong> At \((r,k) = (2,1)\), \(D{=}2\): the 16 two-bit
   tables split into 6 non-essential and 10 essential; a best 1-junta (constants included) errs
   \(1/4\) on each of the 8 AND/OR-type essential functions and \(1/2\) on XOR/XNOR, so
-  \(c_{2,1} = (8\cdot\tfrac14 + 2\cdot\tfrac12)/10 = 0.3\) exactly. The campaign's analysis
-  re-verified this (10 essential tables, mean best-1-junta error \(0.3\), exact match — §6). The
-  adversarial pass additionally pinned \(c_{3,2} = 43/218 \approx 0.197\) and
-  \(c_{3,1} = 55/218 \approx 0.252\), both above the \(2^{-r}\) floor, which is pointwise tight.</p>
+  \(c_{2,1} = (8\cdot\tfrac14 + 2\cdot\tfrac12)/10 = 0.3\) exactly. Exhaustive evaluation also pins
+  \(c_{3,2} = 43/218 \approx 0.197\) and \(c_{3,1} = 55/218 \approx 0.252\), both above the
+  \(2^{-r}\) floor, which is pointwise tight.</p>
 
-  <div class="corollary"><p><strong>Corollary (\(k=r\) minimality — wording part of the
-  contract, scoped per A01).</strong> Among arities \(k \ge r\) the finite-class upper bound
-  \eqref{eq:t3k} is minimized at \(k = r\) — unconditional, by T3(a) monotonicity. That \(k = r\)
+  <div class="corollary"><p><strong>The bound is minimized at the true arity.</strong> Among arities
+  \(k \ge r\) the upper bound \eqref{eq:t3k} is minimized at \(k = r\), by monotonicity; that \(k = r\)
   is moreover the smallest <em>realizable</em> arity is established at \(N{=}1\) by the floor
-  \eqref{eq:floor} (and at \(k{=}1\) for any \(N\)); realizability at \(N \ge 2\),
-  \(2 \le k \lt r\) is the declared open case. This is a statement about the <em>bound</em>, not
+  \eqref{eq:floor} (and at \(k{=}1\) for any \(N\)). This is a statement about the <em>bound</em>, not
   a universal statistical theorem.</p></div>
 
-  <p>The finite-sample right arm — \(k \gt r\) hurting at fixed \(n\) — is the
-  <em>over-classing effect of the uniform-VS predictor</em> (larger \(k\) leaves more spurious
-  consistent hypotheses), not a property of ERM in general. The Occam-ERM that returns a
-  consistent hypothesis of minimal per-node essential fan-in inside
-  \(\mathcal F_k \supseteq \mathcal F_r\) collapses the right arm exactly: realizability puts
-  \(f^\star\) (per-node essential fan-in \(\le r\)) in the consistent set, so the minimal
+  <p>The finite-sample right arm — \(k \gt r\) hurting at fixed \(n\) — is <strong>not a property of
+  ERM in general</strong>; it is the over-classing effect of the version-space predictor, which at
+  larger \(k\) leaves more spurious consistent hypotheses to draw from. A deterministic Occam-ERM that
+  returns a consistent hypothesis of minimal per-node essential fan-in collapses the right arm exactly:
+  realizability puts \(f^\star\) (essential fan-in \(\le r\)) in the consistent set, so the minimal
   consistent output has essential fan-in \(\le r\); pruning inessential parents exhibits it in
-  \(\mathcal F_r\), and Lemma 1 applied to \(\mathcal F_r\) gives exactly T2-at-\(r\) for every
-  \(k \ge r\) — the rule's output set is \(k\)-invariant, so its right arm is exactly flat.
-  (Caveat pinned: &ldquo;essential arity&rdquo; means per-node essential fan-in; under the
-  composed-function reading the pruning step fails for \(N \gt 1\); at \(N{=}1\), where the
-  U-shape lives, the two readings coincide.) The right arm as a theorem for the VS predictor
-  (T3&prime;) is a pre-registered high-risk stretch that was <em>not attempted</em>, per its
-  pre-commitment; nothing depends on it (§5.2 reports its numeric probe).</p>
+  \(\mathcal F_r\), and Lemma 1 applied to \(\mathcal F_r\) gives exactly the arity-\(r\) rate for
+  every \(k \ge r\). The U-shape is thus a statement about approximation (the left arm, binding on
+  every learner) and about a specific Gibbs predictor's finite-sample ambiguity (the right arm), never
+  about arbitrary ERM.</p>
 
-  <h3>3.4 Lower bound at \(D=2\)</h3>
+  <h2>7. A near-matching lower bound at \(D=2\)</h2>
 
-  <div class="theorem"><p><strong>Theorem T4 (junta subclass).</strong> There is a constant
-  \(c \gt 0\) such that any learner (possibly randomized, possibly improper) that, for
-  <em>every</em> distribution \(P\) on \(\{0,1\}^{d}\) and every target in the fan-in-\(r\)
-  class, achieves error at most \(\epsilon\) with probability at least \(1-\delta\)
-  (hypotheses: \(\epsilon \le 1/8\), \(\delta \le 1/8\), \(d \ge 2r\)) requires</p>
+  <p>The upper bound's leading terms are not loose: already the single Boolean node forces them from
+  below. The lower bound is the classical junta minimax bound, self-contained here.</p>
+
+  <div class="theorem"><p><strong>Junta lower bound.</strong> There is a constant \(c \gt 0\) such
+  that any learner (possibly randomized, possibly improper) that, for <em>every</em> distribution
+  \(P\) on \(\{0,1\}^{d}\) and every target in the fan-in-\(r\) class, achieves error at most
+  \(\epsilon\) with probability at least \(1-\delta\) (hypotheses: \(\epsilon \le 1/8\),
+  \(\delta \le 1/8\), \(d \ge 2r\)) requires</p>
   \[\begin{equation}\label{eq:t4}
   n \;\ge\; c\,\frac{2^{r} + r\log_2(d/r) + \log_2(1/\delta)}{\epsilon}.
   \end{equation}\]
-  <p>Already the \(N{=}1\) junta subclass forces this; the \(N\)-linear upper-bound term of
-  T1/T2 is <em>not</em> matched from below, and that gap is left open. (The for-every-\(P\)
-  quantifier matches the distribution-free upper bounds.)</p></div>
+  <p>Already the \(N{=}1\) junta subclass forces this; the \(N\)-linear upper-bound term is
+  <em>not</em> matched from below, and that gap is left open. The for-every-\(P\) quantifier matches
+  the distribution-free upper bounds.</p></div>
 
-  <p><em>Proof.</em> Since the \(r\)-junta class \(\mathcal J_r\) is contained in the
-  fan-in-\(r\) target class (\(N{=}1\)), a minimax lower bound for \(\mathcal J_r\) lower-bounds
-  the larger problem. Both shattering directions are self-contained.
-  <em>VC \(\ge 2^{r}\):</em> fix a support \(S_0\), \(|S_0| = r\); the \(2^{r}\) inputs that are
-  zero off \(S_0\) are shattered by the tables on \(S_0\).
-  <em>VC \(\ge r\lfloor\log_2\lfloor d/r\rfloor\rfloor\) (block-dictator construction,
-  \(d \ge 2r\)):</em> partition the \(d\) coordinates into \(r\) blocks of size
-  \(q = \lfloor d/r\rfloor\) and set \(m_b = \lfloor\log_2 q\rfloor \ge 1\). In block \(b\) pick
-  \(m_b\) points, each supported on block \(b\) only, whose \(q\)-column patterns over the
-  block's coordinates realize all \(2^{m_b}\) binary columns (possible since
-  \(2^{m_b} \le q\)). Given any labeling \(y\), choose in each block the coordinate \(j_b\) whose
-  column equals \(y\) restricted to that block, and set \(f = \bigoplus_b x_{j_b}\) — an XOR of
-  \(r\) dictators, hence an \(r\)-junta. On a block-\(b\) point all other blocks' chosen
-  coordinates read 0, so \(f\) equals the required label: the set is shattered.</p>
+  <p><em>Proof sketch.</em> Since the \(r\)-junta class \(\mathcal J_r\) sits inside the fan-in-\(r\)
+  class (\(N{=}1\)), a minimax lower bound for \(\mathcal J_r\) suffices. Two shattered sets are built
+  by hand. <em>VC \(\ge 2^{r}\):</em> fix a support \(S_0\) of size \(r\); the \(2^{r}\) inputs zero off
+  \(S_0\) are shattered by the tables on \(S_0\). <em>VC \(\ge r\lfloor\log_2\lfloor d/r\rfloor
+  \rfloor\):</em> partition the \(d\) coordinates into \(r\) blocks of size \(q = \lfloor d/r\rfloor\);
+  in block \(b\) place \(m_b = \lfloor\log_2 q\rfloor\) points whose column patterns realize all
+  \(2^{m_b}\) binary columns, and for any labeling \(y\) set \(f = \bigoplus_b x_{j_b}\) with \(j_b\)
+  the coordinate whose column matches \(y\) on block \(b\) — an XOR of \(r\) dictators, hence an
+  \(r\)-junta, that shatters the point set. A standard two-point and rare-mass argument turns each
+  shattered set of size \(m\) into an \(\Omega(m/\epsilon)\) sample lower bound and supplies the
+  \(\log(1/\delta)/\epsilon\) term; combining via \(\max(a,b) \ge \tfrac12(a+b)\) gives
+  \eqref{eq:t4}. \(\square\)</p>
 
-  <p><em>(i) \(\Omega(m/\epsilon)\) from a shattered set of size \(m \ge 2\).</em> Define \(P\):
-  \(P(x_0) = 1-8\epsilon\), \(P(x_j) = 8\epsilon/(m-1)\) for \(j \ge 1\); draw the target
-  uniformly among the \(2^{m-1}\) shattered labelings fixing \(f(x_0)\). Suppose
-  \(n \le (m-1)/(64\epsilon)\). Each rare point is unseen with probability
-  \((1 - \tfrac{8\epsilon}{m-1})^{n} \ge 1 - \tfrac{8\epsilon n}{m-1} \ge \tfrac78\), so the
-  expected number unseen is at least \(\tfrac78(m-1)\). Define the rare-mass error</p>
-  \[\begin{equation}\label{eq:raremass}
-  X \;=\; \tfrac{8\epsilon}{m-1}\,\#\{j \ge 1 : \hat h(x_j) \ne f(x_j)\} \;\in\; [0, 8\epsilon],
-  \qquad X \le \mathrm{err}_P(\hat h).
-  \end{equation}\]
-  <p>On an unseen rare point the target label is uniform and independent of the learner's (even
-  randomized) prediction, so it is mispredicted with probability exactly \(\tfrac12\); hence
-  \(\mathbb E X \ge \tfrac12\cdot\tfrac{8\epsilon}{m-1}\cdot\tfrac78(m-1) = 3.5\,\epsilon\)
-  jointly over target, sample, and learner randomness. Reverse Markov on
-  \(X \in [0, 8\epsilon]\): \(\Pr[X \gt \epsilon] \ge (\mathbb E X - \epsilon)/(7\epsilon) \ge
-  \tfrac{5}{14} \gt \tfrac18 \ge \delta\). Averaging over targets, some fixed target fails with
-  probability above \(\delta\) — so \(n \gt (m-1)/(64\epsilon)\), and \(m-1 \ge m/2\).
-  <em>(ii) \(\Omega(\log(1/\delta)/\epsilon)\).</em> Two shattered points:
-  \(P(x_0) = 1-2\epsilon\), \(P(x_1) = 2\epsilon\); shattering supplies \(f_0, f_1\) agreeing at
-  \(x_0\), differing at \(x_1\). With \(E\) = &ldquo;\(x_1\) unseen&rdquo;,
-  \(\Pr[E] = (1-2\epsilon)^{n}\); for \(\epsilon \le 1/8\),
-  \(-\ln(1-2\epsilon) \le 0.576\cdot 4\epsilon\), so at \(n \le \ln(1/\delta)/(4\epsilon)\),
-  \(\Pr[E] \ge \delta^{0.576}\). On \(E\) the sample is identical under both targets, so the
-  prediction at \(x_1\) errs against one of them with conditional probability at least
-  \(\tfrac12\), costing error \(2\epsilon \gt \epsilon\); hence
-  \(\max_i \Pr_{f_i}[\mathrm{err} \gt \epsilon] \ge \tfrac12\delta^{0.576} \ge 1.2\,\delta
-  \gt \delta\) for \(\delta \le \tfrac18\). Combining (i) at
-  \(m = \max(2^{r},\, r\lfloor\log_2\lfloor d/r\rfloor\rfloor)\) with (ii) via
-  \(\max(a,b) \ge \tfrac12(a+b)\) gives \eqref{eq:t4}. \(\square\)</p>
+  <p><strong>Consequence.</strong> At \(D{=}2\) the arity-\(r\) consistent learner is
+  minimax-near-optimal in the leading \(2^{r}\) and \(r\log(d/r)\) dependencies (up to constants).
+  Optimality is not claimed beyond this, and nothing is claimed for \(D \gt 2\) — which is why the
+  headline lower bound reads &ldquo;at \(D{=}2\), i.e. \(2^{r}\)&rdquo;.</p>
 
-  <p><strong>Consequence.</strong> At \(D{=}2\) the \(k{=}r\) consistent learner of T2 is
-  minimax-near-optimal in the leading \(2^{r}\) and \(r\log(d/r)\) dependencies (up to
-  constants). &ldquo;Sample-optimal&rdquo; is deliberately not claimed beyond this; nothing is
-  claimed for \(D \gt 2\), and the top-level claim's lower-bound clause reads &ldquo;at
-  \(D{=}2\) (i.e. \(2^{r}\))&rdquo; for exactly this reason.</p>
+  <h2>8. Exact fan-in-2 ReLU realization</h2>
 
-  <h3>3.5 The MLP bridge</h3>
+  <p>The class is not an abstraction that happens to have small counting complexity: it is realized
+  <em>exactly</em> by scalar-fan-in-2 ReLU networks — every unit reads at most two others — after a
+  logarithmic depth inflation. This is the bridge from the DAG class to neuron-level architectures,
+  and it refines the encoding of the <a class="xref" href="../neurep_mlp_encoding/">companion note</a> to enforce
+  scalar fan-in at most two.</p>
 
-  <p><em>Input-encoding convention, part of every T5 statement:</em> the input layer is the
-  one-hot encoding of the \(d\) symbolic variables (one group of \(D\) coordinates per variable);
-  <strong>scalar fan-in \(k\) counts one-hot coordinates, DAG arity \(r\) counts variable
-  groups</strong> — the two are never conflated. (The scalar-symbol alternative must first build
-  equality indicators and pay their units, depth, and fan-in; it is a remark, not the route
-  taken.)</p>
+  <p><em>Encoding convention.</em> The input layer is the one-hot encoding of the \(d\) symbolic
+  variables (one group of \(D\) coordinates per variable); <strong>scalar fan-in \(k\) counts one-hot
+  coordinates, DAG arity \(r\) counts variable groups</strong> — the two are never conflated.</p>
 
-  <div class="theorem"><p><strong>Theorem T5(a) (realizability at \(k=2\) with depth
-  inflation).</strong> Every computation-graph function (arities \(r_v \le r\), depth
-  \(\Delta\), common alphabet \(D\)) is computed <em>exactly</em> by a ReLU network of scalar
-  fan-in at most 2, integer weights of magnitude at most 1 with biases in \(\{0, -1\}\)
-  (\(b = 2\) bits per parameter), whose output is a designated one-hot group inside the network
+  <div class="theorem"><p><strong>Realizability at scalar fan-in 2.</strong> Every computation-graph
+  function (arities \(r_v \le r\), depth \(\Delta\), common alphabet \(D\)) is computed <em>exactly</em>
+  by a ReLU network of scalar fan-in at most 2, integer weights of magnitude at most 1 with biases in
+  \(\{0, -1\}\) (2 bits per parameter), whose output is a designated one-hot group inside the network
   (no external argmax), with</p>
   \[\begin{equation}\label{eq:t5size}
   \begin{aligned}
@@ -692,541 +785,424 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
   \end{equation}\]
   <p>where the \(r^{2}\) term carries the live-input factor \(\min(d, Nr)\).</p></div>
 
-  <p><em>Proof.</em> Maintain the invariant (I1) that after processing DAG level \(\ell\), every
+  <p><em>Proof.</em> Maintain the invariant that after processing DAG level \(\ell\), every
   still-needed node \(u\) owns a group of units whose activations form exactly the one-hot
   \(\xi_u = e_{z_u} \in \{0,1\}^{D}\); level 0 is the input encoding. For node \(v\) with parents
-  \(p_1 \dots p_{r_v}\): <em>conjunction trees</em> — for each parent-value row \(c\), AND the
-  \(r_v\) bits \(\xi_{p_j}[c_j]\) pairwise with \(\mathrm{AND}(a,b) = \mathrm{ReLU}(a+b-1)\)
-  (exact on \(\{0,1\}\)), reaching the row indicator \(h^v_c\) after
-  \(\lceil\log_2 r_v\rceil\) layers; because each parent group is one-hot, exactly one row unit
-  is active per input. <em>OR trees</em> — for each output symbol \(s\), sum the row units of
-  \(g_v^{-1}(s)\) pairwise with \(\mathrm{SUM}(a,b) = \mathrm{ReLU}(a+b)\); since at most one
-  summand is ever 1 (rows mutually exclusive), all partial sums stay in \(\{0,1\}\) (I3), and
-  after at most \(\lceil r\log_2 D\rceil\) layers the group \(\xi_v\) is one-hot again (I1
-  restored). All nodes of a level run their trees in parallel inside shared physical layers,
-  padding shorter trees and still-needed groups with identity units \(\mathrm{ReLU}(x)\)
-  (fan-in 1) — so depth is per-level, never per-node (I5), with \(+1\) slack covering unary
-  leaf-copy stages. Every unit has scalar fan-in at most 2 (I2) and integer weights
-  \(|w| \le 1\), biases in \(\{0,-1\}\). Units: node \(v\) costs \(O(D^{r_v} r_v)\) tree units
-  (the first AND stage dominates, then geometric decay, plus \(D\) OR roots); carries cost
-  \(O(\text{live groups}\cdot D)\) per physical layer, and live groups never exceed
-  \(N + \min(d, Nr)\) (only hidden nodes and consumed inputs are carried), so carries total
-  \(O\big((N + \min(d, Nr))\,D\,\Delta\,r\log D\big) \subseteq O(N D\,\Delta\,r^{2}\log D)\) —
-  the carried-input factor is not \(O(N)\) alone and is stated explicitly. The output node's
-  group is the network's last-layer one-hot (I4). \(\square\)</p>
+  \(p_1 \dots p_{r_v}\): <em>conjunction trees</em> — for each parent-value row \(c\), AND the \(r_v\)
+  bits \(\xi_{p_j}[c_j]\) pairwise with \(\mathrm{AND}(a,b) = \mathrm{ReLU}(a+b-1)\) (exact on
+  \(\{0,1\}\)), reaching the row indicator after \(\lceil\log_2 r_v\rceil\) layers; because each parent
+  group is one-hot, exactly one row unit is active per input. <em>OR trees</em> — for each output
+  symbol \(s\), sum the row units of \(g_v^{-1}(s)\) pairwise with \(\mathrm{SUM}(a,b) =
+  \mathrm{ReLU}(a+b)\); since at most one summand is ever 1, all partial sums stay in \(\{0,1\}\), and
+  after at most \(\lceil r\log_2 D\rceil\) layers the group \(\xi_v\) is one-hot again. All nodes of a
+  level run their trees in parallel inside shared physical layers, padding shorter trees and
+  still-needed groups with identity units (fan-in 1), so depth is per-level, never per-node. Every
+  unit has scalar fan-in at most 2 and integer weights \(|w| \le 1\), biases in \(\{0,-1\}\). Units:
+  node \(v\) costs \(O(D^{r_v} r_v)\) tree units; carries cost \(O(\text{live groups}\cdot D)\) per
+  physical layer, and live groups never exceed \(N + \min(d, Nr)\), so carries total
+  \(O\big(N D\,\Delta\,r^{2}\log D\big)\). The output node's group is the network's last-layer
+  one-hot. \(\square\)</p>
 
-  <p><strong>Executable witness (part of Gate A).</strong> <code>src/verify_t5.py</code> builds
-  exactly this construction and asserts, on 80 random graphs (\(D \in \{2,3\}\),
-  \(r \in \{1,2,3\}\), \(N \in \{1,\dots,4\}\), mixed arities with unary nodes, plus the
-  campaign's diamond and chain): exact I/O equality on all \(D^{d}\) inputs, max scalar fan-in
-  \(\le 2\), integer weights \(|w| \le 1\) with biases in \(\{0,-1\}\), the depth bound of
-  \eqref{eq:t5size}, and one-hotness of every carried group at every level boundary. All 80
-  pass; unit counts are reported, not asserted.</p>
+  <p>An executable check builds this construction and verifies, on 80 random graphs (\(D \in \{2,3\}\),
+  \(r \in \{1,2,3\}\), \(N \in \{1,\dots,4\}\), mixed arities, plus the diamond and chain of Appendix&nbsp;A): exact
+  I/O equality on all \(D^{d}\) inputs, scalar fan-in \(\le 2\), integer weights \(|w| \le 1\) with
+  biases in \(\{0,-1\}\), the depth bound of \eqref{eq:t5size}, and one-hotness of every carried group
+  at every level boundary.</p>
 
-  <div class="theorem"><p><strong>Theorem T5(b) (fan-in-1 impossibility — output mechanism
-  pinned).</strong> (i) If every unit including the designated output unit has fan-in at most 1,
-  then by induction every unit's activation is a function of at most one input coordinate; the
-  output therefore cannot equal any target essential on 2 or more coordinates. (ii) Relaxed
-  variant — unrestricted linear readout, or argmax over scores, over fan-in-1 features: every
-  feature depends on at most one coordinate, so each score is additive across single-coordinate
-  functions; for two scores, argmax is the sign of an additive score against a threshold. For
-  XOR (\(D{=}2\)): \(s(00) + s(11) = s(01) + s(10)\), hence
-  \(\min(s_{01}, s_{10}) \le \tfrac12(s_{01}+s_{10}) = \tfrac12(s_{00}+s_{11})
-  \le \max(s_{00}, s_{11})\) — correctness would need the strict opposite under either tie rule.
-  Additive scores cannot decide XOR, so generic \(r \ge 2\)-ary interactions are excluded in both
-  variants. \(\square\)</p></div>
+  <div class="theorem"><p><strong>Fan-in 1 is not enough.</strong> If every unit including the output
+  has fan-in at most 1, then by induction every unit's activation depends on at most one input
+  coordinate, so the output cannot equal any target essential on two or more coordinates. Allowing an
+  unrestricted linear readout or an argmax over fan-in-1 features does not help: each score is additive
+  across single-coordinate functions, and for XOR (\(D{=}2\)), \(s(00) + s(11) = s(01) + s(10)\) forces
+  \(\min(s_{01}, s_{10}) \le \max(s_{00}, s_{11})\), the opposite of what correctness needs under either
+  tie rule. Two is the smallest scalar fan-in that realizes generic \(r \ge 2\)-ary interactions.
+  \(\square\)</p></div>
 
-  <div class="theorem"><p><strong>Theorem T5(&zwnj;c) (capacity — quantized vs equally-quantized,
-  never mixed).</strong> The class \(\mathcal F_{k,b}\) of ReLU networks with architecture
-  \(\{m_\ell\}_{\ell=1}^{L}\), per-unit fan-in at most \(k\), and integer parameters in \(b\)
-  bits satisfies</p>
+  <p><strong>Capacity: a description-length separation, not a VC separation.</strong> The class \(\mathcal F_{k,b}\) of ReLU networks with architecture
+  \(\{m_\ell\}\), per-unit fan-in at most \(k\), and integer parameters in \(b\) bits has description
+  count</p>
   \[\begin{equation}\label{eq:cap}
   \log_2|\mathcal F_{k,b}| \;\le\; \sum_{\ell} m_\ell\Big[k\log_2\tfrac{e\,m_{\ell-1}}{k}
   + (k+1)\,b\Big]
   \end{equation}\]
-  <p>(each unit: a \(\le k\)-subset of the previous layer — subsumed by exactly-\(k\) subsets
-  with zero weights, \(\binom{m_{\ell-1}}{k} \le (e m_{\ell-1}/k)^{k}\) by \eqref{eq:binom} —
-  plus \(k\) weights and a bias at \(b\) bits; the output group is WLOG the first \(D\) units of
-  the last layer). The equally-quantized <em>dense</em> class at the same architecture and \(b\)
-  has description count \(\Theta\big(b\sum_\ell m_\ell(m_{\ell-1}+1)\big) = \Theta(\Delta' m^{2} b)\)
-  at width \(m\), depth \(\Delta'\) (functions at most descriptions; the function-count lower
-  bound is not claimed). At T5(a)'s realizing sizes — \(b = 2\),
-  \(\sum_\ell m_\ell = \tilde O(N D^{r})\) <em>under the explicit regime hypothesis
-  \(\Delta = O(r D^{r-1})\)</em> (Note&nbsp;0's regime, which absorbs the carry term), with
-  \(\tilde O\) hiding \(\mathrm{polylog}(N D^{r})\) — the fan-in-2 class costs
-  \(\log_2|\mathcal F| = \tilde O(N r D^{r})\) against the dense description count
-  \(\Theta(\Delta' m^{2} b)\) with \(m = \tilde O(N D^{r})\): near-linear in \(N D^{r}\) versus
-  quadratic in the width, at equal architecture, both sides quantized at the same \(b\).
-  <em>Real-valued remark (separate; the import [B]):</em> sparse real-valued ReLU networks with
-  \(W\) weights and \(L\) layers have VC/pseudo-dimension \(\tilde O(WL)\); with
-  \(W = k\sum_\ell m_\ell\) this is the real-valued analogue and is never combined with the
-  counting bound in one inequality.</p></div>
+  <p>(each unit picks a \(\le k\)-subset of the previous layer, \(\binom{m_{\ell-1}}{k} \le
+  (e m_{\ell-1}/k)^{k}\) by \eqref{eq:binom}, plus \(k\) weights and a bias). At the realizing sizes of
+  \eqref{eq:t5size} — \(b = 2\), \(\sum_\ell m_\ell = \tilde O(N D^{r})\) under the depth regime
+  \(\Delta = O(r D^{r-1})\) — the fan-in-2 class costs \(\log_2|\mathcal F| = \tilde O(N r D^{r})\)
+  against the equally-quantized <em>dense</em> class's description count \(\Theta(\Delta' m^{2} b)\) with
+  \(m = \tilde O(N D^{r})\): near-linear in \(N D^{r}\) versus quadratic in the width, at equal
+  architecture and equal quantization. This is a <em>description-count</em> comparison for a structured
+  quantized subclass — <strong>not</strong> a claim that dense networks cannot represent these functions,
+  and not a generic VC-dimension separation. The real-valued statement is separate and stands on its own:
+  by <a href="https://jmlr.org/papers/v20/17-612.html">Bartlett, Harvey, Liaw &amp; Mehrabian (2019)</a>,
+  sparse real-valued ReLU networks with \(W\) weights and \(L\) layers have VC/pseudo-dimension
+  \(\tilde O(WL)\); it is never combined with the counting bound in one inequality. Finally, against the
+  <em>flat</em> class of arbitrary \(f:\Sigma^d\to\Sigma\) (description size \(D^{d}\log_2 D\)), the
+  bounded-arity class at \(N D^{r}\log_2 D + O(N r\log\frac{e(d+N)}{r})\) is exponentially separated once
+  \(r \ll d\) and \(N = \mathrm{poly}(d)\).</p>
 
-  <div class="theorem"><p><strong>Theorem T5(d) (flat comparison).</strong> Arbitrary
-  \(f : \Sigma^{d} \to \Sigma\) form a class of \(\log_2\)-size \(D^{d}\log_2 D\); T2's class
-  costs \(N D^{r}\log_2 D + O(N r\log\frac{e(d+N)}{r})\) — exponentially separated once
-  \(r \ll d\) and \(N = \mathrm{poly}(d)\). \(\square\)</p></div>
+  <h2>9. A flat-class memorization pathology</h2>
 
-  <h3>3.6 A bad ERM on the flat class</h3>
+  <p>The bounds above are about the <em>class</em>: bound its size, and every consistent learner inherits
+  the rate. Drop the class and even a consistent learner has no rate at all — a reminder that the
+  inductive bias, not the fitting principle, is what buys efficiency.</p>
 
-  <div class="theorem"><p><strong>Theorem T6 (bad-ERM separation — stretch, included).</strong>
-  There exists an ERM over the flat class needing \(n = \Omega(D^{d})\) samples to reach error
-  at most \(\tfrac14(1-1/D)\) on a fan-in-\(r\) realizable target under uniform inputs, while by
-  T1/T2 every consistent learner over the matched class needs only
+  <div class="theorem"><p><strong>ERM alone certifies no rate on the flat class.</strong> There is a
+  consistent learner over the flat class of all functions \(\Sigma^d\to\Sigma\) needing
+  \(n = \Omega(D^{d})\) samples to reach error \(\le \tfrac12\) on a fan-in-\(r\) realizable target under
+  uniform inputs, while every consistent learner over the matched bounded-arity class needs only
   \(\tilde O(N D^{r})/\epsilon\).</p></div>
 
-  <p><em>Proof.</em> The adversarial consistent rule \(\hat h\): on seen inputs predict the seen
-  label; on every unseen input predict \(f^\star(x) + 1 \pmod D\). It is an ERM for the flat
-  class — the returned hypothesis is in the class with empirical risk exactly 0; the ERM
-  <em>principle</em> does not forbid this tie-break, which is the point: the principle alone
-  gives no rate for the flat class. The rule is wrong on every unseen input, and \(n\) samples
-  cover at most \(n\) distinct inputs, so</p>
+  <p><em>Proof.</em> Fix the constant target \(f^\star \equiv 1\) (fan-in \(0 \le r\), realizable). Define
+  the learner \(\hat h\) by a fixed rule that never references \(f^\star\): predict the observed label on
+  each seen input, and a fixed default symbol \(0\) on every unseen input. \(\hat h\) reproduces the
+  training labels, so its empirical error is 0 and it is a valid ERM output for the flat class. Since
+  \(f^\star \equiv 1\) and \(\hat h = 0\) off the sample, \(\hat h\) is wrong on every unseen input; \(n\)
+  samples cover at most \(n\) distinct inputs, so</p>
   \[\begin{equation}\label{eq:t6}
-  \mathrm{err}(\hat h) \;\ge\; 1 - n\,D^{-d}\qquad\text{deterministically};
+  \mathrm{err}(\hat h) \;=\; 1 - \tfrac{\#\{\text{distinct inputs seen}\}}{D^{d}} \;\ge\; 1 - n\,D^{-d}
+  \qquad\text{deterministically},
   \end{equation}\]
-  <p>error at most \(\tfrac14(1-1/D) \le \tfrac14\) forces \(n \ge \tfrac34 D^{d}\) on every
-  realization. \(\square\)</p>
+  <p>and error \(\le \tfrac12\) forces \(n \ge \tfrac12 D^{d}\). The rule is target-independent; only the
+  constant, realizable target is adversarial — so the pathology is a property of the ERM principle on the
+  flat class, not of a learner that peeks at \(f^\star\). \(\square\)</p>
 
-  <h2>4. The enumeration campaign</h2>
+  <h2>10. Exact-enumeration signatures</h2>
 
-  <p>The campaign's role is the one §1 fixed: sanity checks and mechanism evidence, never the
-  logical foundation (§8). Exact enumeration over the discrete classes removes SGD as a
-  confound; it cannot and does not validate SGD-trained MLP behavior (out of scope, §9).</p>
+  <p>The bounds are class-level facts, proved without reference to any algorithm's dynamics. To see the
+  finite-sample behavior they predict, we enumerate the discrete classes exactly — every function, every
+  consistent hypothesis, error measured as the exact expectation over all \(D^{d}\) inputs — which removes
+  SGD as a confound but also caps reach at \(d \le 12\). Three signatures carry the story; the rest, with
+  the seed and statistics mechanics, are in Appendix&nbsp;A&ndash;B. Error bands are the interquartile
+  range over target draws; intervals are 95% bootstrap percentile CIs (10,000 resamples, the target draw
+  the resampling unit). Write \(n(\epsilon)\) for the smallest sample count at which a learner's median
+  exact error first crosses down to \(\epsilon\); the ratios below compare these crossings at
+  \(\epsilon = 0.1\).</p>
 
-  <p><strong>Learners.</strong> <code>L-flat</code>: all functions on \(\Sigma^{d}\) (its VS
-  error has a closed form, \eqref{eq:flat} below). <code>L-known</code>: true graph, tables
-  unknown. <code>L-unk</code>: fan-in-\(r\) structures + tables; in the \(N \ge 2\) cells the
-  wiring <em>shape</em> is known and the input assignment + tables are unknown (recorded
-  realization, mirroring the diamond restriction below). <code>L-k</code> for
-  \(k \in \{1,2,3,4\}\): the fan-in-\(k\) class (at \(N{=}1\), \(k\)-juntas with per-mask closed
-  forms). <code>L-tables-oracle</code>: true tables, graph unknown — the complementary oracle.
-  <code>L-unk-diamond</code>: wiring shape and \(x_e\) known, the two disjoint leaf pairs and all
-  tables unknown. Every learner is the VS predictor in both weightings where feasible, with the
-  empty-VS rule of §2.</p>
+  <p><strong>Ambient dimension is nearly free.</strong> Growing \(d\) from 6 to 12 — which squares the
+  flat class's \(2^{d}\) domain — moves the unknown-wiring learner's \(n(0.1)\) crossing by a median
+  within-target factor of only \(1.25\) (CI \([1.23, 1.29]\)), under even the \(\approx 1.3\times\)
+  the two-term bound predicts, while the flat class's own crossing at \(d{=}12\) stands \(514\times\)
+  away (CI \([495, 532]\)). The class learners have finished before the flat curve has moved
+  (Figure&nbsp;1). The same holds through composition: for the four-node branch-and-merge diamond with
+  unknown leaf pairs, the paired ratio is again \(1.25\) and the flat wall \(27\times\)
+  (Appendix&nbsp;A).</p>
 
-  <p><strong>Cells.</strong> Eleven cells at \(D{=}2\) unless stated, 20 target draws each
-  (50 for the arity sweep):</p>
+  <figure>
+    <img class="fig" src="fig/fig_dflat.png" alt="Error curves for the flat, unknown-wiring, and known-structure learners at d = 6, 9, 12: the class learners cross 0.1 near n = 10-30 at every d while the flat learner needs roughly 100 at d=6 and about 1000 at d=9, far beyond at d=12"/>
+    <figcaption><strong>Figure 1 — Ambient dimension is nearly free (\(r{=}2\), \(N{=}1\)).</strong>
+    Median exact error over 20 targets (bands: interquartile range) vs sample count \(n\). Ambient
+    dimension barely moves the unknown-wiring (blue) and known-structure (green) learners; the flat class
+    (grey) pays the \(D^{d}\) wall. Dotted line: \(\epsilon = 0.1\).</figcaption>
+  </figure>
 
-  <div class="tablewrap"><table>
-    <thead><tr><th>cell</th><th>family</th><th>\(N\)</th><th>\(r\)</th><th>\(d\)</th>
-    <th>learners</th></tr></thead>
-    <tbody>
-      <tr><td>main grid (3 cells)</td><td>single node</td><td>1</td><td>1 / 2 / 3</td>
-      <td>6, 9, 12</td><td><code>L-flat</code>, <code>L-known</code>, <code>L-unk</code></td></tr>
-      <tr><td>arity sweep (2 cells)</td><td>single node</td><td>1</td><td>2; 3</td><td>9</td>
-      <td><code>L-k</code>, \(k \in \{1..4\}\); \(k \in \{2,3,4\}\)</td></tr>
-      <tr><td>chain</td><td>2-node chain</td><td>2</td><td>2</td><td>6, 9</td>
-      <td><code>L-known</code>, <code>L-unk</code>, <code>L-tables-oracle</code></td></tr>
-      <tr><td>diamond, known</td><td>branch + merge</td><td>4</td><td>2</td><td>6, 9</td>
-      <td><code>L-known</code> (\(16^4 = 65{,}536\) descriptions)</td></tr>
-      <tr><td>diamond, unknown leaves</td><td>branch + merge</td><td>4</td><td>2</td><td>6, 9</td>
-      <td><code>L-unk-diamond</code> (90 / 756 skeletons at \(d = 6/9\))</td></tr>
-      <tr><td>alphabet (\(D{=}3\))</td><td>single node</td><td>1</td><td>2</td><td>6</td>
-      <td><code>L-known</code>, <code>L-unk</code></td></tr>
-      <tr><td>basis-mixing control</td><td>single node</td><td>1</td><td>2</td><td>9</td>
-      <td><code>L-k=2</code> (uniform-min-ERM)</td></tr>
-      <tr><td>label-shuffle control</td><td>single node</td><td>1</td><td>2</td><td>9</td>
-      <td><code>L-flat</code>, <code>L-known</code>, <code>L-unk</code></td></tr>
-    </tbody>
-  </table></div>
+  <p><strong>The version-space error is minimized at the true arity.</strong> Sweeping the learner's
+  assumed arity \(k\) against a fixed sample budget \(n^\ast = 12\) (the arity-\(2\) learner's own median
+  crossing), the median exact error traces a U with its minimum exactly at \(k = r\): for \(r{=}2\) the
+  medians are \(0.282,\,0.090,\,0.237,\,0.316\) at \(k = 1,2,3,4\), and for \(r{=}3\) they are
+  \(0.298,\,0.249,\,0.349\) at \(k = 2,3,4\), minimal at \(k = 3\) (Figure&nbsp;2). Both weightings agree.
+  The two arms have the anatomy §6 assigns them, and this is measurable: decomposing each error into an
+  <em>approximation</em> part (the error still present at the largest sample count, where the version
+  space has emptied) and an <em>estimation</em> part (the rest), the left arm at \(k{=}1\) is
+  approximation-driven (\(0.250\) approximation vs \(0.022\) estimation — the best-1-junta floor, whose
+  empirical mean \(0.315\) matches the exact anchor \(c_{2,1}=0.3\)), while for \(k \ge r\) the
+  approximation part vanishes (median \(0.000\)) and the entire excess is the version-space predictor's
+  finite-sample ambiguity — the effect a deterministic Occam-ERM would remove.</p>
 
-  <p>The compositional diamond is the \(N{=}4\) branching-and-merging family</p>
+  <figure>
+    <img class="fig" src="fig/fig_ushape.png" alt="Median exact error at fixed sample budget versus class arity k: U-shaped with minimum at k=2 for r=2 and at k=3 for r=3, in both weightings"/>
+    <figcaption><strong>Figure 2 — Error is minimized when arity matches (\(n^\ast = 12\)).</strong>
+    Median exact error vs class arity \(k\) for targets of true arity \(r{=}2\) (left; 50 targets) and
+    \(r{=}3\) (right). Solid and dashed are the two version-space weightings; the dotted vertical line
+    marks \(k = r\).</figcaption>
+  </figure>
+
+  <p><strong>The advantage is coordinate-relative.</strong> The class is defined in a basis, so composing
+  each target with a random invertible \(\mathrm{GF}(2)\) linear map should move it <em>out</em> of the
+  axis-aligned class and erase the advantage — and it does. At \((r{=}2, d{=}9)\), one map per target, the
+  median error jumps to \(0.404\) from the unmixed \(0.090\) (Figure&nbsp;3). The collapse is
+  approximation-driven, not noise: the post-mixing best-in-class error, computed exactly per target, is
+  \(0.25\) for 15 of 20 targets and \(0.5\) for the other 5, and the fraction of mixed targets that
+  coincidentally re-enter a low-arity axis-aligned class is \(0/20\). The target genuinely leaves the
+  class — which is the whole content of &ldquo;the advantage is a property of the function together with
+  its basis&rdquo;.</p>
+
+  <figure>
+    <img class="fig" src="fig/fig_mixing.png" alt="Histogram of per-target mixed errors clustered near 0.4-0.5 and best-in-class errors at 0.25 and 0.5, far from the unmixed median 0.09 marked by a dotted line"/>
+    <figcaption><strong>Figure 3 — A random basis change erases the advantage (20 targets).</strong>
+    Per-target exact error after \(\mathrm{GF}(2)\) mixing (blue) and the post-mixing best-in-class error
+    (orange), against the unmixed median (dotted). No mixed target re-enters the class.</figcaption>
+  </figure>
+
+  <h2>11. Discussion and open problems</h2>
+
+  <p>Bounded local arity turns a flat, ambient-domain learning problem into a table-plus-wiring problem:
+  the sample complexity is set by the local arity \(r\) and the alphabet \(D\), the ambient dimension
+  entering only through a logarithmic graph-selection term, and the enumeration of §10 bears out the
+  predicted finite-sample behavior.</p>
+
+  <p>Three limits mark where the claim stops. First, this is
+  a <em>class-level</em> result: it bounds the samples any consistent learner needs, and it says nothing
+  about whether gradient descent — or any efficient algorithm — <em>finds</em> the bounded-arity structure.
+  The sparse-parity literature shows the two questions are genuinely separate: a class can be
+  statistically easy yet reachable by SGD only near the computational limit
+  (<a href="https://arxiv.org/abs/2207.08799">Barak et&nbsp;al., 2022</a>). Second, the advantage is
+  <em>basis-relative</em>: under a random linear change of variables the target leaves the axis-aligned
+  class and the advantage vanishes, as the mixing control confirms — consonant with the
+  <a class="xref" href="../sample_efficiency_foundations/">foundations note</a>, where the representation varies with
+  the class fixed, while here class membership itself is basis-relative. Third, the advantage is
+  <em>statistical, not expressive</em>: dense networks can represent everything here, and per-neuron fan-in
+  does not imply module-level fan-in — a module of many fan-in-\(k\) neurons can collectively read many
+  variables.</p>
+
+  <p>The open problems are the natural next rungs. The lower bound matches only the single-node terms; a
+  matching bound with the \(N\)-linear dependence, and any lower bound for \(D \gt 2\), are open. The
+  realization is exact but passive; an <em>efficient recovery</em> algorithm for the bounded-arity DAG
+  under stated assumptions is not given. And the decisive successor is the discovery question stated as a
+  falsifiable test: do SGD-trained fan-in-\(k\) MLPs, at matched budget, reproduce the arity-matched error
+  minimum and the ambient-dimension flatness on these same targets? A negative answer would mean the
+  class-level advantage does not transfer to training dynamics — the one thing the present, exact-enumeration
+  evidence cannot settle.</p>
+
+  <h2>Appendix A. Further signatures</h2>
+
+  <p>The enumeration ran eleven cells at \(D{=}2\) unless stated (20 target draws each, 50 for the arity
+  sweep), spanning single nodes at \(r \in \{1,2,3\}\) and \(d \in \{6,9,12\}\), a two-node chain, the
+  four-node diamond, a \(D{=}3\) cell, and basis-mixing and label-shuffle controls. Beyond the three
+  signatures of §10, the following corroborate the two-term bound.</p>
+
+  <p><strong>The graph-selection cost is positive and slowly growing.</strong> The unknown-wiring learner
+  pays a positive gap over the known-structure learner at every \(d\): median gaps \(1.9,\,3.7,\,4.8\)
+  samples at \(d = 6,9,12\) (all 20 targets positive at each \(d\); Figure&nbsp;6, left). The known-structure learner's crossing
+  is left-censored at the grid floor \(n_{\min}=8\) — a 16-entry table class is pinned almost immediately —
+  so these are conservative lower bounds, and the bound's predicted slow (logarithmic) growth in \(d\)
+  cannot be separately resolved at these scales beyond positivity.</p>
+
+  <p><strong>The two costs superpose.</strong> On the two-node chain, the complementary oracles decompose
+  the total: at \(d{=}6\), \(n_{\text{known}} + n_{\text{tables-oracle}} = 9.7 + 9.8 = 19.5\) against
+  \(n_{\text{unknown}} = 16.9\) (ratio \(1.16\)); at \(d{=}9\), \(9.7 + 13.1 = 22.8\) against \(20.7\)
+  (ratio \(1.10\)) — table-learning and graph-selection costs add approximately, as the two-term bound
+  suggests (Figure&nbsp;6, right). Here the unknown-wiring learner knows the wiring <em>shape</em>, so its
+  graph-selection component measures input-assignment selection under a known shape.</p>
+
+  <p><strong>Alphabet direction.</strong> At \((N{=}1, r{=}2, d{=}6)\), raising \(D\) from 2 to 3 moves the
+  median crossing by \(1.76\times\) (CI \([1.61, 1.86]\)) — the direction the \(D^{r}\) law predicts,
+  though below its \(\approx 3.6\times\) point value at this single small scale.</p>
+
+  <p><strong>The compositional diamond.</strong> The four-node branch-and-merge family</p>
   \[\begin{equation}\label{eq:diamond}
   z_1 = g_1(x_a, x_b),\quad z_2 = g_2(x_c, x_d),\quad z_3 = g_3(z_1, z_2),\quad
   y = g_4(z_3, x_e),
   \end{equation}\]
-  <p>with \(a,b,c,d,e\) pairwise distinct (targets violating this are rejected). The learner's
-  skeleton class deliberately remains \(e\)-inclusive — leaf pairs drawn from all \(d\)
-  coordinates, a stated superclass (this is what the 90/756 skeleton counts enumerate) — and the
-  \(x_e\)-known restriction is an enumeration-cost concession. <strong>Targets</strong> are drawn
-  uniformly conditioned on <em>global essentiality</em>: every local table uses every parent,
-  the composed truth table has every intended input observationally essential, and (for
-  \(N \ge 2\)) every internal node has interventional influence on \(y\) — the two criteria are
-  deliberately different, observational for inputs, interventional for latent nodes, the cleaner
-  choice there. Rejection rates are recorded in the shards. <strong>Pairing:</strong> each outer
-  seed draws its essential core (wiring + tables) once and embeds it at every \(d\) in the grid
-  with canonical parent coordinates (class permutation-symmetry + uniform inputs make the
-  embedding choice immaterial), so every cross-\(d\) comparison below is a within-target paired
-  ratio or gap.</p>
-
-  <p><strong>Sample-complexity readout.</strong> Errors are evaluated on the grid
-  \(n \in \{8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096\}\); \(n_i(\epsilon)\) is the
-  crossing of target \(i\)'s log-linearly interpolated error curve with \(\epsilon = 0.1\).
-  Wherever a gated crossing-ratio prediction's crossing (P1, P6a; §5.1) fell between grid
-  points with \(n\)-ratio above \(\sqrt2\), one integer-rounded log-midpoint was inserted into
-  that gap — the exact \(\sqrt2\) point in log space, though rounding to integer sample counts
-  leaves the realized bracketing ratio at \(\le 1.46\) rather than exactly \(\le \sqrt2\)
-  (inserted: \(n = 11\) for P1, \(n = 23, 45\) for P6a; identical grids across each
-  prediction's compared cells, logged in shard metadata); no other densification, and the
-  gated ratios are insensitive to the residual at their observed margins (\(1.25\) against
-  threshold \(2.0\), walls \(514\times\)/\(27\times\) against \(3\); §5.1). The U-shape's
-  reference point (P3, §5.2) was instead read on the base grid — \(n^\ast\) is the
-  integer-rounded median of <code>L-k=2</code>'s interpolated crossings (\(12.30 \to 12\); the
-  enriched-grid median \(11.64\) rounds to the same value) — then inserted as an exact
-  evaluation grid point, so the error readouts at \(n^\ast\) (P3, and later P4 and M3) are
-  measured directly at \(n = 12\), not interpolated. <em>Censoring (pre-registered):</em> a curve not crossing by
-  \(n_{\max} = 4096\) reports \(n(\epsilon) \gt 4096\) (right-censored; ratios involving it
-  become bounds, and a flat-wall clause passes if the censored bound already exceeds its
-  threshold); a curve already below \(\epsilon\) at \(n_{\min} = 8\) reports
-  \(n(\epsilon) \lt 8\) (left-censored; bounds propagate in the direction unfavorable to
-  passing), and a gate undecidable on censored intervals is reported &ldquo;not resolved at
-  these scales&rdquo;, never silently passed. The flat class needs no enumeration: under w-fun
-  its VS predictor guesses each unseen input uniformly (wrong with probability \(1 - 1/D\)),
-  giving the closed form</p>
-  \[\begin{equation}\label{eq:flat}
-  \mathbb E\,\mathrm{err}_n(\text{L-flat}) = \Big(1-\tfrac1D\Big)\big(1 - D^{-d}\big)^{n},
-  \qquad
-  n_{\text{flat}}(\epsilon) = \frac{\ln\!\big(\epsilon/(1-\tfrac1D)\big)}{\ln(1 - D^{-d})}.
-  \end{equation}\]
-
-  <p><strong>Statistics.</strong> Intervals are bootstrap 95% percentile CIs over target draws
-  (10,000 seeded resamples; the resampling unit is the target draw). Tests are one-sided
-  exact-binomial sign tests on within-target paired differences (ties dropped). Gated
-  ratio/threshold clauses are CI-aware: they pass only if the 95% CI excludes the violating
-  side. Replication: 20 target draws per cell (outer seeds 0&ndash;19; 50, seeds 0&ndash;49, for
-  the arity sweep); 50 nested sample draws per (target, \(n\)) — prefixes of one master stream
-  per (target, draw); the VS predictor's own randomness is integrated exactly wherever closed
-  forms exist (all \(N{=}1\) cells and <code>L-flat</code>) and folded into 64 tie draws
-  otherwise (\(N \ge 2\) cells). Reported curves are medians over targets of per-target means
-  over sample draws. There is no training loop: every learner is a parameter-free exact
-  procedure over a pre-registered class with the identical prediction rule and empty-VS
-  fallback, so there are no hyperparameters anywhere and HP-trial parity is a justified
-  omission. All randomness derives from
-  <code>seed = SHA256(cell_id, target_seed, n, draw_idx) &amp; 0xFFFFFFFF</code>, recorded in
-  the shards.</p>
-
-  <p><strong>Pilot and execution.</strong> The mandatory feasibility pilot ran the worst planned
-  cell (diamond, unknown leaves, \(d{=}9\): 756 skeletons, \(49{,}545{,}216\) descriptions,
-  asserted under the \(6\times10^{7}\) runtime cap) and measured setup cost 21.6&nbsp;s,
-  marginal cost 8.3&nbsp;ms per (target &times; sample-draw &times; \(n\)-point), projected full
-  cell cost <strong>0.03&nbsp;h against the 8&nbsp;h cap</strong> and peak RSS
-  <strong>0.07&nbsp;GB against the 16&nbsp;GB cap</strong> — pass on both, so the whole campaign
-  ran in-process on CPU (0 SLURM jobs) and the pre-registered downgrade cascade was never
-  engaged: every cell, including the diamond at \(d{=}9\), ran at full pre-registered scope.
-  Descriptions were streamed in chunks against bit-packed truth tables with precomputed sample
-  masks; per-cell duplicate rates were recorded (§2).</p>
-  <h2>5. Signatures</h2>
-
-  <h3>5.1 d-flatness</h3>
-
-  <p><strong>P1 (gating).</strong> Pre-registered clauses, for <code>L-unk</code> at
-  \((r{=}2, N{=}1)\): the within-target ratio \(n_i(0.1;\,d{=}12)/n_i(0.1;\,d{=}6)\) has median
-  at most \(2.0\) with CI upper bound at most \(2.0\) (the theory expectation from
-  \eqref{eq:t2} is \(\approx 1.3\times\)); and the <em>flat wall</em>, the within-target ratio
-  \(n_{\text{flat}}(0.1;\,d{=}12)/n_i(0.1;\,d{=}12)\) with \(n_{\text{flat}}\) from
-  \eqref{eq:flat}, has median at least \(3\) with CI lower bound at least \(3\) (theory: far
-  above \(10\times\)). <strong>Result: pass.</strong> Growing \(d\) from 6 to 12 — which squares
-  the flat class's \(2^{d}\) domain — moved <code>L-unk</code>'s crossing by a median factor of
-  only \(1.25\) (CI \([1.23, 1.29]\); 0/20 targets censored), under even the \(1.3\times\)
-  theory expectation, while the flat wall at \(d{=}12\) stands \(514\times\) away (CI
-  \([495, 532]\)). Figure&nbsp;1 shows the three learners' curves: the class learners fall
-  before the flat curve has moved.</p>
+  <p>with \(a,b,c,d,e\) distinct, reproduces the ambient-dimension flatness of §10 under composition:
+  raising \(d\) from 6 to 9 (distractor coordinates \(1 \to 4\), candidate skeletons \(90 \to 756\)) moves
+  the crossing by a paired ratio \(1.25\) (CI \([1.21, 1.27]\)) while the flat wall stands \(27\times\)
+  away (Figure&nbsp;4). Targets are drawn uniformly subject to global essentiality; test error is exact
+  over all \(D^{d}\) inputs.</p>
 
   <figure>
-    <img class="fig" src="fig/fig_dflat.png" alt="Error curves for L-flat, L-unk, L-known at d = 6, 9, 12: the class learners cross 0.1 near n = 10-30 at every d while L-flat needs roughly 100 at d=6 and about 1000 at d=9, far beyond at d=12"/>
-    <figcaption><strong>Figure 1 — P1, d-flatness (\(r{=}2\), \(N{=}1\); w-fun).</strong>
-    Median exact error over 20 targets (bands: interquartile range over targets) vs sample count
-    \(n\). Ambient dimension barely moves <code>L-unk</code> (blue) and <code>L-known</code>
-    (green); the flat class (grey) pays the \(D^{d}\) wall. Dotted line:
-    \(\epsilon = 0.1\).</figcaption>
+    <img class="fig" src="fig/fig_diamond.png" alt="Diamond error curves: unknown-leaf learner at d=6 and d=9 nearly coincide and cross 0.1 near n = 25-31; known-structure slightly earlier; the flat wall marker sits at n about 823"/>
+    <figcaption><strong>Figure 4 — Flatness survives composition (\(N{=}4\), branch + merge).</strong>
+    Median exact error (bands: IQR over 20 targets). Raising \(d\) from 6 to 9 barely moves the curve; the
+    flat wall (dash-dot, \(n \approx 823\)) is \(27\times\) away.</figcaption>
   </figure>
 
-  <p><strong>P6a (gating) — the same signature survives composition.</strong> For the diamond
-  \eqref{eq:diamond} with unknown leaf pairs, the same two clauses at \(d \in \{6, 9\}\):
-  within-target ratio median/CI at most \(2.0\) (theory \(\approx 1.15\times\)); flat wall at
-  \(d{=}9\) median/CI at least \(3\) (theory \(\approx 4.6\times\)). <strong>Result:
-  pass.</strong> The paired ratio is \(1.25\) (CI \([1.21, 1.27]\), 0/20 censored) and the wall
-  is \(27.0\times\) (CI \([26.5, 28.2]\)) against \(n_{\text{flat}}(0.1;\,d{=}9) \approx 823\)
-  — Figure&nbsp;2. The pilot cascade was never engaged, so P6a gates at its full pre-registered
-  scope. <strong>P6b (descriptive)</strong> — the \(N\)-scaling ratio
-  \(n_{\text{diamond,known}}(0.1)/n_{N=1,\text{known}}(0.1)\) against the \([2,8]\) band — is
-  <em>not resolvable at these scales</em>: the \(N{=}1\) known-structure curves sit below
-  \(\epsilon\) already at \(n_{\min} = 8\) for every target (left-censored denominator), so the
-  ratio is only bounded below — and a lower bound cannot decide the two-sided \([2, 8]\)
-  band.</p>
+  <p><strong>The version space burns its bits.</strong> Every finite-class bound runs on one quantity —
+  how fast the version space shrinks. Measured directly at \(n^\ast\), the median
+  \(\log_2|\text{version space}|\) is \(0.13\) (known structure) \(\lt 0.84\) (unknown wiring) \(\lt 500.0\)
+  (flat), and the flat arm's measured value tracks its exact counting prediction
+  \(2^{d}(1-2^{-d})^{n^\ast} = 500.13\) to a slope ratio of \(1.01\) (Figure&nbsp;5) — tying the measured
+  curves back to the counting arguments of §4&ndash;§5.</p>
 
   <figure>
-    <img class="fig" src="fig/fig_diamond.png" alt="Diamond error curves: L-unk-diamond at d=6 and d=9 nearly coincide and cross 0.1 near n = 25-31; L-known slightly earlier; the flat wall marker sits at n ~ 823"/>
-    <figcaption><strong>Figure 2 — P6, compositional diamond (\(N{=}4\), branch + merge;
-    w-fun).</strong> Median exact error (bands: IQR over 20 targets). Raising \(d\) from 6 to 9
-    (distractor coordinates \(1 \to 4\), candidate skeletons \(90 \to 756\)) barely moves the
-    curve; the flat wall (dash-dot, \(n \approx 823\) by \eqref{eq:flat}) is \(27\times\)
-    away.</figcaption>
+    <img class="fig" src="fig/fig_vs_size.png" alt="Median log2 version-space size versus n at r=2, d=9: the flat learner starts near 500 and decays slowly; the unknown-wiring and known-structure learners start near 3 and 0.4 and hit zero by n around 30"/>
+    <figcaption><strong>Figure 5 — Version-space size (\(r{=}2\), \(d{=}9\)).</strong> Median
+    \(\log_2|\text{version space}|\) vs \(n\) (symlog axis). The class learners burn their few bits of
+    ambiguity within tens of samples; the flat class starts with \(2^{d}\) free bits.</figcaption>
   </figure>
-
-  <h3>5.2 The over-classing U-shape</h3>
-
-  <p><strong>P3 (gating; w-fun arm, 50 targets).</strong> Let \(\mathrm{err}_i(k)\) be target
-  \(i\)'s exact error of <code>L-k</code> at the cell's pre-registered reference point
-  \(n^\ast\) — <code>L-k=2</code>'s median interpolated crossing \(n(0.1)\), which the campaign
-  fixed at \(n^\ast = 12\) and evaluated as an exact grid point (§4). Clauses: \(\mathrm{median}_i[\mathrm{err}_i(1) -
-  \mathrm{err}_i(2)] \ge 0.05\) and \(\mathrm{median}_i[\mathrm{err}_i(3) -
-  \mathrm{err}_i(2)] \ge 0.02\), each with a one-sided sign test on (difference − margin) at
-  \(p \lt 0.05\); \(\mathrm{median}_i[\mathrm{err}_i(4) - \mathrm{err}_i(3)] \ge 0\); and at
-  \(r{=}3\), median error minimal at \(k{=}3\) over \(k \in \{2,3,4\}\). <strong>Result:
-  pass.</strong> Median errors at \(n^\ast\) are \(0.282,\ 0.090,\ 0.237,\ 0.316\) for
-  \(k = 1,2,3,4\) — the U bottoms exactly at \(k = r = 2\) (Figure&nbsp;3). The paired
-  differences are decisive: \(0.191\) (\(k{=}1\) vs 2) and \(0.147\) (\(k{=}3\) vs 2), with
-  every one of the 50 targets clearing its margin (sign tests \(p = 2^{-50} \approx
-  9\times10^{-16}\)); the right arm keeps rising, \(0.079\) (\(k{=}4\) vs 3). At \(r{=}3\) the
-  medians are \(0.298, 0.249, 0.349\) for \(k = 2,3,4\) — minimal at \(k = r = 3\). The w-rep
-  sensitivity arm agrees (\(0.275, 0.094, 0.204, 0.313\)): no parameterization-dependence to
-  report.</p>
 
   <figure>
-    <img class="fig" src="fig/fig_ushape.png" alt="Median exact error at n* versus class arity k: V-shaped with minimum at k=2 for r=2 and at k=3 for r=3, in both weightings"/>
-    <figcaption><strong>Figure 3 — P3, the VS predictor's U-shape at \(n^\ast = 12\).</strong>
-    Median exact error vs class arity \(k\) for targets of true arity \(r{=}2\) (left; 50
-    targets) and \(r{=}3\) (right). Solid: w-fun (the gating arm); dashed: w-rep. The dotted
-    vertical line marks \(k = r\).</figcaption>
+    <img class="fig" src="fig/fig_graphcost.png" alt="Left: boxplots of paired gap lower bounds rising from about 2 at d=6 to about 5 at d=12. Right: chain error curves with the unknown-wiring learner above the tables-oracle above the known-structure learner, all crossing 0.1 by n around 20"/>
+    <figcaption><strong>Figure 6 — Graph-selection cost and additivity.</strong> Left: per-target
+    graph-selection gap at each \(d\), as conservative lower bounds (known-structure learner left-censored
+    at \(n_{\min}=8\)). Right: the two-node chain's three learners (medians, IQR bands) — the
+    unknown-wiring learner sits above both oracles, its crossing between the larger oracle's and the
+    oracles' sum.</figcaption>
   </figure>
 
-  <p><strong>M3 — U-shape anatomy (descriptive).</strong> The pre-registered diagnostic — the
-  direct measurement of T3's claimed mechanism — decomposes each arm's error at \(n^\ast\) into
-  <em>approximation</em>, the error still present at \(n_{\max} = 4096\) (read under the
-  empty-VS rule where the version space empties), plus <em>estimation</em>, the per-target
-  difference \(\mathrm{err}(n^\ast) - \mathrm{err}(n_{\max})\), in both weightings. Measured
-  (w-fun medians), the two arms have the anatomy the theory assigns them. The left arm is
-  approximation-driven: at \(k{=}1\) the approximation arm is \(0.250\) against an estimation
-  share of \(0.022\) — per-target best-1-junta floors of \(1/4\) or \(1/2\), with empirical mean
-  \(0.315\) against the anchor expectation \(c_{2,1} = 0.3\) of \eqref{eq:floor}, which the
-  analysis re-verified exactly over the essential class (10 essential two-bit tables, mean
-  best-1-junta error \(0.300\)). The right arm is estimation-driven: for \(k \ge r\) the class
-  contains the target and the approximation arm vanishes (median
-  \(\mathrm{err}(n_{\max}) = 0.000\) at \(k = 2, 3, 4\)), so the excess at \(n^\ast\) —
-  \(0.090,\ 0.237,\ 0.316\) — is entirely finite-sample: the spurious-consistency effect the
-  corollary of §3.3 attributes to the uniform-VS predictor specifically, the effect a
-  deterministic Occam-ERM collapses exactly. The same anatomy holds at \(r{=}3\) (approximation
-  \(0.250\) vs estimation \(0.089\) at \(k{=}2\); \(0.000\) vs \(0.249,\ 0.349\) at
-  \(k = 3, 4\)) and under w-rep. The pre-registered numeric probe for T3&prime; (the right arm
-  as a theorem) found 97.7% of paired \((k \to k{+}1)\) comparisons monotone — suggestive, but
-  the theorem was not attempted, per the pre-commitment.</p>
+  <p><strong>Controls.</strong> With training labels shuffled independently per distinct input (error still
+  measured against the true function), every learner sits at chance at \(n = 512\) — medians \(0.501\),
+  \(0.496\), \(0.504\) — so nothing in the pipeline leaks labels; and the exact anchor
+  \(c_{2,1} = 0.300\) doubles as a correctness check of the closed-form junta machinery.</p>
 
-  <h3>5.3 Alphabet direction</h3>
+  <h2>Appendix B. Reproducibility</h2>
 
-  <p><strong>P7 (descriptive, non-gating; unpaired — different domains and target laws, so no
-  sign test).</strong> At \((N{=}1, r{=}2, d{=}6)\), the ratio of median crossings
-  \(n_{D=3}(0.1)/n_{D=2}(0.1)\) is \(1.76\) (bootstrap 95% CI \([1.61, 1.86]\)) — above the
-  pre-registered directional line \(1.5\), below the \([2, 6]\) theory band (point prediction
-  \(\approx 3.6\times\) from the \(D^{r}\) law). The direction is present; its magnitude did not
-  resolve to the band at this scale. Per the contract, P7 neither gates nor forces an
-  amendment.</p>
+  <p>The enumeration is parameter-free: every learner is an exact procedure over an explicit class with a
+  single prediction rule, so there are no hyperparameters and no training loop. All randomness derives from
+  \(\text{seed} = \mathrm{SHA256}(\text{cell}, \text{target}, n, \text{draw}) \wedge \text{0xFFFFFFFF}\).
+  Curves are medians over targets of per-target means over sample draws; intervals are 95% bootstrap
+  percentile CIs (10,000 resamples, target-draw unit); paired comparisons use one-sided exact-binomial
+  sign tests on within-target differences. The design — classes, cells, arity grid, thresholds, and
+  statistics — was fixed before the enumeration was run. Exact enumeration buys exactness and pays reach:
+  \(d \le 12\), description counts under \(5\times10^{7}\), and a grid floor \(n_{\min}=8\) that
+  left-censors the known-structure baselines.</p>
 
-  <h2>6. Controls</h2>
+  <div class="repro"><p><span class="git">git <code>84d947b</code></span> (analysis + figures; enumeration
+  data @ <code>3bf8e15</code>) &middot; seeds SHA256-derived per <code>configs/enum_v1.yaml</code>
+  &middot; <code>src/run_enum.py --pilot</code> → <code>src/run_enum.py --all</code> →
+  <code>src/analyze.py</code> (writes <code>results/analysis.json</code> + all figures) &middot; witness
+  <code>src/verify_t5.py</code> &middot; full proofs <code>report/theory_proofs.md</code>.</p></div>
 
-  <p><strong>P4 — basis-mixing (gating for the mechanism story).</strong> The class is defined
-  in a basis (§2), so composing each target with a random invertible GF(2) linear map should
-  move it <em>out</em> of the axis-aligned class and erase the advantage — if it does not, the
-  axis-alignment story is wrong. One map per target at \((r{=}2, d{=}9, k{=}2)\); the mixed
-  version space is typically empty, so the learner is the uniform-min-ERM predictor (§2).
-  Clauses: median mixed error at \(n^\ast\) at least \(0.25\), against the unmixed median at
-  most \(0.10\). <strong>Result: pass.</strong> Median error \(0.404\) mixed vs \(0.090\)
-  unmixed. Reported distributionally (Figure&nbsp;4): the pre-registered decomposition separates
-  approximation from estimation via the post-mixing best-in-class error
-  \(\inf_{h\in\mathcal F_{k=2}}\mathrm{err}(h)\), computed per target in closed form — it is
-  \(0.25\) for 15/20 targets and \(0.5\) for the other 5, so the collapse is
-  approximation-driven: the target genuinely leaves the class. The fraction of mixed targets
-  coincidentally re-entering a low-arity axis-aligned class (best-in-class error below
-  \(0.10\)) is \(0/20\).</p>
+  <h2>References</h2>
 
-  <figure>
-    <img class="fig" src="fig/fig_mixing.png" alt="Histogram of per-target mixed errors clustered near 0.4-0.5 and best-in-class errors at 0.25 and 0.5, far from the unmixed median 0.09 marked by a dotted line"/>
-    <figcaption><strong>Figure 4 — P4, GF(2) basis-mixing (20 targets).</strong> Per-target
-    exact error of the uniform-min-ERM predictor at \(n^\ast\) on mixed targets (blue) and the
-    post-mixing best-in-class error (orange), against the unmixed median (dotted). No mixed
-    target re-enters the class.</figcaption>
-  </figure>
+  <div>
+  <p><a href="https://www.stat.berkeley.edu/~bartlett/nnl/index.html">Anthony, M., &amp; Bartlett,
+  P. L. (1999).</a> <em>Neural Network Learning: Theoretical Foundations</em>. Cambridge University
+  Press.</p>
 
-  <p><strong>Label-shuffle smoke.</strong> With labels resampled independently per distinct
-  training input (keeping <code>L-flat</code> single-valued) and error still measured against
-  the true function, every learner should sit at chance at \(n = 512\): pass band
-  \(0.5 \pm 0.05\). All three do — medians \(0.501\) (<code>L-flat</code>), \(0.496\)
-  (<code>L-known</code>), \(0.504\) (<code>L-unk</code>) — so nothing in the pipeline leaks
-  labels. The campaign's anchor re-verification (\(c_{2,1} = 0.300\) exactly, §5.2) doubles as a
-  correctness check of the closed-form junta machinery.</p>
+  <p><a href="https://arxiv.org/abs/2207.08799">Barak, B., Edelman, B., Goel, S., Kakade, S., Malach, E.,
+  &amp; Zhang, C. (2022).</a> Hidden progress in deep learning: SGD learns parities near the computational
+  limit. <em>NeurIPS 2022</em>.</p>
 
-  <h2>7. Mechanism</h2>
+  <p><a href="https://doi.org/10.1109/18.720554">Barron, A., Rissanen, J., &amp; Yu, B. (1998).</a>
+  The minimum description length principle in coding and modeling. <em>IEEE Transactions on
+  Information Theory</em>, 44(6), 2743&ndash;2760.</p>
 
-  <p><strong>M1/P5 — the counting engine, made visible (descriptive).</strong> Every
-  finite-class bound above runs on one quantity: how fast the version space shrinks. The
-  campaign measures \(\log_2|\text{version space}|\) directly (min-disagreement set when empty).
-  At \(n^\ast\), the pre-registered strict ordering holds:
-  \(0.13\) (<code>L-known</code>) \(\lt\) \(0.84\) (<code>L-unk</code>) \(\lt\) \(500.0\)
-  (<code>L-flat</code>) — Figure&nbsp;5, which renders M1 as \(\log_2|\text{VS}|\) vs \(n\):
-  M1's pre-registered rendering, &ldquo;plotted against error&rdquo;, is delivered numerically
-  — this ordering and the slope check at \(n^\ast\) — rather than as an
-  error-vs-\(|\text{VS}|\) panel. P5's second clause, verbatim &ldquo;shrinkage slope
-  within \(2\times\) of the counting prediction&rdquo;, is instantiated as a value-at-\(n^\ast\)
-  agreement on the flat arm (the one with an exact counting prediction): \(\log_2|\text{VS}|\)
-  starts at the known \(2^{d} = 512\), so the value at \(n^\ast\) fixes the average slope over
-  \([0, n^\ast]\), and the measured \(500.0\) against the analytic
-  \(2^{d}(1 - 2^{-d})^{n^\ast} = 500.13\) is a slope ratio of \(1.01\) — well within the
-  \(2\times\) band — tying the measured curves back to the counting arguments of §3.</p>
+  <p><a href="https://jmlr.org/papers/v20/17-612.html">Bartlett, P. L., Harvey, N., Liaw, C., &amp;
+  Mehrabian, A. (2019).</a> Nearly-tight VC-dimension and pseudodimension bounds for piecewise linear
+  neural networks. <em>Journal of Machine Learning Research</em>, 20(63), 1&ndash;17.</p>
 
-  <figure>
-    <img class="fig" src="fig/fig_vs_size.png" alt="Median log2 version-space size versus n at r=2, d=9: L-flat starts near 500 and decays slowly; L-unk and L-known start near 3 and 0.4 and hit zero by n around 30"/>
-    <figcaption><strong>Figure 5 — M1/P5, version-space size (\(r{=}2\), \(d{=}9\);
-    w-fun).</strong> Median \(\log_2|\text{VS}|\) vs \(n\) (symlog axis). The class learners
-    burn their few bits of ambiguity within tens of samples; the flat class starts with
-    \(2^{d}\) free bits.</figcaption>
-  </figure>
+  <p><a href="https://doi.org/10.1073/pnas.1903070116">Belkin, M., Hsu, D., Ma, S., &amp; Mandal, S.
+  (2019).</a> Reconciling modern machine-learning practice and the classical bias&ndash;variance
+  trade-off. <em>PNAS</em>, 116(32), 15849&ndash;15854.</p>
 
-  <p><strong>P2 — the graph-selection gap (pre-registered consequence, non-gating).</strong>
-  T2's two-term structure predicts a positive, slowly growing cost for not knowing the wiring:
-  \(\mathrm{gap}_i(d) = n_{i,\text{L-unk}}(0.1; d) - n_{i,\text{L-known}}(0.1; d)\). Clauses: at
-  each \(d \in \{6,9,12\}\), median gap positive with one-sided sign test \(p \lt 0.05\);
-  growth, \(\mathrm{median}[\mathrm{gap}(12)]\) between \(1\times\) and \(2.5\times\)
-  \(\mathrm{median}[\mathrm{gap}(6)]\) (log-like, not polynomial). <strong>Result:
-  positivity holds; growth is not resolvable at these scales.</strong> <code>L-known</code>'s
-  crossings are left-censored at \(n_{\min} = 8\) for 20/20 targets at every \(d\) (a 16-entry
-  table class pins down almost immediately), so per the censoring rules the gaps enter as
-  conservative lower bounds \(\mathrm{gap}_i \gt n_{i,\text{L-unk}} - 8\): their medians are
-  \(1.9,\ 3.7,\ 4.8\) samples at \(d = 6, 9, 12\) (CIs \([1.5, 2.4]\), \([2.8, 4.1]\),
-  \([4.4, 5.3]\); all 20 targets positive at each \(d\), sign tests
-  \(p = 2^{-20} \approx 9.5\times10^{-7}\); Figure&nbsp;6, left). The growth clauses cannot be
-  decided on lower bounds, so P2 as a whole takes its pre-registered non-fatal downgrade:
-  <em>T2's graph term is positive but not separately resolvable at these scales beyond
-  positivity.</em></p>
+  <p><a href="https://doi.org/10.1145/1536414.1536437">Blais, E. (2009).</a> Testing juntas nearly
+  optimally. <em>Proc. 41st ACM Symposium on Theory of Computing (STOC)</em>, 151&ndash;158.</p>
 
-  <p><strong>M2 — additivity of the two costs (descriptive).</strong> On the \(N{=}2\) chain,
-  the complementary oracles decompose the total cost: at \(d{=}6\), median
-  \(n_{\text{L-known}}(0.1) + n_{\text{L-tables-oracle}}(0.1) = 9.7 + 9.8 = 19.5\) vs
-  \(n_{\text{L-unk}}(0.1) = 16.9\) (ratio \(1.16\)); at \(d{=}9\), \(9.7 + 13.1 = 22.8\) vs
-  \(20.7\) (ratio \(1.10\)) — both within the pre-registered descriptive band of \(1.5\times\)
-  (Figure&nbsp;6, right). Table-learning and graph-selection costs superpose approximately
-  additively, as the two-term bound \eqref{eq:t2} suggests they should. One scope note carries
-  from §4: the chain's <code>L-unk</code> knows the wiring shape — a narrowing, recorded at run
-  time rather than pre-registered, of the locked learner spec's full fan-in-\(r\) structure
-  class — so its graph-selection component measures input-assignment selection under a known
-  shape, and the additivity reading carries that scope.</p>
+  <p><a href="https://doi.org/10.1016/0020-0190(87)90114-1">Blumer, A., Ehrenfeucht, A., Haussler,
+  D., &amp; Warmuth, M. K. (1987).</a> Occam's razor. <em>Information Processing Letters</em>, 24(6),
+  377&ndash;380.</p>
 
-  <figure>
-    <img class="fig" src="fig/fig_graphcost.png" alt="Left: boxplots of paired gap lower bounds rising from about 2 at d=6 to about 5 at d=12. Right: chain error curves with L-unk above L-tables-oracle above L-known, all crossing 0.1 by n around 20"/>
-    <figcaption><strong>Figure 6 — P2 and M2 (w-fun).</strong> Left: per-target
-    graph-selection gap at each \(d\), as conservative lower bounds
-    (<code>L-known</code> left-censored at \(n_{\min} = 8\) throughout). Right: the \(N{=}2\)
-    chain's three learners (medians, IQR bands) — <code>L-unk</code> sits above both oracles;
-    its crossing lands between the larger oracle's and the oracles' sum (M2
-    additivity).</figcaption>
-  </figure>
+  <p><a href="https://doi.org/10.1145/76359.76371">Blumer, A., Ehrenfeucht, A., Haussler, D., &amp;
+  Warmuth, M. K. (1989).</a> Learnability and the Vapnik&ndash;Chervonenkis dimension. <em>Journal of
+  the ACM</em>, 36(4), 929&ndash;965.</p>
 
-  <h2>8. Verdict</h2>
+  <p><a href="https://doi.org/10.1109/TIT.1968.1054142">Chow, C. K., &amp; Liu, C. N. (1968).</a>
+  Approximating discrete probability distributions with dependence trees. <em>IEEE Transactions on
+  Information Theory</em>, 14(3), 462&ndash;467.</p>
 
-  <p>The pre-registered verdict is two-layer, and the layers are deliberately asymmetric:
-  <strong>Layer 1</strong> — the study's verdict, which sets the registry status — is decided by
-  the proofs alone. It reads <em>supported</em> iff Gate&nbsp;A holds: T1&ndash;T5 fully proved
-  (T3&prime;/T6 optional) with every assumption stated, imports limited to the pre-authorized
-  citation-grade list, T5's invariants discharged with its output mechanism pinned and
-  <code>src/verify_t5.py</code> passing, and capacity regimes never mixed — with each theorem
-  surviving a fresh-context adversarial proof-check and the Stage-X audit (the workflow's
-  independent pre-publication audit of the drafted report) passing with no blocker-grade
-  (evidence-breaking) gap. It could read <em>refuted</em> only on an
-  irreparable proof gap; failing Gate&nbsp;A without a disproof means amend or park, never
-  publish. <em>No enumeration outcome can refute Layer 1.</em> <strong>Layer 2</strong> — the
-  empirical-signature verdict, decided entirely by <code>results/analysis.json</code> — gates on
-  the core signatures P1, P3 (w-fun), P6a: all three passing reads <em>supported</em>; P1
-  passing with exactly one of P3/P6a failing reads <em>partially supported</em>; P1 failing, or
-  both P3 and P6a failing, reads <em>does not support</em>.</p>
+  <p><a href="https://arxiv.org/abs/1602.07576">Cohen, T. S., &amp; Welling, M. (2016).</a> Group
+  equivariant convolutional networks. <em>ICML 2016</em>, PMLR 48, 2990&ndash;2999.</p>
 
-  <div class="tldr"><p><strong>Layer 1 (theory):</strong>
-  <span class="status supported">supported</span> — T1&ndash;T6 proved (§3), each through an
-  adversarial proof-check pass (five refuter passes + a contract-fit pass; the repairs were
-  re-pinned as A01 before dispatch); the Stage-X audit found no blocker-grade gap; the
-  executable witness passes all 80 graphs; the only citation-grade import is [B] (T5(c)'s
-  real-valued remark); T3&prime; was not attempted, per its pre-commitment.</p>
-  <p><strong>Layer 2 (signatures):</strong> <span class="status supported">supported</span> —
-  in the pre-registered wording: &ldquo;the enumeration supports the proposed finite-sample
-  signatures&rdquo; — at full pre-registered scope. Core: P1 ✓, P3 ✓, P6a ✓.</p></div>
+  <p><a href="https://arxiv.org/abs/2002.07400">Daniely, A., &amp; Malach, E. (2020).</a> Learning parities
+  with neural networks. <em>NeurIPS 2020</em>.</p>
 
-  <div class="tablewrap"><table>
-    <thead><tr><th>prediction</th><th>pre-registered clause</th><th>result</th>
-    <th>outcome</th></tr></thead>
-    <tbody>
-      <tr><td>P1 d-flatness</td><td>ratio med/CI \(\le 2.0\); wall med/CI \(\ge 3\)</td>
-      <td>\(1.25\) \([1.23, 1.29]\); wall \(514\times\) \([495, 532]\)</td>
-      <td><strong>pass</strong> (gating)</td></tr>
-      <tr><td>P2 graph cost</td><td>gap \(\gt 0\) at each \(d\); growth \(1{-}2.5\times\)</td>
-      <td>positive at all \(d\) (\(p = 9.5\times10^{-7}\)); growth on censored bounds</td>
-      <td>positivity <strong>pass</strong>; growth <strong>not resolvable</strong>
-      (pre-registered non-fatal downgrade)</td></tr>
-      <tr><td>P3 U-shape</td><td>margins \(0.05 / 0.02\) at \(p \lt .05\); right arm
-      \(\ge 0\); \(r{=}3\) spot</td>
-      <td>\(0.191 / 0.147\) (\(p \approx 9\times10^{-16}\)); \(0.079\); \(k{=}3\) minimal</td>
-      <td><strong>pass</strong> (gating)</td></tr>
-      <tr><td>P4 basis-mixing</td><td>mixed med \(\ge 0.25\) vs unmixed \(\le 0.10\)</td>
-      <td>\(0.404\) vs \(0.090\); re-entry \(0/20\)</td>
-      <td><strong>pass</strong> (mechanism control)</td></tr>
-      <tr><td>P5 VS ordering</td><td>strict order; &ldquo;shrinkage slope within \(2\times\)
-      of the counting prediction&rdquo;</td>
-      <td>\(0.13 \lt 0.84 \lt 500.0\); slope ratio \(1.01\) (\(500.0\) vs \(500.13\) at
-      \(n^\ast\))</td>
-      <td><strong>pass</strong> (descriptive)</td></tr>
-      <tr><td>P6a diamond d-flatness</td><td>ratio med/CI \(\le 2.0\); wall med/CI \(\ge 3\)</td>
-      <td>\(1.25\) \([1.21, 1.27]\); wall \(27\times\) \([26.5, 28.2]\)</td>
-      <td><strong>pass</strong> (gating; cascade not engaged)</td></tr>
-      <tr><td>P6b N-scaling</td><td>ratio vs \([2, 8]\) band</td>
-      <td>denominator left-censored at \(n_{\min}\)</td>
-      <td><strong>not resolvable</strong> (descriptive)</td></tr>
-      <tr><td>P7 alphabet</td><td>directional \(\ge 1.5\); band \([2, 6]\)</td>
-      <td>\(1.76\) \([1.61, 1.86]\)</td>
-      <td>direction <strong>yes</strong>; below band (descriptive)</td></tr>
-      <tr><td>M2 additivity</td><td>sum vs total within \(1.5\times\)</td>
-      <td>\(1.16\) (\(d{=}6\)), \(1.10\) (\(d{=}9\))</td>
-      <td><strong>pass</strong> (descriptive)</td></tr>
-      <tr><td>M3 U-shape anatomy</td><td>left arm approximation-driven; right arm
-      estimation-driven</td>
-      <td>\(k{=}1\): approx \(0.250\) vs est \(0.022\); \(k \gt r\): approx \(0.000\),
-      est \(0.237 / 0.316\)</td>
-      <td><strong>pass</strong> (descriptive; both weightings)</td></tr>
-      <tr><td>shuffle smoke</td><td>all learners \(0.5 \pm 0.05\) at \(n{=}512\)</td>
-      <td>\(0.501, 0.496, 0.504\)</td>
-      <td><strong>pass</strong> (control)</td></tr>
-    </tbody>
-  </table></div>
+  <p><a href="https://doi.org/10.1023/A:1007417612269">Dasgupta, S. (1997).</a> The sample complexity
+  of learning fixed-structure Bayesian networks. <em>Machine Learning</em>, 29, 165&ndash;180.</p>
 
-  <h2>9. Scope and limitations</h2>
+  <p><a href="https://arxiv.org/abs/1803.03635">Frankle, J., &amp; Carbin, M. (2019).</a> The lottery
+  ticket hypothesis: finding sparse, trainable neural networks. <em>ICLR 2019</em>.</p>
 
-  <p>What the theorems do <em>not</em> say. Per-neuron fan-in does not imply module-level
-  fan-in — the plan's own pre-registered guard, quoted verbatim from the intake: &ldquo;A module
-  with many neurons can collectively read many upstream variables even if every scalar neuron
-  only reads (k) inputs. So per-neuron fan-in does not mathematically imply module
-  fan-in.&rdquo; All statements are hypothesis-class statements: SGD-trained
-  fan-in-limited MLPs are an explicitly deferred successor study, and nothing here validates
-  their behavior. Dense networks can represent everything in this note — the claim is
-  statistical complexity (inductive bias), never expressivity. And the advantage is
-  <em>class-membership relative to a basis</em>: under GF(2) mixing the target leaves the
-  axis-aligned class and the advantage must — and does (§6) — vanish. This is consonant with
-  <a class="xref" href="../sample_efficiency_foundations/">the foundations node</a>: there the
-  representation varies with the class fixed; here the class membership itself is
-  basis-relative.</p>
+  <p><a href="https://doi.org/10.1214/aos/1176347963">Friedman, J. H. (1991).</a> Multivariate
+  adaptive regression splines. <em>The Annals of Statistics</em>, 19(1), 1&ndash;67.</p>
 
-  <p>Open, by declaration rather than oversight: the \(N\)-linear term of T1/T2 is not matched
-  from below (T4 forces only the \(N{=}1\) subclass's \(2^{r} + r\log(d/r)\)); realizability at
-  \(N \ge 2\), \(2 \le k \lt r\) is the floor's declared open case; and T3&prime; — the VS
-  right arm as a theorem — was left unattempted under its pre-commitment, with a 97.7%-monotone
-  numeric probe on record. The capacity separation holds under the explicit regime
-  \(\Delta = O(r D^{r-1})\) with the dense side counted by descriptions; the lower bound is
-  claimed at \(D{=}2\) only.</p>
+  <p><a href="https://doi.org/10.1007/BF00344251">Fukushima, K. (1980).</a> Neocognitron: a self-organizing
+  neural network model for a mechanism of pattern recognition unaffected by shift in position.
+  <em>Biological Cybernetics</em>, 36(4), 193&ndash;202.</p>
 
-  <p>Empirically, exact enumeration buys exactness and pays reach: \(d \le 12\), description
-  counts under \(5\times10^{7}\), and a grid floor \(n_{\min} = 8\) that left-censors the
-  known-structure baselines — which is why P2's growth clause and P6b could not resolve
-  (§7, §5.1); the \(D^{r}\) magnitude check P7 ran at a single small scale and landed below its
-  band (§5.3). These are scale limits of the illustration, not of the theorems. The natural
-  next rung — SGD-trained fan-in-limited MLPs on the same targets — is the deferred successor
-  study, and it decides one falsifiable question: do SGD-trained fan-in-\(k\) MLPs at matched
-  budget reproduce the \(k{=}r\) U-shape and the \(d\)-flatness signatures on these same
-  targets? Failure would mean the class-level advantage does not transfer to training
-  dynamics.</p>
+  <p><a href="https://doi.org/10.1007/BF01744431">Furst, M., Saxe, J. B., &amp; Sipser, M. (1984).</a>
+  Parity, circuits, and the polynomial-time hierarchy. <em>Mathematical Systems Theory</em>, 17(1),
+  13&ndash;27.</p>
 
-  <div class="repro"><p><span class="git">git <code>84d947b</code></span> (analysis + figures;
-  enumeration shards @ <code>3bf8e15</code>) &middot; seeds
-  SHA256-derived per <code>configs/enum_v1.yaml</code> &middot;
-  <code>src/run_enum.py --pilot</code> → <code>src/run_enum.py --all</code> →
-  <code>src/analyze.py</code> (writes <code>results/analysis.json</code> + all figures) &middot;
-  witness <code>src/verify_t5.py</code> &middot; proof source <code>report/theory_proofs.md</code>
-  &middot; contract <code>plan/contract.json</code> (locked 2026-07-04) + amendment
-  <code>plan/amendments/A01.md</code>.</p></div>
+  <p><a href="https://arxiv.org/abs/1506.02626">Han, S., Pool, J., Tran, J., &amp; Dally, W. J. (2015).</a>
+  Learning both weights and connections for efficient neural networks. <em>NeurIPS 2015</em>.</p>
+
+  <p><a href="https://www.csc.kth.se/~johanh/largesmalldepth.pdf">Håstad, J. (1986).</a> Almost optimal
+  lower bounds for small depth circuits. <em>Proc. 18th ACM Symposium on Theory of Computing (STOC)</em>,
+  6&ndash;20.</p>
+
+  <p><a href="https://doi.org/10.1023/A:1022623210503">Heckerman, D., Geiger, D., &amp; Chickering,
+  D. M. (1995).</a> Learning Bayesian networks: the combination of knowledge and statistical data.
+  <em>Machine Learning</em>, 20(3), 197&ndash;243.</p>
+
+  <p><a href="https://doi.org/10.1137/0222080">Kushilevitz, E., &amp; Mansour, Y. (1993).</a> Learning
+  decision trees using the Fourier spectrum. <em>SIAM Journal on Computing</em>, 22(6),
+  1331&ndash;1348.</p>
+
+  <p><a href="https://doi.org/10.1109/5.726791">LeCun, Y., Bottou, L., Bengio, Y., &amp; Haffner, P.
+  (1998).</a> Gradient-based learning applied to document recognition. <em>Proceedings of the IEEE</em>,
+  86(11), 2278&ndash;2324.</p>
+
+  <p><a href="https://proceedings.neurips.cc/paper/1989/hash/6c9882bbac1c7093bd25041881277658-Abstract.html">LeCun,
+  Y., Denker, J. S., &amp; Solla, S. A. (1989).</a> Optimal brain damage. <em>NeurIPS 2</em>,
+  598&ndash;605.</p>
+
+  <p><a href="https://dl.acm.org/doi/10.1145/174130.174138">Linial, N., Mansour, Y., &amp; Nisan, N.
+  (1993).</a> Constant depth circuits, Fourier transform, and learnability. <em>Journal of the ACM</em>,
+  40(3), 607&ndash;620.</p>
+
+  <p><a href="https://arxiv.org/abs/1712.01312">Louizos, C., Welling, M., &amp; Kingma, D. P. (2018).</a>
+  Learning sparse neural networks through \(L_0\) regularization. <em>ICLR 2018</em>.</p>
+
+  <p><a href="https://doi.org/10.1007/978-1-4615-2696-4_11">Mansour, Y. (1994).</a> Learning Boolean
+  functions via the Fourier transform. In <em>Theoretical Advances in Neural Computation and
+  Learning</em>, 391&ndash;424.</p>
+
+  <p><a href="https://arxiv.org/abs/1608.03287">Mhaskar, H., &amp; Poggio, T. (2016).</a> Deep vs. shallow
+  networks: an approximation theory perspective. <em>Analysis and Applications</em>, 14(6),
+  829&ndash;848.</p>
+
+  <p><a href="https://www.cs.columbia.edu/~rocco/papers/stoc03juntas.html">Mossel, E., O'Donnell, R., &amp;
+  Servedio, R. (2004).</a> Learning functions of \(k\) relevant variables. <em>Journal of Computer and
+  System Sciences</em>, 69(3), 421&ndash;434.</p>
+
+  <p><a href="https://arxiv.org/abs/1905.11604">Nakkiran, P., Kaplun, G., Kalimeris, D., Yang, T., Edelman,
+  B. L., Zhang, F., &amp; Barak, B. (2019).</a> SGD on neural networks learns functions of increasing
+  complexity. <em>NeurIPS 2019</em>.</p>
+
+  <p><a href="https://arxiv.org/abs/1503.00036">Neyshabur, B., Tomioka, R., &amp; Srebro, N.
+  (2015).</a> Norm-based capacity control in neural networks. <em>Proc. 28th Conference on Learning
+  Theory (COLT)</em>, PMLR 40, 1376&ndash;1401.</p>
+
+  <p><a href="https://doi.org/10.1017/CBO9781139814782">O'Donnell, R. (2014).</a> <em>Analysis of Boolean
+  Functions</em>. Cambridge University Press.</p>
+
+  <p><a href="https://arxiv.org/abs/1611.00740">Poggio, T., Mhaskar, H., Rosasco, L., Miranda, B., &amp;
+  Liao, Q. (2017).</a> Why and when can deep — but not shallow — networks avoid the curse of
+  dimensionality: a review. <em>International Journal of Automation and Computing</em>, 14,
+  503&ndash;519.</p>
+
+  <p><a href="https://doi.org/10.1111/j.1467-9868.2009.00718.x">Ravikumar, P., Lafferty, J., Liu, H.,
+  &amp; Wasserman, L. (2009).</a> Sparse additive models. <em>Journal of the Royal Statistical
+  Society, Series B</em>, 71(5), 1009&ndash;1030.</p>
+
+  <p><a href="https://doi.org/10.1016/0005-1098(78)90005-5">Rissanen, J. (1978).</a> Modeling by
+  shortest data description. <em>Automatica</em>, 14(5), 465&ndash;471.</p>
+
+  <p><a href="https://arxiv.org/abs/1705.05502">Rolnick, D., &amp; Tegmark, M. (2018).</a> The power of
+  deeper networks for expressing natural functions. <em>ICLR 2018</em>.</p>
+
+  <p><a href="https://doi.org/10.1214/aos/1176344136">Schwarz, G. (1978).</a> Estimating the dimension
+  of a model. <em>The Annals of Statistics</em>, 6(2), 461&ndash;464.</p>
+
+  <p><a href="https://arxiv.org/abs/1703.07950">Shalev-Shwartz, S., Shamir, O., &amp; Shammah, S.
+  (2017).</a> Failures of gradient-based deep learning. <em>ICML 2017</em>, PMLR 70,
+  3067&ndash;3075.</p>
+
+  <p><a href="https://doi.org/10.1111/j.2517-6161.1996.tb02080.x">Tibshirani, R. (1996).</a>
+  Regression shrinkage and selection via the Lasso. <em>Journal of the Royal Statistical Society,
+  Series B</em>, 58(1), 267&ndash;288.</p>
+
+  <p><a href="https://doi.org/10.1145/1968.1972">Valiant, L. G. (1984).</a> A theory of the learnable.
+  <em>Communications of the ACM</em>, 27(11), 1134&ndash;1142.</p>
+
+  <p><a href="https://doi.org/10.1137/1116025">Vapnik, V. N., &amp; Chervonenkis, A. Ya. (1971).</a>
+  On the uniform convergence of relative frequencies of events to their probabilities. <em>Theory of
+  Probability and Its Applications</em>, 16(2), 264&ndash;280.</p>
+
+  <p><a href="https://arxiv.org/abs/1611.03530">Zhang, C., Bengio, S., Hardt, M., Recht, B., &amp; Vinyals,
+  O. (2017).</a> Understanding deep learning requires rethinking generalization. <em>ICLR 2017</em>.</p>
+  </div>
 
 </article></main>
 </body>
