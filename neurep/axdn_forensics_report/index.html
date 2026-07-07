@@ -1,7 +1,164 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow"><title>The axon–dendrite wiring prior (nr.axdn-euc-abs) on flat_modular — neurep</title><link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%234b2e63'/%3E%3C/svg%3E"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"><script>window.MathJax={tex:{tags:'ams',inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]'],['$$','$$']]},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']},chtml:{displayAlign:'center'}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><style>/* ========================================================================== *
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow"><title>The axon–dendrite wiring prior (nr.axdn-euc-abs) on flat_modular — neurep</title><link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%234b2e63'/%3E%3C/svg%3E"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"><script>window.MathJax={tex:{tags:'ams',inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]'],['$$','$$']]},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']},chtml:{displayAlign:'center'}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><script id="rs-mathcopy">(function(){
+  "use strict";
+  var ENV = /^\\begin\{(equation|align|gather|multline|flalign|alignat|eqnarray)\*?\}/;
+  function wrap(tex, display){
+    // A top-level display environment is already its own display context — wrapping it in
+    // \[ \] would be invalid LaTeX, so keep it verbatim; otherwise add \[ \] or \( \).
+    if(ENV.test(tex)) return tex;
+    return display ? ("\\[ " + tex + " \\]") : ("\\( " + tex + " \\)");
+  }
+  function stampMathJax(){
+    try{
+      var doc = window.MathJax && MathJax.startup && MathJax.startup.document;
+      var list = doc && doc.math;
+      if(!list) return;
+      for(var it of list){
+        var root = it.typesetRoot, tex = (it.math || "").trim();
+        if(!root || !root.setAttribute || !tex) continue;
+        root.setAttribute("data-tex", wrap(tex, it.display));
+      }
+    }catch(e){}
+  }
+  function stampKaTeX(){
+    try{
+      var nodes = document.querySelectorAll(".katex");
+      for(var i=0;i<nodes.length;i++){
+        var el = nodes[i];
+        if(el.getAttribute("data-tex")) continue;
+        var ann = el.querySelector("annotation[encoding='application/x-tex']");
+        var tex = ann ? (ann.textContent || "").trim() : "";
+        if(!tex) continue;
+        var display = !!(el.closest && el.closest(".katex-display"));
+        el.setAttribute("data-tex", wrap(tex, display));
+      }
+    }catch(e){}
+  }
+  function stampAll(){ stampMathJax(); stampKaTeX(); return !!document.querySelector("[data-tex]"); }
+  // Pure, testable core: given a Selection, return the LaTeX to put on the clipboard,
+  // or null when the selection touches no math (so normal copy proceeds untouched).
+  window.__mjxCopyText = function(sel){
+    if(!sel || sel.rangeCount === 0 || sel.isCollapsed) return null;
+    var range = sel.getRangeAt(0);
+    var holder = document.createElement("div");
+    holder.appendChild(range.cloneContents());
+    var maths = holder.querySelectorAll("[data-tex]");
+    if(!maths.length){
+      // Selection sits entirely inside one equation: the container is an ancestor of the
+      // range, not inside the clone — recover it and return the whole equation's source.
+      var c = range.commonAncestorContainer;
+      var anc = (c.nodeType === 1 ? c : c.parentNode);
+      var eq = (anc && anc.closest) ? anc.closest("[data-tex]") : null;
+      return eq ? eq.getAttribute("data-tex") : null;
+    }
+    maths.forEach(function(m){ m.replaceWith(document.createTextNode(" " + m.getAttribute("data-tex") + " ")); });
+    var txt = holder.textContent.replace(/[ \t ]+/g, " ").replace(/ *\n */g, "\n").trim();
+    return txt || null;
+  };
+  document.addEventListener("copy", function(e){
+    var t = window.__mjxCopyText(window.getSelection());
+    if(t == null) return;
+    (e.clipboardData || window.clipboardData).setData("text/plain", t);
+    e.preventDefault();
+  });
+  // Drive stamping: retry until math is rendered (MathJax typeset / KaTeX auto-render),
+  // then stop. Also chain MathJax's own ready promise when available.
+  if(window.MathJax && MathJax.startup && MathJax.startup.promise){ MathJax.startup.promise.then(stampAll); }
+  var n = 0, poll = setInterval(function(){ if(stampAll() || ++n > 150) clearInterval(poll); }, 100);
+})();
+</script><script id="rs-toc-js">// rs-toc: auto-generated table of contents for a study report, as a persistent left
+// sidebar that is ALWAYS shown in full (no tab, no collapse). Nestles in the gutter to the
+// left of the content column and hides itself only when the viewport is too narrow to fit
+// beside the text. Scroll-spy highlights the current section. Vanilla, dependency-free,
+// CSP-safe; self-defers until the article's headings exist.
+(function () {
+  "use strict";
+  if (window.__rsTocDone) return; window.__rsTocDone = true;
+
+  var CSS = "\
+.rs-toc{position:fixed;top:1.25rem;left:1.25rem;z-index:30;width:13rem;\
+font-family:var(--disp,sans-serif)}\
+.rs-toc-cap{font-size:.66rem;font-weight:700;\
+letter-spacing:.16em;text-transform:uppercase;color:var(--violet,#4b2e63);margin:0 0 .65rem}\
+.rs-toc-scroll{max-height:calc(100vh - 3.6rem);overflow-y:auto;overflow-x:hidden;overscroll-behavior:none}\
+.rs-toc-list{list-style:none;margin:0;padding:0;font-size:.85rem;line-height:1.45}\
+.rs-toc-list a{display:block;text-decoration:none;color:var(--mut,#6f685f);\
+border-left:2px solid var(--line,rgba(22,22,26,.14));padding:.1rem 0 .1rem .7rem;\
+transition:color .15s ease,border-color .15s ease}\
+.rs-toc-list a:hover{color:var(--ink,#16161a);border-left-color:var(--mut,#6f685f)}\
+.rs-toc-list a.active{color:var(--violet,#4b2e63);font-weight:600;border-left-color:var(--violet,#4b2e63)}\
+.rs-toc-list li.l3 a{padding-left:1.4rem;font-size:.81rem}\
+@media print{.rs-toc{display:none!important}}";
+
+  function slug(s) {
+    return (s || "").toLowerCase().replace(/[^\w\s-]/g, "").trim().replace(/[\s_]+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "").slice(0, 64);
+  }
+  function esc(s) { var d = document.createElement("span"); d.textContent = s; return d.innerHTML; }
+
+  function build() {
+    var art = document.querySelector("article") || document.querySelector("main.study") || document.querySelector("main");
+    if (!art) return;
+    var heads = art.querySelectorAll("h2, h3"), items = [], seen = {};
+    for (var i = 0; i < heads.length; i++) {
+      var h = heads[i];
+      var text = (h.textContent || "").trim();
+      if (!text) continue;
+      if (!h.id) { var s = slug(text) || "sec-" + i; while (seen[s] || document.getElementById(s)) s += "-" + i; h.id = s; }
+      seen[h.id] = 1;
+      items.push({ el: h, id: h.id, text: text, lvl: h.tagName === "H3" ? 3 : 2 });
+    }
+    if (items.length < 3) return;
+
+    var listH = '<ol class="rs-toc-list">';
+    for (var k = 0; k < items.length; k++) listH += '<li class="l' + items[k].lvl + '"><a href="#' + items[k].id + '" data-tid="' + items[k].id + '">' + esc(items[k].text) + "</a></li>";
+    listH += "</ol>";
+
+    var root = document.createElement("aside");
+    root.className = "rs-toc"; root.setAttribute("aria-label", "Table of contents");
+    root.innerHTML = '<p class="rs-toc-cap">Contents</p><div class="rs-toc-scroll">' + listH + "</div>";
+    document.body.appendChild(root);
+
+    var top0 = 20, nav = document.querySelector("header.nav, .nav");
+    if (nav) { var nr = nav.getBoundingClientRect(); if (nr.top < 40 && nr.height > 4) top0 = nr.bottom + 8; }
+    root.style.top = top0 + "px";
+
+    var main = document.querySelector("main.study") || art;
+    function place() {
+      var cl = main.getBoundingClientRect().left, w = root.offsetWidth || 208;
+      var left = cl - w - 52;                       // sit in the gutter, with clear separation from the text
+      if (left >= 12) { root.style.left = left + "px"; root.style.visibility = "visible"; }
+      else { root.style.visibility = "hidden"; }    // no room beside the text -> hide (never overlap)
+    }
+
+    var links = root.querySelectorAll("a[data-tid]");
+    function setActive(id) { for (var j = 0; j < links.length; j++) links[j].classList.toggle("active", links[j].getAttribute("data-tid") === id); }
+    var ticking = false, curId = null;
+    function react() {
+      ticking = false;
+      place();
+      var active = items[0];
+      for (var i = 0; i < items.length; i++) { if (items[i].el.getBoundingClientRect().top <= 100) active = items[i]; else break; }
+      if (active && active.id !== curId) { curId = active.id; setActive(curId); }
+    }
+    function onScroll() { if (!ticking) { ticking = true; requestAnimationFrame(react); } }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll, { passive: true });
+    window.__rsTocReact = react;   // test seam
+    react();
+  }
+
+  function inject() {
+    var st = document.createElement("style"); st.id = "rs-toc-css"; st.textContent = CSS;
+    document.head.appendChild(st);
+    try { if (!matchMedia("(prefers-reduced-motion: reduce)").matches) document.documentElement.style.scrollBehavior = "smooth"; } catch (e) {}
+    build();
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", inject);
+  else inject();
+})();
+</script><style>/* ========================================================================== *
  *  research-site theme — the single source of truth for the visual language.
  *  The builder INLINES this file into every generated page's <head>, so each
  *  report renders standalone (open the .html directly) and is depth-proof.
