@@ -98,7 +98,7 @@ transition:color .15s ease,border-color .15s ease}\
   function esc(s) { var d = document.createElement("span"); d.textContent = s; return d.innerHTML; }
 
   function build() {
-    var art = document.querySelector("article") || document.querySelector("main.study") || document.querySelector("main");
+    var art = document.querySelector("article") || document.querySelector("main.study");   // report pages only — no generic <main> fallback, so the forest studies-page + landing render no ToC
     if (!art) return;
     var heads = art.querySelectorAll("h2, h3"), items = [], seen = {};
     for (var i = 0; i < heads.length; i++) {
