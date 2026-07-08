@@ -426,7 +426,7 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
 </head>
 <body>
 <header class="nav"><a class="brand" href="../index.html"><span>neurep</span></a></header><main class="study"><header class="study-head"><h1>A measured-communication prior for neuron-aligned modules</h1><p class=sub>Measured neuron-to-neuron communication carries a task's module structure; trained as a code prior it concentrates fan-in, with weight-magnitude parity almost everywhere.</p><div class="rule"></div></header><div class="context"><span class="crumb"><a href="../studies.html#thread-representation">Learned representations &amp; modularity</a></span><span class="status refuted">refuted</span><span class="dep">builds on: <a href="../collapse_review/">What is the Separator regularizer actually
-doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou-Hangyu/neurep/commit/fdee9b8"><code>fdee9b8</code></a> <span class="git">· master</span></span></div><article>
+doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou-Hangyu/neurep/commit/5a5b6ab"><code>5a5b6ab</code></a> <span class="git">· master</span></span></div><article>
 
   <div class="tldr"><p><strong>TL;DR.</strong> A neuron-to-neuron communication matrix \(A\), measured on
   an ordinarily trained network, does carry a task's module structure — planted modules are recovered
@@ -435,7 +435,7 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
   <p>Trained as a code prior in its causal form (§2), \(A\) acts as a centered adaptive \(\ell_1\) that
   concentrates each neuron's fan-in onto its code cluster — a closed-form mechanism (§6) whose measured
   effect matches group-lasso's, the measured content adding alignment only over an information-ablated
-  \(\lvert W\rvert\)-as-score control, never over group-lasso itself (§5). The benefit is confined to a
+  W-as-score control, never over group-lasso itself (§5). The benefit is confined to a
   narrow low-data flat-modular regime (the large-sample regime is unmeasurable under this study's fixed
   training schedule, §7.1); it does not survive on the hierarchical task, uses detected modules no better
   than \(\lvert W\rvert\) does, and closes none of a compositional out-of-distribution gap (§7). The
@@ -444,7 +444,7 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
   objective the prior was meant to power is not justified on this evidence (§8).</p></div>
 
   <h2>1. Why a measured communication prior</h2>
-  <p>In the current NeuRep objective the per-neuron codes \(\phi_i\) receive no task gradient, and each
+  <p>In the objective this study revisits, the per-neuron codes \(\phi_i\) receive no task gradient, and each
   connection is priced by its weight magnitude — a static, data-free proxy for how much two neurons
   belong together. The companion forensics
   (<a class="xref" href="../experiment_representation/">a learned neuron representation does not make weights modular</a>,
@@ -470,7 +470,7 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
       <tr><td>Measured communication carries modular signal</td><td>S1 recovered exactly (ARI 1.000); S2 hierarchy recovered, root never merged (10/10 seeds) — §3.2</td><td>\(\lvert W\rvert\) reads the same structure (S1 1.000, S2 0.912); measured \(A\) does not out-detect it</td></tr>
       <tr><td>The realistic modules are rotated off the neuron axes</td><td>a rotated subspace reproduces the module (patch-\(R^2\) 0.92 flat) while axis-mass stays \(\approx0.23\) — §3.3</td><td>a per-neuron code starts at a representational disadvantage</td></tr>
       <tr><td>The trained prior concentrates fan-in</td><td>effective fan-in \(18.45\to9.48\), \(d_z=-1.88\) — §5.3, §6</td><td>equivalent to group-lasso (TOST at margin \(d_z=0.8\)); not unique to measured communication</td></tr>
-      <tr><td>Measured content beats objective form, not structured sparsity</td><td>M1 beats the \(\lvert W\rvert\)-as-score control on axis-mass (\(d_z=0.54\)) — §5.3</td><td>does not beat group-lasso on axis-mass (null, \(d_z=0.15\))</td></tr>
+      <tr><td>Measured content beats objective form, not structured sparsity</td><td>M1 beats the W-as-score control on axis-mass (\(d_z=0.54\)) — §5.3</td><td>does not beat group-lasso on axis-mass (null, \(d_z=0.15\))</td></tr>
       <tr><td>Downstream gains are narrow</td><td>M1 beats group-lasso on <code>flat_modular</code> at \(n\le2048\) (\(d_z\) \(-1.28\dots-1.45\)) — §7.1</td><td>sign-flips on <code>hier_tree</code>; large-\(n\) undecidable; no causal-use edge over \(\lvert W\rvert\); OOD closure \(\le7.2\%\) (null)</td></tr>
     </tbody>
   </table></div>
@@ -548,7 +548,7 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
   ("glasso" in tables) — a structured penalty whose groups are each neuron's fan-in, so it prunes whole
   neurons: the apt competitor for a method claiming neuron-level structure, and the comparator fixed
   in advance for the sample-efficiency test (§7.1) as the toughest structured baseline.</p>
-  <p><strong>The alphabet.</strong> Every trained arm and control referenced below, in one place:</p>
+  <p><strong>The alphabet.</strong> Every trained arm and control:</p>
   <div class="tablewrap"><table>
     <thead><tr><th>Name</th><th>What it is</th><th>Role</th></tr></thead>
     <tbody>
@@ -618,7 +618,7 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
   (Fig.&nbsp;1, left). On S2, the decisive test, the measured scores recover the hierarchy with ARI
   \(0.88\!-\!0.89\); the choose-\(k\) detector finds exactly \(G{+}1=5\) communities in 10/10 seeds
   (M1, M2); and <strong>the root keeps its own community in 10/10 seeds for every score</strong> — it
-  is never absorbed into a leaf (Fig.&nbsp;1, right). The feared transitive merging does not happen:
+  is never absorbed into a leaf (Fig.&nbsp;1, right). Transitive merging does not happen:
   within-module density (block contrast \(B\approx6\!-\!9\)) dominates the single high-\(A\)
   interface, so community detection holds the root apart even though the contrastive term
   \eqref{eq:mod}, alone, would not.</p>
@@ -728,7 +728,7 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
     <img class="fig" src="fig/fig_fv4_overview_mse.png" alt="test MSE per condition across the four tasks"/>
     <figcaption><strong>Figure 3.</strong> No measured score leads any panel. Held-out test MSE per
     condition (bars = geometric means, log scale; dots = seeds 10–29, validation-picked
-    configurations; descriptive). Every regularizer clears noreg; the measured-score conditions sit
+    configurations). Every regularizer clears noreg; the measured-score conditions sit
     inside the baseline pack on all four tasks.</figcaption>
   </figure>
   <figure>
@@ -747,7 +747,7 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
   likelihood-ratio test at \(\alpha=.05\) per cell; power 0.94–1.00 at the observed mode geometry,
   computed before the runs):</p>
   <div class="tablewrap"><table>
-    <thead><tr><th>cell</th><th>mean axis-mass</th><th>GMM LRT</th><th>\(p\)</th><th>verdict</th><th>ramp − const (\(p\))</th></tr></thead>
+    <thead><tr><th>cell</th><th>mean axis-mass</th><th>GMM LRT</th><th>\(p\)</th><th>outcome</th><th>ramp − const (\(p\))</th></tr></thead>
     <tbody>
       <tr><td>fm@512 / M1</td><td>0.554</td><td>1.20</td><td>.66</td><td>resolved (unimodal)</td><td>−0.031 (.31)</td></tr>
       <tr><td>fm@2048 / M1</td><td>0.379</td><td>13.9</td><td>.018</td><td><strong>persists</strong></td><td>−0.030 (.006)</td></tr>
@@ -790,7 +790,7 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
       <tr><td>hier_tree@2048</td><td><strong>0.382</strong></td><td>0.095</td><td>0.204</td><td>0.393</td><td>0.159</td><td>0.101</td></tr>
     </tbody>
   </table></div>
-  <p>The M1-detached column carries a caution: codes organize onto the communication graph's
+  <p>M1-detached codes organize onto the communication graph's
   communities <em>even when they cannot shape the weights</em> (0.24 fm, 0.39 ht) — the passive
   embedding of P-iv (§6) — so "organized codes" alone certify nothing about the weights.</p>
 
@@ -813,14 +813,14 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
     margin \(d_z=0.8\) (\(p=8.8\times10^{-9}\); \(d_z=-0.10\)) — and the companion comparison,
     axis-mass superiority over group-lasso, does not fire: pooled one-sided \(p=.20\), \(d_z=0.15\),
     itself TOST-equivalent at the same margin (\(p=6.9\times10^{-8}\)) — a genuine null, not a power
-    failure. The hoped-for dissociation ("fan-in equal yet alignment better, so fan-in bounding cannot
+    failure. A dissociation ("fan-in equal yet alignment better, so fan-in bounding cannot
     be the whole mechanism") is not established.</li>
     <li><strong>The information control.</strong> Against W-as-score — the same objective with
     \(A=\lvert W\rvert\) — fan-in is TOST-comparable (\(p=7.8\times10^{-10}\), \(d_z=0.04\)) and M1's
     axis-mass <em>is</em> superior (\(p=5.5\times10^{-6}\), \(d_z=0.54\)): the measured content of
     \(A\) does work its form alone cannot.</li>
   </ul>
-  <p>The reading is conservative: this combination was not among the outcomes anticipated before the
+  <p>This combination was not among the outcomes anticipated before the
   runs, and everything group-lasso-equivalent about M1 is compatible with fan-in bounding as the
   sufficient mechanism — M1 behaves as an adaptive fan-in concentrator of group-lasso's strength —
   while the measured-\(A\) content demonstrably adds alignment only against the form-matched control,
@@ -1035,7 +1035,7 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
   at every testable \(n\): mean gap −0.93 (\(d_z=-1.28\)) at 512, −0.66 (\(d_z=-1.43\)) at 1024,
   −0.52 (\(d_z=-1.45\)) at 2048 — every Holm \(p=1.1\times10^{-5}\), 20 pairs each — with the gap
   shrinking as data grows. <strong>hier_tree: the sign flips.</strong> At 512 group-lasso beats M1
-  (+0.55, \(d_z=+0.98\), Holm \(p=.0029\), 19 pairs; this cell carries a residual glasso grid-edge
+  (+0.55, \(d_z=+0.98\), Holm \(p=.0029\), 19 pairs; this cell carries a residual group-lasso grid-edge
   pin, 14/20); 1024 and 2048 are ties (Holm \(p=1.0\)). On both tasks the \(n\ge4096\) rungs fell to
   the convergence bar — 997 of 1080 fits at \(n\ge4096\) fail it — so whether the gap vanishes,
   shrinks, or persists at scale is undecidable from these runs, and what the data do support is a
@@ -1051,7 +1051,7 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
     <figcaption><strong>Figure 8.</strong> The flat-task advantage is real but shrinks with data; the
     hierarchy sign-flips. Mean paired gap in log test MSE (M1 − group-lasso; below
     zero favors M1), seeds 10–29: on flat_modular M1 wins at every testable \(n\), the gap shrinking
-    0.93 → 0.52; on hier_tree glasso wins at 512, then ties. The shaded region's cells were excluded by
+    0.93 → 0.52; on hier_tree group-lasso wins at 512, then ties. The shaded region's cells were excluded by
     the convergence bar (83/1080 pass).</figcaption>
   </figure>
   <p><strong>The large-sample regime has no feasible converged budget under this training schedule.</strong>
@@ -1116,7 +1116,7 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
       <tr><td>composition M1 \(\lt\) glasso</td><td>+0.014</td><td>+0.20</td><td>1.0</td><td>null</td></tr>
     </tbody>
   </table></div>
-  <p>Read descriptively: only the gap@16 direction is consistent with the pilot; the other three legs
+  <p>Only the gap@16 direction is consistent with the pilot; the other three legs
   are directionally null, and group-lasso's own gap@32 — likewise descriptive — is itself
   significantly negative (\(d_z=-0.46\), \(p=.022\); the pilot had it at \(d_z\approx-0.03\)), so the
   restricted-readout advantage, where it appears, is not specific to the communication prior. No
@@ -1163,7 +1163,7 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
   neither pairing significant (\(p=.105/.68\)) — so measured \(A\) did not out-detect
   \(\lvert W\rvert\), and that evidence does not justify building the original three-term objective
   \eqref{eq:total}. The one place measurement demonstrably beats form is alignment against the
-  \(\lvert W\rvert\)-as-score control (\(d_z=0.54\)): the content does extra work, just not work that
+  W-as-score control (\(d_z=0.54\)): the content does extra work, just not work that
   group-lasso does not already do.</p>
   <p>The causal prior's operative mechanism is adaptive fan-in
   concentration (§5.3, §6) — a structured-sparsity effect, which is exactly why group-lasso shadows
@@ -1172,7 +1172,7 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
   flat task, a sign flip on the hierarchical task, and no alignment of the hierarchy's deeper levels
   by anything tested (§5.5).</p>
   <p><strong>What would change the picture.</strong> The result that would justify building the prior: a
-  regime where a measured score beats <em>both</em> the form-matched \(\lvert W\rvert\)-as-score
+  regime where a measured score beats <em>both</em> the form-matched W-as-score
   control <em>and</em> val-picked group-lasso on task error or alignment at matched budget — §5.3's
   information control shows the first leg is attainable, and nothing yet shows the second. The
   representation follow-up motivated by §3.3 and §5.5 is rotation-aware codes — or training that
@@ -1196,7 +1196,7 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
   the fm payoff regime is a statement about the shared 3k-step budget, not about converged fits. Likewise the <code>hier_tree</code>
   depth choice rests on a single-cell pilot (Appendix A). <strong>Grid edges persist.</strong> After
   the two capped extension rounds, 26 of the 52 tracked comparisons remain edge-pinned (worst:
-  \(\ell_1/\ell_2\) at fm@512, 20/20; \(\ell_2\) at S2@512, 19/20), including glasso at the ht@512
+  \(\ell_1/\ell_2\) at fm@512, 20/20; \(\ell_2\) at S2@512, 19/20), including group-lasso at the ht@512
   flip cell (14/20); every residual is enumerated in <code>results/fv3_analysis.json</code>.
   <strong>Depth-3-only probes.</strong> <code>lane_diag</code> and <code>patch_r2</code> hard-code
   the three-layer topology, so on <code>hier_tree</code> they are reported at a depth-3 continuity
@@ -1208,7 +1208,7 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
   <strong>Gauge sensitivity.</strong> The fan-in statistics move under GELU unit rescaling (§5.3), by
   margins several times smaller than the effects read from them.
   <strong>Scope.</strong> Synthetic regression tasks, tiny GELU MLPs, one code architecture; the
-  planted topologies are the study's own; nothing here speaks to depth beyond five layers,
+  planted topologies are the study's own; nothing here tests depth beyond five layers,
   classification, or scale.</p>
 
   <h2>Appendix A — Setup detail and measurement notes</h2>
@@ -1271,7 +1271,7 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
   <p><strong>hier_tree depth.</strong> The five-layer choice comes from a pilot at @2048 (depths
   3/4/5 × {noreg, glasso, M1} × 10 seeds, decided on validation FVU only): only depth 5 sits within a
   5% paired margin of the best (median paired excess: depth 3 +39.4%, depth 4 +12.5%), and the
-  non-deciding glasso and M1 tables concur (both minimized at depth 5, val FVU 0.0184 / 0.0249 vs
+  non-deciding group-lasso and M1 tables concur (both minimized at depth 5, val FVU 0.0184 / 0.0249 vs
   noreg 0.0199). A companion leg at @16384 never converged (30/30 at the 12k-step cap), so the choice
   rests on the @2048 leg alone with depth-3-calibrated hyperparameters — the declared price of a
   non-adaptive pilot (§9). A spot-check of the 2% CV rule on the adopted-depth nets passes at 65,536
