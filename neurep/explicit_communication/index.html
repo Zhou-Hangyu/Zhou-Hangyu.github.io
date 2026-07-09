@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow"><title>A measured-communication prior for neuron-aligned modules — neurep</title><link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%234b2e63'/%3E%3C/svg%3E"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"><script>window.MathJax={tex:{tags:'ams',inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]'],['$$','$$']]},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']},chtml:{displayAlign:'center'}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><script id="rs-mathcopy">(function(){
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow"><title>Measured communication carries module structure but never beats weight magnitude — neurep</title><link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%234b2e63'/%3E%3C/svg%3E"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"><script>window.MathJax={tex:{tags:'ams',inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]'],['$$','$$']]},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']},chtml:{displayAlign:'center'}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><script id="rs-mathcopy">(function(){
   "use strict";
   var ENV = /^\\begin\{(equation|align|gather|multline|flalign|alignat|eqnarray)\*?\}/;
   function wrap(tex, display){
@@ -515,25 +515,25 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
 </style>
 </head>
 <body>
-<header class="nav"><a class="brand" href="../index.html"><span>neurep</span></a></header><main class="study"><header class="study-head"><h1>A measured-communication prior for neuron-aligned modules</h1><p class=sub>Measured neuron-to-neuron communication carries a task's module structure; trained as a code prior it concentrates fan-in, with weight-magnitude parity almost everywhere.</p><div class="rule"></div></header><div class="context"><span class="crumb"><a href="../studies.html#thread-representation">Learned representations &amp; modularity</a></span><span class="status refuted">refuted</span><span class="dep">builds on: <a href="../collapse_review/">What is the Separator regularizer actually
-doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou-Hangyu/neurep/commit/5a5b6ab"><code>5a5b6ab</code></a> <span class="git">· master</span></span></div><article>
+<header class="nav"><a class="brand" href="../index.html"><span>neurep</span></a></header><main class="study"><header class="study-head"><h1>Measured communication carries module structure but never beats weight magnitude</h1><p class=sub>Trained as a code prior it concentrates each neuron's fan-in, with weight-magnitude parity almost everywhere; the realistic modules it should name sit rotated off the neuron axes.</p><div class="rule"></div></header><div class="context"><span class="crumb"><a href="../studies.html#thread-representation">Learned representations &amp; modularity</a></span><span class="status refuted">refuted</span><span class="dep">builds on: <a href="../collapse_review/">What is the Separator regularizer actually
+doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou-Hangyu/neurep/commit/2fbc24d"><code>2fbc24d</code></a> <span class="git">· master</span></span></div><article>
 
   <div class="tldr"><p><strong>TL;DR.</strong> A neuron-to-neuron communication matrix \(A\), measured on
   an ordinarily trained network, does carry a task's module structure — planted modules are recovered
-  exactly, and two pipelined modules never merge (§3) — but on realistic nets the modules live in
-  <em>rotated</em> subspaces, off the neuron axes a per-neuron code can name (§3.3).</p>
-  <p>Trained as a code prior in its causal form (§2), \(A\) acts as a centered adaptive \(\ell_1\) that
-  concentrates each neuron's fan-in onto its code cluster — a closed-form mechanism (§6) whose measured
+  exactly, and two pipelined modules never merge (<a href="#sec-3">§3</a>) — but on realistic nets the modules live in
+  <em>rotated</em> subspaces, off the neuron axes a per-neuron code can name (<a href="#sec-3-3">§3.3</a>).</p>
+  <p>Trained as a code prior in its causal form (<a href="#sec-2">§2</a>), \(A\) acts as a centered adaptive \(\ell_1\) that
+  concentrates each neuron's fan-in onto its code cluster — a closed-form mechanism (<a href="#sec-6">§6</a>) whose measured
   effect matches group-lasso's, the measured content adding alignment only over an information-ablated
-  W-as-score control, never over group-lasso itself (§5). The benefit is confined to a
+  W-as-score control, never over group-lasso itself (<a href="#sec-5">§5</a>). The benefit is confined to a
   narrow low-data flat-modular regime (the large-sample regime is unmeasurable under this study's fixed
-  training schedule, §7.1); it does not survive on the hierarchical task, uses detected modules no better
-  than \(\lvert W\rvert\) does, and closes none of a compositional out-of-distribution gap (§7). The
+  training schedule, <a href="#sec-7-1">§7.1</a>); it does not survive on the hierarchical task, uses detected modules no better
+  than \(\lvert W\rvert\) does, and closes none of a compositional out-of-distribution gap (<a href="#sec-7">§7</a>). The
   implication: measured communication is real signal but largely redundant with weight magnitude on these
   tasks, per-neuron codes remain the wrong object for rotated or hierarchical structure, and the
-  objective the prior was meant to power is not justified on this evidence (§8).</p></div>
+  objective the prior was meant to power is not justified on this evidence (<a href="#sec-8">§8</a>).</p></div>
 
-  <h2>1. Why a measured communication prior</h2>
+  <h2 id="sec-1">1. Why a measured communication prior</h2>
   <p>In the objective this study revisits, the per-neuron codes \(\phi_i\) receive no task gradient, and each
   connection is priced by its weight magnitude — a static, data-free proxy for how much two neurons
   belong together. The companion forensics
@@ -549,23 +549,23 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
   strong inter-module (pipeline) edges, and a communication-based prior could weld pipelined modules
   together. Whether that happens depends entirely on whether \(A\) has community structure — dense
   within a module, sparse between. The first question is therefore whether a
-  measured \(A\) carries that structure at all, on networks trained with the bare task loss (§3); only
-  if it does is the prior worth training in its causal form to see what it does (§5), why (§6), and what
-  it buys (§7).</p>
+  measured \(A\) carries that structure at all, on networks trained with the bare task loss (<a href="#sec-3">§3</a>); only
+  if it does is the prior worth training in its causal form to see what it does (<a href="#sec-5">§5</a>), why (<a href="#sec-6">§6</a>), and what
+  it buys (<a href="#sec-7">§7</a>).</p>
   <p><strong>Claims and evidence.</strong> The five findings that carry the study, each paired with the
   toughest control it was measured against:</p>
   <div class="tablewrap"><table>
     <thead><tr><th>Claim</th><th>Evidence</th><th>Strongest control / caveat</th></tr></thead>
     <tbody>
-      <tr><td>Measured communication carries modular signal</td><td>S1 recovered exactly (ARI 1.000); S2 hierarchy recovered, root never merged (10/10 seeds) — §3.2</td><td>\(\lvert W\rvert\) reads the same structure (S1 1.000, S2 0.912); measured \(A\) does not out-detect it</td></tr>
-      <tr><td>The realistic modules are rotated off the neuron axes</td><td>a rotated subspace reproduces the module (patch-\(R^2\) 0.92 flat) while axis-mass stays \(\approx0.23\) — §3.3</td><td>a per-neuron code starts at a representational disadvantage</td></tr>
-      <tr><td>The trained prior concentrates fan-in</td><td>effective fan-in \(18.45\to9.48\), \(d_z=-1.88\) — §5.3, §6</td><td>equivalent to group-lasso (TOST at margin \(d_z=0.8\)); not unique to measured communication</td></tr>
-      <tr><td>Measured content beats objective form, not structured sparsity</td><td>M1 beats the W-as-score control on axis-mass (\(d_z=0.54\)) — §5.3</td><td>does not beat group-lasso on axis-mass (null, \(d_z=0.15\))</td></tr>
-      <tr><td>Downstream gains are narrow</td><td>M1 beats group-lasso on <code>flat_modular</code> at \(n\le2048\) (\(d_z\) \(-1.28\dots-1.45\)) — §7.1</td><td>sign-flips on <code>hier_tree</code>; large-\(n\) undecidable; no causal-use edge over \(\lvert W\rvert\); OOD closure \(\le7.2\%\) (null)</td></tr>
+      <tr><td>Measured communication carries modular signal</td><td>S1 recovered exactly (ARI 1.000); S2 hierarchy recovered, root never merged (10/10 seeds) — <a href="#sec-3-2">§3.2</a></td><td>\(\lvert W\rvert\) reads the same structure (S1 1.000, S2 0.912); measured \(A\) does not out-detect it</td></tr>
+      <tr><td>The realistic modules are rotated off the neuron axes</td><td>a rotated subspace reproduces the module (patch-\(R^2\) 0.92 flat) while axis-mass stays \(\approx0.23\) — <a href="#sec-3-3">§3.3</a></td><td>a per-neuron code starts at a representational disadvantage</td></tr>
+      <tr><td>The trained prior concentrates fan-in</td><td>effective fan-in \(18.45\to9.48\), \(d_z=-1.88\) — <a href="#sec-5-3">§5.3</a>, <a href="#sec-6">§6</a></td><td>equivalent to group-lasso (TOST at margin \(d_z=0.8\)); not unique to measured communication</td></tr>
+      <tr><td>Measured content beats objective form, not structured sparsity</td><td>M1 beats the W-as-score control on axis-mass (\(d_z=0.54\)) — <a href="#sec-5-3">§5.3</a></td><td>does not beat group-lasso on axis-mass (null, \(d_z=0.15\))</td></tr>
+      <tr><td>Downstream gains are narrow</td><td>M1 beats group-lasso on <code>flat_modular</code> at \(n\le2048\) (\(d_z\) \(-1.28\dots-1.45\)) — <a href="#sec-7-1">§7.1</a></td><td>sign-flips on <code>hier_tree</code>; large-\(n\) undecidable; no causal-use edge over \(\lvert W\rvert\); OOD closure \(\le7.2\%\) (null)</td></tr>
     </tbody>
   </table></div>
 
-  <h2>2. Communication scores and the code prior</h2>
+  <h2 id="sec-2">2. Communication scores and the code prior</h2>
   <p><strong>The proposed objective.</strong> Two regularizers join the task loss
   \(\mathcal{L}_{\text{task}}\) (mean-squared error throughout — these are regression tasks): an
   <em>edge-suppression</em> term that prunes weakly-communicating weights, and a contrastive
@@ -594,9 +594,9 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
   drive \(i\)". M2 is co-activation: how correlated a sender and receiver fire, blind to the weight
   between them. M3 weights each edge by how much the network's <em>output</em> depends on it, through
   the output Jacobian \(\partial\hat y/\partial z_i\) (not the loss gradient, which vanishes at
-  convergence) — the most task-aware and the most expensive. Two controls bracket every score:
-  \(A=\lvert W\rvert\) (the incumbent proxy the redesign wants to replace) and a per-layer
-  <em>shuffle</em> (negative control); a <em>ceiling</em> sets \(A=\) the planted 0/1 mask, confirming
+  convergence) — the most task-aware and the most expensive. \(A=\lvert W\rvert\) (the incumbent proxy
+  the redesign wants to replace) and a per-layer <em>shuffle</em> (negative control) bracket every
+  score; a <em>ceiling</em> sets \(A=\) the planted 0/1 mask, confirming
   the detection pipeline works when \(A\) is perfect.</p>
   <p><strong>The causal form.</strong> As written, \(\widetilde A\) enters \eqref{eq:sup}–\eqref{eq:mod}
   <em>detached</em> — a constant to the optimizer. The code term is then harmless but inert: in an
@@ -608,11 +608,11 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
   (<code>results/analysis_followup.json</code>). The reason is algebraic, not empirical: with \(A\)
   detached and \(\phi\) absent from the forward pass, \(\mathcal{R}_{\text{mod}}\) contributes
   <em>zero</em> weight gradient, so the weight trajectory is exactly the unregularized one (proposition
-  P-iv, §6; verified bitwise at scale in §5.3). The codes become a passive readout, not a prior. Two
-  repairs make them causal: <em>un-detach</em> \(A\) (the attraction term becomes a product of a
-  \(W\)-function and a \(\phi\)-function, so its gradient flows into both) and replace
-  max-normalization + \((1{-}A)\) with a layer-<em>mean</em> normalization and a constant repulsion
-  threshold \(c\):</p>
+  P-iv, <a href="#sec-6">§6</a>; verified bitwise at scale in <a href="#sec-5-3">§5.3</a>). The codes become a passive readout, not a prior.
+  <em>Un-detaching</em> \(A\) (the attraction term becomes a product of a \(W\)-function and a
+  \(\phi\)-function, so its gradient flows into both) and replacing max-normalization + \((1{-}A)\)
+  with a layer-<em>mean</em> normalization and a constant repulsion threshold \(c\) make the codes
+  causal:</p>
   \[\begin{equation}\label{eq:modv2}
     \mathcal{R}_{\text{mod}}^{\,\text{v2}} = \sum_{\ell}\sum_{i,j}\Big[\,\widehat A^{(\ell)}_{ij}\,d_{ij} \;+\; c\,\max\!\big(0,\,m-d_{ij}\big)\Big],
     \qquad \widehat A^{(\ell)} = A^{(\ell)}\big/\,\overline{A^{(\ell)}},
@@ -620,8 +620,8 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
   <p>where \(\overline{A^{(\ell)}}\) is the layer's mean score (a single scalar), so \(\widehat A\) has
   mean 1 and a pair attracts when \(\widehat A \gt c\), repels when \(\widehat A \lt c\). The codes are
   8-dimensional, one per neuron, trained jointly with the weights; the margin is \(m=1\). This causal
-  form has an exact consequence, derived in §6: the attraction term is a centered adaptive \(\ell_1\)
-  that should pull each neuron's fan-in onto its own code cluster — the prediction §5.3 then tests
+  form has an exact consequence, derived in <a href="#sec-6">§6</a>: the attraction term is a centered adaptive \(\ell_1\)
+  that should pull each neuron's fan-in onto its own code cluster — the prediction <a href="#sec-5-3">§5.3</a> then tests
   directly.
   \(\mathcal{L}_{\text{task}} + \lambda_{\text{mod}}\mathcal{R}_{\text{mod}}^{\,\text{v2}}\) is the
   objective every trained arm below uses, with the score named by the condition: <strong>M1</strong>,
@@ -630,14 +630,14 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
   control: if it matches M1, the <em>form</em> of the prior suffices and the measured content adds
   nothing), and <strong>M2</strong> (co-activation keeping its bounded \((1{-}A)\) complement). The
   suppression term \eqref{eq:sup} stays out of the base objective and is priced separately by an
-  ablation (§5.4): it presumes the high-\(A\) edges are the ones to keep, exactly the assumption §3
+  ablation (<a href="#sec-5-4">§5.4</a>): it presumes the high-\(A\) edges are the ones to keep, exactly the assumption <a href="#sec-3">§3</a>
   tests first.</p>
   <p><strong>Baselines.</strong> Throughout: <strong>noreg</strong> (bare task loss),
   <strong>\(\ell_1\)</strong>, <strong>\(\ell_2\)</strong>, and
   <a href="https://en.wikipedia.org/wiki/Lasso_(statistics)#Group_lasso"><strong>group-lasso</strong></a>
   ("glasso" in tables) — a structured penalty whose groups are each neuron's fan-in, so it prunes whole
   neurons: the apt competitor for a method claiming neuron-level structure, and the comparator fixed
-  in advance for the sample-efficiency test (§7.1) as the toughest structured baseline.</p>
+  in advance for the sample-efficiency test (<a href="#sec-7-1">§7.1</a>) as the toughest structured baseline.</p>
   <p><strong>The alphabet.</strong> Every trained arm and control:</p>
   <div class="tablewrap"><table>
     <thead><tr><th>Name</th><th>What it is</th><th>Role</th></tr></thead>
@@ -651,13 +651,13 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
     </tbody>
   </table></div>
 
-  <h2>3. Module structure in the communication matrix</h2>
+  <h2 id="sec-3">3. Module structure in the communication matrix</h2>
   <p>The validation question is whether a measured \(A\), read from an ordinarily trained network,
   carries the information needed to recover the task's modules — including across the pipeline
   edges of a hierarchy. Two planted testbeds supply exact ground truth, and a realistic setting
   asks the same question where it ultimately matters.</p>
 
-  <h3>3.1 Planted testbeds</h3>
+  <h3 id="sec-3-1">3.1 Planted testbeds</h3>
   <p>The planted nets are <strong>masked MLPs</strong>: every layer's weight carries a fixed \(0/1\)
   mask and the forward pass uses the effective weight \(W\odot\text{mask}\), so the module of every
   neuron and every inter-module edge is fixed by construction. Each module's sub-function is a fixed
@@ -667,7 +667,7 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
   Every net here — planted and realistic alike — is trained on the <strong>bare task loss</strong> (no
   regularizer), 10 seeds, each seed redrawing the teachers (or, for S3, the task instance and init);
   all seeds passed their fit checks (planted test \(R^2\): S1 0.998, S2 0.970 against a 0.90 bar;
-  details in Appendix A).</p>
+  details in <a href="#app-a">Appendix&nbsp;A</a>).</p>
   <div class="tablewrap"><table>
     <thead><tr><th></th><th>Topology (layer widths)</th><th>Masks</th><th>Inter-module edges</th><th>Neurons</th><th>Modules</th></tr></thead>
     <tbody>
@@ -683,7 +683,7 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
   sub-nets each emit one scalar \(s_g\); the scalars feed a shared root through a <em>full</em>
   leaf-scalar\(\to\)root-hidden layer — the only inter-module wiring — and the target is
   \(y=R(T_1(x_1),\dots,T_G(x_G))\). Ground truth is \(G{+}1\) modules (four leaves + root), and the
-  S1\(\to\)S2 contrast isolates exactly the pipeline-merging risk of §1.
+  S1\(\to\)S2 contrast isolates exactly the pipeline-merging risk of <a href="#sec-1">§1</a>.
   <strong>S3 — realistic</strong> drops the scaffolding: the standard \(24\to64\to64\to1\) GELU MLP on
   <code>flat_modular</code> and <code>hier_tree</code> (24-dim inputs: 8 signal + 16 nuisance,
   \(n_{\text{train}}=2048\)), where only the input neurons carry ground-truth labels (their factor
@@ -702,25 +702,25 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
   between-module edge weight), whether S2's root is <em>absorbed</em> into a leaf community, and, for
   S3, the <strong>input-group ARI</strong> (do the input neurons cluster by factor group?).</p>
 
-  <h3>3.2 Planted recovery and pipeline separation</h3>
+  <h3 id="sec-3-2">3.2 Planted recovery and pipeline separation</h3>
   <p>On S1 every measured score recovers the planted modules exactly — ARI \(=1.000\), NMI
   \(=1.000\) — far above the shuffle control (ARI \(=0.013\)) and matching the planted-mask ceiling
-  (Fig.&nbsp;1, left). On S2, the decisive test, the measured scores recover the hierarchy with ARI
+  (<a href="#fig-1">Fig.&nbsp;1</a>, left). On S2, the decisive test, the measured scores recover the hierarchy with ARI
   \(0.88\!-\!0.89\); the choose-\(k\) detector finds exactly \(G{+}1=5\) communities in 10/10 seeds
   (M1, M2); and <strong>the root keeps its own community in 10/10 seeds for every score</strong> — it
-  is never absorbed into a leaf (Fig.&nbsp;1, right). Transitive merging does not happen:
+  is never absorbed into a leaf (<a href="#fig-1">Fig.&nbsp;1</a>, right). Transitive merging does not happen:
   within-module density (block contrast \(B\approx6\!-\!9\)) dominates the single high-\(A\)
   interface, so community detection holds the root apart even though the contrastive term
   \eqref{eq:mod}, alone, would not.</p>
   <p>The information is there — and the \(\lvert W\rvert\) control
   reads the same structure, matching the scores on S1 (ARI 1.000) and edging them on S2 (0.912 vs
-  0.883–0.893), a parity §8 returns to. Magnitude-prune-then-detect variants (keep the top half of
+  0.883–0.893), a parity <a href="#sec-8">§8</a> returns to. Magnitude-prune-then-detect variants (keep the top half of
   each layer's weights, then detect) were also run for every score: S1 stays perfect while S2
   recovery drops (M3 0.88 → 0.73) — pruning keeps the high-magnitude bottleneck edges and drops
   weak within-module ones (<code>results/analysis.json</code>). (An expectation stated before the runs
   — that M3, the output-aware score, would be strongest and M2 the most merge-prone — did
   not hold: M3 is weakest on S2, and no score ever merges the root.)</p>
-  <figure>
+  <figure id="fig-1">
     <img class="fig" src="fig/fig_recovery.png" alt="ARI per score for S1 and S2"/>
     <figcaption><strong>Figure 1.</strong> Measured communication recovers the planted modules — and
     so does \(\lvert W\rvert\). Module recovery (ARI, 10 seeds; points = seeds).
@@ -730,7 +730,7 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
     kept separate from the leaves.</figcaption>
   </figure>
 
-  <h3>3.3 Rotated modules in realistic nets</h3>
+  <h3 id="sec-3-3">3.3 Rotated modules in realistic nets</h3>
   <p>On S3 the input-group ARI is weak and high-variance (best score: 0.36 on
   <code>flat_modular</code>, 0.24 on <code>hier_tree</code>) — individual neurons do not sort into
   modules. Three rotation-aware subspace probes say why: <strong>axis-mass</strong> (mean squared
@@ -742,44 +742,45 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
   <a class="xref" href="../flat_forensics_report/">the flat winning ticket under the microscope</a>.
   <code>patch_r2</code> recovers the modules
   from <em>rotated</em> subspaces (0.92 flat; 0.47 mean / 0.59 median hier), far above a rotation-blind
-  control that patches a random subspace of matched dimension (\(\approx0.21\) flat, strongly negative
-  on hier), while axis-mass sits at \(\approx0.23\) — not single-neuron-aligned (Fig.&nbsp;2; the
-  rotation-blind control carries this conclusion — a planned variant on the
-  \(\lvert W\rvert\)-thresholded net was not evaluated). The structure is real but rotated off the
+  control that patches a random subspace of matched dimension (\(\approx0.19\) flat, strongly negative
+  on hier), while axis-mass sits at \(\approx0.23\) — not single-neuron-aligned (<a href="#fig-2">Fig.&nbsp;2</a>; the
+  rotation-blind control distinguishes genuine module structure from a random-subspace artifact, but the
+  pre-registered comparison against the \(\lvert W\rvert\)-thresholded net was not run, so this reading
+  is real-vs-random, not measured-vs-\(\lvert W\rvert\)). The structure is real but rotated off the
   neuron basis, corroborating that study's rotated-modules finding:
   per-neuron codes start at a representational disadvantage, and axis-mass becomes the
   de-rotation readout for everything that follows.</p>
-  <figure>
+  <figure id="fig-2">
     <img class="fig" src="fig/fig_s3.png" alt="S3 input-group ARI and probes for flat_modular and hier_tree"/>
     <figcaption><strong>Figure 2.</strong> Realistic modules are real but rotated off the neuron axes.
     Input-group ARI (neuron-level view) stays low, while the rotation-aware probes (annotated) show
     real but rotated module structure.</figcaption>
   </figure>
 
-  <h2>4. Setup</h2>
-  <p>All trained comparisons (§§5–7) share one design; the paragraphs below carry the operative facts,
-  with measurement detail in Appendix A.</p>
+  <h2 id="sec-4">4. Setup</h2>
+  <p>All trained comparisons (<a href="#sec-5">§§5–7</a>) share one design; the paragraphs below carry the operative facts,
+  with measurement detail in <a href="#app-a">Appendix&nbsp;A</a>.</p>
   <p><strong>Cells.</strong> <code>flat_modular</code> and <code>hier_tree</code> at
   \(n_{\text{train}}\in\{512,\dots,16384\}\), plus the planted S1/S2 at \(n=512\); the four core
   analysis cells are fm@512, fm@2048, ht@1024, ht@2048. <code>hier_tree</code> uses a five-layer
   net — one hidden layer per hierarchy level, selected by a depth pilot on validation FVU (fraction of
-  variance unexplained, MSE\(/\mathrm{Var}(y)\); Appendix A) — plus a depth-3 continuity cell
-  (§9).</p>
+  variance unexplained, MSE\(/\mathrm{Var}(y)\); <a href="#app-a">Appendix&nbsp;A</a>) — plus a depth-3 continuity cell
+  (<a href="#sec-9">§9</a>).</p>
   <p><strong>Selection.</strong> Every condition is validation-picked over 9 explicit hyperparameter
   configurations per cell (\(\ell_1/\ell_2\)/glasso/M2 ladders;
   \(\lambda_{\text{mod}}\in\{0.05,0.2,0.6\}\times c\in\{0.5,1.0,1.5\}\) for M1/M3/W/M2c); magnitude
   ladders (\(\lambda\), \(\lambda_{\text{mod}}\)) shift down one decade at \(n_{\text{train}}\ge4096\)
   (the threshold \(c\) is not shifted), and a ladder is extended when a pick sits at its grid edge in
-  \(\gt20\%\) of cases (at most twice; residual edge-pinning is reported, §9).</p>
+  \(\gt20\%\) of cases (at most twice; residual edge-pinning is reported, <a href="#sec-9">§9</a>).</p>
   <p><strong>Splits.</strong> Disjoint train / validation (selection and early stopping only) /
   in-distribution test of 65,536 points, touched once per condition and seed; an extrapolation readout
   is reported separately. Test size, the raw-MSE primary readout, and the split policy were fixed from
-  a dedicated measurement study before any comparison ran (Appendix A).</p>
+  a dedicated measurement study before any comparison ran (<a href="#app-a">Appendix&nbsp;A</a>).</p>
   <p><strong>Replication.</strong> 20 fresh seeds (10–29; 30 where noted), disjoint from every
   previously inspected draw; each seed redraws teachers/task and init.</p>
   <p><strong>Convergence.</strong> At \(n\ge4096\) the step budget rises with a convergence check, and
   a cell failing the check is excluded and reported — the consequences for the large-sample regime are
-  in §7.1.</p>
+  in <a href="#sec-7-1">§7.1</a>.</p>
   <p><strong>Statistics.</strong> Paired across seeds —
   <a href="https://en.wikipedia.org/wiki/Wilcoxon_signed-rank_test">Wilcoxon signed-rank</a> +
   <a href="https://en.wikipedia.org/wiki/Effect_size#Cohen's_d">Cohen's \(d_z\)</a>,
@@ -789,18 +790,18 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
   \(d_z=0.8\); outcomes between superiority and equivalence are reported as underdetermined. Figures
   show point estimates with paired \(d_z\)/\(p\) annotated; inference is carried by the paired
   tests.</p>
-  <p><strong>Artifacts.</strong> Weight/code checkpoints for §§5.2–5.6 come from a second training pass
+  <p><strong>Artifacts.</strong> Weight/code checkpoints for <a href="#sec-5-2">§§5.2–5.6</a> come from a second training pass
   at the picked configuration that must reproduce the first pass's validation MSE (relative tolerance
   \(10^{-6}\)).</p>
   <p><strong>Evidence classes.</strong> Comparisons under rules fixed before the runs are the default
-  and carry the statistics above; results labeled <em>exploratory</em> (the §2 detachment check, the
-  §7.2 pilot) or <em>descriptive</em> (stated per use) carry no planned family.</p>
+  and carry the statistics above; results labeled <em>exploratory</em> (the <a href="#sec-2">§2</a> detachment check, the
+  <a href="#sec-7-2">§7.2</a> pilot) or <em>descriptive</em> (stated per use) carry no planned family.</p>
   <p><strong>Provenance.</strong> Every number traces to <code>src/analyze*.py</code> →
-  <code>results/*.json</code> (file map in Appendix A).</p>
+  <code>results/*.json</code> (file map in <a href="#app-a">Appendix&nbsp;A</a>).</p>
 
-  <h2>5. Effects of the trained prior</h2>
+  <h2 id="sec-5">5. Effects of the trained prior</h2>
   <p>Training \(\mathcal{L}_{\text{task}}+\lambda_{\text{mod}}\mathcal{R}_{\text{mod}}^{\,\text{v2}}\)
-  \eqref{eq:modv2} moves held-out error and alignment together. On test error (Fig.&nbsp;3, a
+  \eqref{eq:modv2} moves held-out error and alignment together. On test error (<a href="#fig-3">Fig.&nbsp;3</a>, a
   descriptive overview), every regularizer beats no-regularization, and
   the coded conditions sit inside the pack: on S1 plain \(\ell_1\) leads (geo-mean MSE 0.019 vs noreg
   0.142, with W-as-score at 0.028 and M1 at 0.054); on S2 everything clusters within 0.19–0.27
@@ -808,30 +809,30 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
   <code>hier_tree</code>@2048 \(\ell_1\) and W lead (0.0097/0.0099) with M1 at 0.0124. No measured
   score leads any panel, and the per-seed spread (the dots' vertical bands, especially on S2 and
   <code>hier_tree</code>) is task-draw difficulty heterogeneity, not evaluation noise
-  (Appendix&nbsp;A).</p>
-  <p>On alignment (Fig.&nbsp;4), the average lifts over noreg's rotated floor
+  (<a href="#app-a">Appendix&nbsp;A</a>).</p>
+  <p>On alignment (<a href="#fig-4">Fig.&nbsp;4</a>), the average lifts over noreg's rotated floor
   (axis-mass 0.22/0.20) are modest and — as elsewhere — <em>not</em> specific to the measured
   scores: plain \(\ell_1\) tops both tasks (0.37/0.35), M1 matches it on <code>flat_modular</code>
   (0.34) but not <code>hier_tree</code> (0.26), and the per-seed clouds split visibly into a low mode
   near the floor and a high mode well above it.</p>
-  <figure>
+  <figure id="fig-3">
     <img class="fig" src="fig/fig_fv4_overview_mse.png" alt="test MSE per condition across the four tasks"/>
     <figcaption><strong>Figure 3.</strong> No measured score leads any panel. Held-out test MSE per
     condition (bars = geometric means, log scale; dots = seeds 10–29, validation-picked
     configurations). Every regularizer clears noreg; the measured-score conditions sit
     inside the baseline pack on all four tasks.</figcaption>
   </figure>
-  <figure>
+  <figure id="fig-4">
     <img class="fig" src="fig/fig_fv4_overview_axis.png" alt="axis-mass per condition on the two realistic tasks"/>
     <figcaption><strong>Figure 4.</strong> Alignment lifts are modest and not specific to the measured
     scores. Axis-mass per condition (bars = means; dots = seeds; dotted
     line = the unregularized mean, 0.22 / 0.20; the planted cells carry no axis-mass readout;
     descriptive). \(\ell_1\)'s lift is as large as any measured score's, and several
-    conditions split into two per-seed modes — the subject of §5.1.</figcaption>
+    conditions split into two per-seed modes — the subject of <a href="#sec-5-1">§5.1</a>.</figcaption>
   </figure>
 
-  <h3>5.1 Bimodal alignment</h3>
-  <p>The two-mode split in Fig.&nbsp;4 is real, and it is not a property of the coded objective. A
+  <h3 id="sec-5-1">5.1 Bimodal alignment</h3>
+  <p>The two-mode split in <a href="#fig-4">Fig.&nbsp;4</a> is real, and it is not a property of the coded objective. A
   confirmation on 30 fresh seeds per cell (full grids, a
   2-component-<a href="https://en.wikipedia.org/wiki/Mixture_model">GMM</a> parametric-bootstrap
   likelihood-ratio test at \(\alpha=.05\) per cell; power 0.94–1.00 at the observed mode geometry,
@@ -861,7 +862,7 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
   it costs a little error. (Per-step train loss is not recorded in the sweep scalars, so
   best-validation MSE stands in for it.)</p>
 
-  <h3>5.2 Code organization</h3>
+  <h3 id="sec-5-2">5.2 Code organization</h3>
   <p>The trained codes \(\phi\) neither collapse nor scatter. On the second-pass artifact set, a code
   set is <em>collapsed</em> if its effective rank \(\le2\) (Roy–Vetterli entropy effective rank of the
   code Gram spectrum — the exponential of the Shannon entropy of the normalized eigenvalues), and
@@ -882,9 +883,9 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
   </table></div>
   <p>M1-detached codes organize onto the communication graph's
   communities <em>even when they cannot shape the weights</em> (0.24 fm, 0.39 ht) — the passive
-  embedding of P-iv (§6) — so "organized codes" alone certify nothing about the weights.</p>
+  embedding of P-iv (<a href="#sec-6">§6</a>) — so "organized codes" alone certify nothing about the weights.</p>
 
-  <h3>5.3 Fan-in concentration</h3>
+  <h3 id="sec-5-3">5.3 Fan-in concentration</h3>
   <p><strong>The trained prior concentrates each neuron's fan-in, to group-lasso's level.</strong> The
   statistic — adopted from <a class="xref" href="../bounded_fan_in/">bounded fan-in from the network</a> — is
   <em>effective fan-in</em>: the participation ratio of each hidden neuron's incoming weight row (the
@@ -895,10 +896,10 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
   <ul>
     <li><strong>Concentration.</strong> M1 concentrates fan-in versus noreg: mean row participation
     ratio 18.45 → 9.48, paired \(\Delta=-8.97\), \(d_z=-1.88\), \(p=9\times10^{-15}\)
-    (Fig.&nbsp;5).</li>
+    (<a href="#fig-5">Fig.&nbsp;5</a>).</li>
     <li><strong>Detachment check.</strong> M1-detached's second-pass weights equal noreg's bitwise in
-    80/80 nets — its fan-in and spectral statistics are noreg's exactly (Fig.&nbsp;5) — the algebraic
-    corollary P-iv (§6), verified at scale.</li>
+    80/80 nets — its fan-in and spectral statistics are noreg's exactly (<a href="#fig-5">Fig.&nbsp;5</a>) — the algebraic
+    corollary P-iv (<a href="#sec-6">§6</a>), verified at scale.</li>
     <li><strong>Group-lasso equivalence.</strong> Fan-in under M1 is TOST-equivalent to group-lasso at
     margin \(d_z=0.8\) (\(p=8.8\times10^{-9}\); \(d_z=-0.10\)) — and the companion comparison,
     axis-mass superiority over group-lasso, does not fire: pooled one-sided \(p=.20\), \(d_z=0.15\),
@@ -921,7 +922,7 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
   caveat travels with all fan-in numbers: rescaling a hidden unit's fan-in and compensating in its
   fan-out — function-preserving under ReLU but not under GELU — moves the statistic by a median of
   2.20 row-PR units, small next to the effects read from it (e.g. \(\Delta=-8.97\) above).</p>
-  <figure>
+  <figure id="fig-5">
     <img class="fig" src="fig/fig_fv3_fanin.png" alt="effective fan-in by condition"/>
     <figcaption><strong>Figure 5.</strong> M1 halves fan-in to the group-lasso level; the detached
     control moves nothing. Effective fan-in (gauge-normalized mean row participation
@@ -930,7 +931,7 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
     W-as-score matches M1's fan-in while losing to it on axis-mass.</figcaption>
   </figure>
 
-  <h3>5.4 The suppression term</h3>
+  <h3 id="sec-5-4">5.4 The suppression term</h3>
   <p>The prune term \(\mathcal{R}_{\text{sup}}\) \eqref{eq:sup} (detached, per-layer-max-normalized
   \(\widetilde A\)) earns a modest place on top of \eqref{eq:modv2}. A nested conditional ablation:
   the \(+\mathcal{R}_{\text{sup}}\) arm inherits the −arm's per-(cell, seed) val-picked
@@ -952,24 +953,24 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
   re-tunes them jointly), and the gains are smallest for the two strongest scores (M1 +0.040,
   \(d_z=0.30\)).</p>
 
-  <h3>5.5 Alignment across depth</h3>
+  <h3 id="sec-5-5">5.5 Alignment across depth</h3>
   <p>Axis-mass reads alignment at the first hidden layer only — <code>hier_tree</code>'s mid and root
   levels went unmeasured. The remedy is per-level alignment: regress layer-\(\ell\) activations on the
   level-\(\ell\) subfunction outputs (the task generator exposes them) to get each subfunction's
   layer-\(\ell\) subspace, and report the full level × layer profile with no scalar collapse. On
   planted nets the statistic is <em>block-mass</em> (subspace energy on the module's known neuron
-  block), and the metric is validated before use: on 10 ceiling seeds (the masked S2 nets of §3 —
+  block), and the metric is validated before use: on 10 ceiling seeds (the masked S2 nets of <a href="#sec-3">§3</a> —
   exact two-level ground truth) versus 10 floor seeds (dense noreg on the same task), the ceiling
   minimum exceeds the floor maximum at both levels (leaf 0.854 vs 0.376, scalar 0.759 vs 0.507 — no
-  overlap). Applied to the <code>hier_tree</code>@2048 depth-5 checkpoints of §5.2 (first measurement,
-  no comparative claim), Fig.&nbsp;6 shows the profile: alignment falls with <em>layer depth</em> for
+  overlap). Applied to the <code>hier_tree</code>@2048 depth-5 checkpoints of <a href="#sec-5-2">§5.2</a> (first measurement,
+  no comparative claim), <a href="#fig-6">Fig.&nbsp;6</a> shows the profile: alignment falls with <em>layer depth</em> for
   every level — the root's subfunctions are as axis-visible at h1 (M1 0.32) as the leaves' own
   (0.34), and no hidden layer specializes in its mapped level (h1→leaf, h2→mid, h3→root; the fourth
   hidden layer is surplus to the hierarchy). Per-neuron alignment on this task is a property of depth
   in the network, not of position in the hierarchy: M1 lifts it modestly at the first two layers and
   nowhere near the root. The hierarchy's deeper levels are now measurable — and nothing yet aligns
   them.</p>
-  <figure>
+  <figure id="fig-6">
     <img class="fig" src="fig/fig_fv4_depth.png" alt="per-level alignment across layers and conditions"/>
     <figcaption><strong>Figure 6.</strong> Alignment decays with layer depth, not hierarchy level —
     nothing aligns the deeper levels. Per-level alignment (block-mass analogue) for hierarchy
@@ -978,9 +979,9 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
     level.</figcaption>
   </figure>
 
-  <h3>5.6 Causal use of detected modules</h3>
+  <h3 id="sec-5-6">5.6 Causal use of detected modules</h3>
   <p>That detection finds structure does not show the network <em>uses</em> it. Communities
-  are detected by the §3 pipeline (\(\widetilde A\)-weighted layered graph, Louvain) from measured M1
+  are detected by the <a href="#sec-3">§3</a> pipeline (\(\widetilde A\)-weighted layered graph, Louvain) from measured M1
   <em>and</em> from \(\lvert W\rvert\), both on the same nets (the M1 arm's second-pass checkpoints at
   fm@2048 and ht@2048, seeds 10–29), each community assigned to the teacher module holding the
   plurality of its ground-truth-labeled nodes; tied or label-free communities are excluded and
@@ -1001,7 +1002,7 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
   label-free, with 4 and 3 zero-assignable seeds; on ht, 74/90 and 64/79, with 11 zero-assignable
   seeds in each arm — mixed-input communities are the norm, especially on the hierarchical task.</p>
   <p><strong>On <code>flat_modular</code> the detected modules are causally used — under both
-  detections</strong> (Fig.&nbsp;7): M1-detected communities exceed the null in 7/20 seeds and
+  detections</strong> (<a href="#fig-7">Fig.&nbsp;7</a>): M1-detected communities exceed the null in 7/20 seeds and
   \(\lvert W\rvert\)-detected ones in 6/20 — both clear the bar. <strong>On <code>hier_tree</code>
   neither does</strong> (2/20 and 1/20). The M1-vs-\(\lvert W\rvert\) contrast — the paired difference
   of the per-seed statistics on the same nets — is null where modules are used at all (fm:
@@ -1010,7 +1011,7 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
   neither detection clears the bar). Detection finds load-bearing modules on the flat task, the
   measured score confers no causal-use advantage over the proxy anywhere, and on the hierarchical task
   neither view finds modules the network demonstrably uses at the leaf-group granularity.</p>
-  <figure>
+  <figure id="fig-7">
     <img class="fig" src="fig/fig_fv4_item9.png" alt="per-seed causal-use statistic minus its null threshold"/>
     <figcaption><strong>Figure 7.</strong> Detected modules are causally used on the flat task under
     both detections; on the hierarchy, neither. Causal use of detected modules: per-seed statistic
@@ -1020,8 +1021,8 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
     does on <code>hier_tree</code>.</figcaption>
   </figure>
 
-  <h2>6. Mechanism, in closed form</h2>
-  <p>For M1 the trained prior's mechanism is exact, and it explains §5.3's measurements. Setting:
+  <h2 id="sec-6">6. Mechanism in closed form</h2>
+  <p>For M1 the trained prior's mechanism is exact, and it explains <a href="#sec-5-3">§5.3</a>'s measurements. Setting:
   \(\mathcal{L}=\mathcal{L}_{\text{task}}+\lambda\,\mathcal{R}_{\text{mod}}^{\,\text{v2}}\) with
   \eqref{eq:modv2}, score M1 \eqref{eq:m1} un-detached, layer-mean normalization
   \(\widehat A=A/\overline{A}\), margin \(m\), threshold \(c\), and the implementation's per-layer
@@ -1086,7 +1087,7 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
   \(d-\bar D_A\); iterating with P-ii's clustering tightens \(d_w\) and the split self-reinforces.
   Verified as a trained signature on the micro-net's planted 2-block task: the within/cross block
   mean-\(\lvert W\rvert\) ratio rises from 1.93 (noreg) to 2.45 (un-detached M1) at equal steps. The
-  at-scale measurement is §5.3 (\(d_z=-1.88\) vs noreg).</p></div>
+  at-scale measurement is <a href="#sec-5-3">§5.3</a> (\(d_z=-1.88\) vs noreg).</p></div>
   <p class="proposition"><strong>P-iv (detachment corollary).</strong> With \(A\) detached and the
   codes absent from the forward pass, \(\mathcal{R}_{\text{mod}}^{\,\text{v2}}\) contributes zero
   gradient to every weight, so the weight trajectory under
@@ -1097,7 +1098,7 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
   \(\phi\); hence \(\partial\mathcal{R}_{\text{mod}}/\partial W\equiv0\), and the \(W\)-updates of
   <a href="https://arxiv.org/abs/1711.05101">AdamW</a> (per-parameter, no cross-parameter coupling)
   coincide step by step with noreg's. Verified bitwise on the micro-net (300 steps, max
-  \(\lvert\Delta W\rvert=0\)) and at scale on all 80 artifact pairs (§5.3).</p></div>
+  \(\lvert\Delta W\rvert=0\)) and at scale on all 80 artifact pairs (<a href="#sec-5-3">§5.3</a>).</p></div>
   <div class="tablewrap"><table>
     <thead><tr><th>micro-net check (<code>results/item2a_toy.json</code>)</th><th>value</th></tr></thead>
     <tbody>
@@ -1112,16 +1113,16 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
   </table></div>
   <p>The precise form of the "it is pruning with threshold \(c\)" intuition is therefore P-iii's
   prediction — per-neuron fan-in concentration, each receiving neuron's incoming mass collapsing onto
-  senders in its own code cluster — which is what §5.3 measures at scale, at group-lasso's
+  senders in its own code cluster — which is what <a href="#sec-5-3">§5.3</a> measures at scale, at group-lasso's
   strength.</p>
 
-  <h2>7. Performance</h2>
+  <h2 id="sec-7">7. Performance</h2>
 
-  <h3>7.1 Sample efficiency</h3>
+  <h3 id="sec-7-1">7.1 Sample efficiency</h3>
   <p>The estimand: the per-\(n\) paired gap in log test MSE between M1 (the comparator fixed in
   advance as the best-performing measured score) and val-picked group-lasso (the toughest baseline),
   at \(n_{\text{train}}\in\{512,\dots,16384\}\), Holm per task over the six per-\(n\) tests
-  (Fig.&nbsp;8). <strong>flat_modular: a real, shrinking payoff regime.</strong> M1 beats group-lasso
+  (<a href="#fig-8">Fig.&nbsp;8</a>). <strong>flat_modular: a real, shrinking payoff regime.</strong> M1 beats group-lasso
   at every testable \(n\): mean gap −0.93 (\(d_z=-1.28\)) at 512, −0.66 (\(d_z=-1.43\)) at 1024,
   −0.52 (\(d_z=-1.45\)) at 2048 — every Holm \(p=1.1\times10^{-5}\), 20 pairs each — with the gap
   shrinking as data grows. <strong>hier_tree: the sign flips.</strong> At 512 group-lasso beats M1
@@ -1136,7 +1137,7 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
   labeled extrapolation readout mirrors the in-distribution split (fm gaps −0.64…−0.39, \(d_z\)
   −1.3…−1.6; ht +0.30 at 512, then ties); and M1's input-code ARI declines as data grows (fm
   0.48 → 0.27) — per-\(n\) values in <code>results/fv3_analysis.json</code>.</p>
-  <figure>
+  <figure id="fig-8">
     <img class="fig" src="fig/fig_fv3_item7.png" alt="per-n paired gap, M1 minus glasso"/>
     <figcaption><strong>Figure 8.</strong> The flat-task advantage is real but shrinks with data; the
     hierarchy sign-flips. Mean paired gap in log test MSE (M1 − group-lasso; below
@@ -1146,22 +1147,22 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
   </figure>
   <p><strong>The large-sample regime has no feasible converged budget under this training schedule.</strong>
   A budget diagnostic traced full validation curves to 192,000 steps — 64× the small-\(n\)
-  budget — on both tasks at \(n\in\{4096,16384\}\) and on the §7.2 substrate (10 seeds per cell at
+  budget — on both tasks at \(n\in\{4096,16384\}\) and on the <a href="#sec-7-2">§7.2</a> substrate (10 seeds per cell at
   the modal validation-picked and one-rung-down configurations; no test evaluation). Convergence in
   the exclusion rule's sense — validation improving \(\lt0.5\%\) per doubling of the budget,
   sustained to 192k — is reached by at most 7 of 10 seeds in the least-constrained fm/ht cells and 0 of
-  10 in the hardest; one cell converges outright (the §7.2 substrate's M1-modal configuration,
+  10 in the hardest; one cell converges outright (the <a href="#sec-7-2">§7.2</a> substrate's M1-modal configuration,
   10/10). In every non-converged cell the worst seed still improves 24–82% per doubling even from
   96k to 192k steps, and group-lasso at fm@16384 halves its validation MSE at every doubling out
-  to 192k (Fig.&nbsp;9).
+  to 192k (<a href="#fig-9">Fig.&nbsp;9</a>).
   Raising the budget cannot clear the convergence bar this design imposes; settling the trend at scale
   requires a different training schedule (a decaying learning rate, or an optimizer change) — outside
   the fixed training identity every comparison here shares.</p>
   <p>The same curves bound the small-\(n\) readouts: at
-  the 3,000-step budget the anchor cells improve ≈10–96% (worst seed) per doubling, so the §7
+  the 3,000-step budget the anchor cells improve ≈10–96% (worst seed) per doubling, so the <a href="#sec-7">§7</a>
   comparisons — the fm payoff regime included — are equal-budget comparisons at the stated budgets,
   not converged-fit comparisons (per-cell tables in <code>results/fv4pilot_budget.json</code>).</p>
-  <figure>
+  <figure id="fig-9">
     <img class="fig" src="fig/fig_fv4_budget.png" alt="budget diagnostic: validation curves and flatness counts"/>
     <figcaption><strong>Figure 9.</strong> No feasible budget brings the large-sample cells to
     convergence. The budget diagnostic (10 seeds per cell, 192k-step
@@ -1171,7 +1172,7 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
     cells; whiskers min–max): no budget brings every cell to the 9-of-10 bar.</figcaption>
   </figure>
 
-  <h3>7.2 Module reuse and composition</h3>
+  <h3 id="sec-7-2">7.2 Module reuse and composition</h3>
   <p>De-rotation would matter if it bought <em>reuse</em>. Because linear probes are
   rotation-invariant (a linear readout undoes any change of basis for free), every functional test is
   built on axis-sensitive operations — restricting a readout to a module's <em>neurons</em>, or
@@ -1193,7 +1194,7 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
   \(n\ge4096\) cell, this substrate included, and only 4/180 of these fits pass it at the raised step
   budget (\(\ell_1\) 1, glasso 1, M2c 2; noreg, \(\ell_2\), M1 all 0) — the cells are excluded, and
   the four planned comparisons are reportable only as an equal-step-budget <em>descriptive</em>
-  readout. The §7.1 budget diagnostic shows the substrate shares the pathology asymmetrically: at
+  readout. The <a href="#sec-7-1">§7.1</a> budget diagnostic shows the substrate shares the pathology asymmetrically: at
   its modal configuration M1 reaches flatness in 10/10 seeds by 96k steps while the unregularized
   and group-lasso arms never do (worst-seed 79–82% improvement per doubling remaining) — so even an
   extended budget would compare a converged arm against unconverged ones:</p>
@@ -1212,11 +1213,11 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
   restricted-readout advantage, where it appears, is not specific to the communication prior. No
   replication claim in either direction is supported by these numbers.</p>
 
-  <h3>7.3 Compositional OOD</h3>
+  <h3 id="sec-7-3">7.3 Compositional OOD</h3>
   <p>Two prior results predict opposite outcomes here. A companion study —
   <a class="xref" href="../emergent_modularity_report/">confinement, not endpoint sparsity, buys sample efficiency</a> —
   found that structural modularity alone buys no compositional OOD (only functional confinement closed
-  that gap), while §7.2's in-distribution reuse effect suggests the prior might. The probe: 4 inputs in two groups, teacher \(y=f_1(x_1)+f_2(x_2)\), net
+  that gap), while <a href="#sec-7-2">§7.2</a>'s in-distribution reuse effect suggests the prior might. The probe: 4 inputs in two groups, teacher \(y=f_1(x_1)+f_2(x_2)\), net
   \(4\to64\to64\to1\); training draws only the correlated range-halves (A,A)/(B,B), the test set
   covers all four quadrants; the OOD readout is MSE on the unseen (A,B)/(B,A) quadrants, validation
   and selection never seeing them. An oracle (same architecture, trained on all-quadrant draws,
@@ -1228,13 +1229,13 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
   (five comparisons per \(n_{\text{train}}\) cell: four closure tests + the headline M1-vs-glasso OOD
   difference). The precondition holds — the noreg−oracle OOD gap is significant in both cells
   (\(p=9.5\times10^{-7}\); one seed per cell excluded on a tiny-denominator rule) — so there is a
-  real gap to close. <strong>No method closes any of it</strong> (Fig.&nbsp;10): median closures sit
+  real gap to close. <strong>No method closes any of it</strong> (<a href="#fig-10">Fig.&nbsp;10</a>): median closures sit
   at +0.1%/+0.1% (\(\ell_1\)), +0.7%/+0.4% (glasso), −3.1%/+7.2% (M1), +0.7%/−8.0% (M2c) at
   512/2048 — at most 7.2% against a 50% bar; every Holm \(p=1.0\). The headline is likewise null: M1 vs
   glasso OOD MSE differs by \(d_z=+0.36\) (\(p=.28\)) at 512 and \(d_z=-0.01\) (\(p=.62\)) at 2048.
   The communication prior's in-distribution reuse does not transfer to the input-decorrelation OOD
   axis — that companion study's skepticism, replicated in a different regularizer family.</p>
-  <figure>
+  <figure id="fig-10">
     <img class="fig" src="fig/fig_fv3_closure.png" alt="median closure of the OOD gap per arm"/>
     <figcaption><strong>Figure 10.</strong> No method closes the compositional OOD gap. Median per-seed
     closure \eqref{eq:closure} of the noreg → oracle gap on the unseen quadrants (19 seeds per cell
@@ -1242,12 +1243,12 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
     null.</figcaption>
   </figure>
 
-  <h2>8. Conclusions</h2>
+  <h2 id="sec-8">8. Conclusions</h2>
   <p>Measured communication is real signal —
   planted recovery is exact, pipelined modules never merge, and on the flat task the detected modules
   are demonstrably load-bearing — but every test that pitted it against weight magnitude found
-  parity: detection (§3.2), causal use (§5.6), the fan-in mechanism (§5.3), and functional payoff
-  (§7). The bar fixed before the study for building on a measured score was out-detecting
+  parity: detection (<a href="#sec-3-2">§3.2</a>), causal use (<a href="#sec-5-6">§5.6</a>), and the fan-in mechanism (<a href="#sec-5-3">§5.3</a>). The bar fixed before
+  the study for building on a measured score was out-detecting
   \(\lvert W\rvert\) by \(\Delta\text{ARI}\ge0.15\), paired across seeds (Wilcoxon + \(d_z\)); the
   observed margins were \(\le0\) on the planted nets and +0.16 / +0.06 on the realistic tasks with
   neither pairing significant (\(p=.105/.68\)) — so measured \(A\) did not out-detect
@@ -1256,23 +1257,23 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
   W-as-score control (\(d_z=0.54\)): the content does extra work, just not work that
   group-lasso does not already do.</p>
   <p>The causal prior's operative mechanism is adaptive fan-in
-  concentration (§5.3, §6) — a structured-sparsity effect, which is exactly why group-lasso shadows
-  it everywhere.</p>
+  concentration (<a href="#sec-5-3">§5.3</a>, <a href="#sec-6">§6</a>) — a structured-sparsity effect, which is why group-lasso shadows it
+  almost everywhere — the lone exception is the flat task's low-data regime (<a href="#sec-7-1">§7.1</a>).</p>
   <p>Its practical value is confined: real MSE gains where data is scarce on the
   flat task, a sign flip on the hierarchical task, and no alignment of the hierarchy's deeper levels
-  by anything tested (§5.5).</p>
+  by anything tested (<a href="#sec-5-5">§5.5</a>).</p>
   <p><strong>What would change the picture.</strong> The result that would justify building the prior: a
   regime where a measured score beats <em>both</em> the form-matched W-as-score
-  control <em>and</em> val-picked group-lasso on task error or alignment at matched budget — §5.3's
+  control <em>and</em> val-picked group-lasso on task error or alignment at matched budget — <a href="#sec-5-3">§5.3</a>'s
   information control shows the first leg is attainable, and nothing yet shows the second. The
-  representation follow-up motivated by §3.3 and §5.5 is rotation-aware codes — or training that
+  representation follow-up motivated by <a href="#sec-3-3">§3.3</a> and <a href="#sec-5-5">§5.5</a> is rotation-aware codes — or training that
   actively forces axis alignment — rather than more per-neuron machinery. Budget alone cannot settle
-  the large-sample regime: the 192k-step diagnostic (§7.1)
+  the large-sample regime: the 192k-step diagnostic (<a href="#sec-7-1">§7.1</a>)
   shows converged large-\(n\) fits are unreachable under the fixed constant-learning-rate schedule,
-  so settling the sample-efficiency trend at scale — and the §7.2 replication — requires a schedule
+  so settling the sample-efficiency trend at scale — and the <a href="#sec-7-2">§7.2</a> replication — requires a schedule
   change, a new training design rather than a bigger budget.</p>
 
-  <h2>9. Limitations</h2>
+  <h2 id="sec-9">9. Limitations</h2>
   <p><strong>What this does not show.</strong> Nothing here says measured communication is useless in
   general. On these synthetic regression tasks and small GELU MLPs, the measured scores do not beat
   weight-magnitude and structured-sparsity controls except in narrow alignment and low-data cases, and
@@ -1280,11 +1281,11 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
   fits there. The specific limits follow.</p>
   <p><strong>The large-sample regime is unmeasurable under this training schedule — measured, not
   merely unmeasured.</strong> The convergence bar vacated nearly all of \(n\ge4096\) and no budget
-  raise closes it (§7.1), so the sample-efficiency trend is undecidable at its decision points and the
-  §7.2 replication stays excluded — under this schedule, permanently. The same diagnostic qualifies the
+  raise closes it (<a href="#sec-7-1">§7.1</a>), so the sample-efficiency trend is undecidable at its decision points and the
+  <a href="#sec-7-2">§7.2</a> replication stays excluded — under this schedule, permanently. The same diagnostic qualifies the
   small-\(n\) side: every comparison in this report is an equal-budget readout at its stated budget, and
   the fm payoff regime is a statement about the shared 3k-step budget, not about converged fits. Likewise the <code>hier_tree</code>
-  depth choice rests on a single-cell pilot (Appendix A). <strong>Grid edges persist.</strong> After
+  depth choice rests on a single-cell pilot (<a href="#app-a">Appendix&nbsp;A</a>). <strong>Grid edges persist.</strong> After
   the two capped extension rounds, 26 of the 52 tracked comparisons remain edge-pinned (worst:
   \(\ell_1/\ell_2\) at fm@512, 20/20; \(\ell_2\) at S2@512, 19/20), including group-lasso at the ht@512
   flip cell (14/20); every residual is enumerated in <code>results/fv3_analysis.json</code>.
@@ -1295,43 +1296,43 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
   median <code>lane_diag</code> 0.31/0.35/0.52, axis-mass 0.22–0.26 — rotated-subspace structure
   under every condition, M1 lifting only the <code>lane_diag</code> share — and the cell costs
   +0.15–0.32 log test MSE against the adopted depth, consistent with the depth pilot.
-  <strong>Gauge sensitivity.</strong> The fan-in statistics move under GELU unit rescaling (§5.3), by
+  <strong>Gauge sensitivity.</strong> The fan-in statistics move under GELU unit rescaling (<a href="#sec-5-3">§5.3</a>), by
   margins several times smaller than the effects read from them.
   <strong>Scope.</strong> Synthetic regression tasks, tiny GELU MLPs, one code architecture; the
   planted topologies are the study's own; nothing here tests depth beyond five layers,
   classification, or scale.</p>
 
-  <h2>Appendix A — Setup detail and measurement notes</h2>
+  <h2 id="app-a"><a href="#app-a">Appendix&nbsp;A</a> — Setup and measurement</h2>
   <p><strong>Training (all nets).</strong> GELU activations, AdamW (weight-decay 0), learning rate
   \(3\times10^{-3}\), batch 200, evaluation every 500 steps, patience 20,
-  best-validation-checkpoint selection. Validation-study nets (§3) cap at 6000 steps (they converge
-  by ~2–3k); trained comparisons (§§5–7) cap at 3000, raised to 12000 at \(n_{\text{train}}\ge4096\)
-  under the §4 convergence check (screen: no validation improvement within patience at the cap;
+  best-validation-checkpoint selection. Validation-study nets (<a href="#sec-3">§3</a>) cap at 6000 steps (they converge
+  by ~2–3k); trained comparisons (<a href="#sec-5">§§5–7</a>) cap at 3000, raised to 12000 at \(n_{\text{train}}\ge4096\)
+  under the <a href="#sec-4">§4</a> convergence check (screen: no validation improvement within patience at the cap;
   adjudication: the picked configuration retrained at 24000 steps, the cell excluded unless the
   relative validation improvement from 12k to 24k is below 0.5%). Validation-study fit checks: every
   planted seed reached test \(R^2\ge0.90\) (S1 0.998, S2 0.970); every S3 seed reached a first-order
   <a href="https://en.wikipedia.org/wiki/Variance-based_sensitivity_analysis">Sobol</a> sum
   \(\ge0.30\) (0.96–0.99 observed) — the summed main-effect sensitivity of the net's output to the
-  signal inputs, near 1 when the net has picked up the task's factors. The §3 apparatus is covered by
+  signal inputs, near 1 when the net has picked up the task's factors. The <a href="#sec-3">§3</a> apparatus is covered by
   10 unit tests (masks isolate modules; the score reader equals <code>model(x)</code>; the M3
   Jacobian equals M1 on the output layer; the planted-mask ceiling recovers blocks; shuffling
   collapses recovery).</p>
   <p><strong>Test size and readout.</strong> The test-set size and the primary accuracy readout were
   set by a dedicated measurement study ({fm@512, fm@2048, ht@2048} × {noreg, glasso, M1} × 10 seeds,
   each trained net evaluated on \(R=8\) independent test draws at each
-  \(n_{\text{test}}\in\{1024,\dots,65536\}\)). Two facts came out. The per-seed "banding" seen across
+  \(n_{\text{test}}\in\{1024,\dots,65536\}\)). The per-seed "banding" seen across
   conditions is task-draw difficulty heterogeneity, not evaluation noise — at
-  \(n_{\text{test}}=1024\) the test-draw component is 0.4–2.4% of var(log MSE) (Fig.&nbsp;11b) — so
+  \(n_{\text{test}}=1024\) the test-draw component is 0.4–2.4% of var(log MSE) (<a href="#fig-11">Fig.&nbsp;11</a>b) — so
   bigger test sets sharpen estimates but cannot collapse the bands, and paired-across-seed statistics
   are the right instrument. And only \(n_{\text{test}}=65{,}536\) brings the mean test-draw
   coefficient of variation under 2% in all three cells (1.01% / 1.80% / 1.39%; 16384 fails at fm@2048
-  with 4.06%; Fig.&nbsp;11a) — hence the adopted size. Raw MSE stays the primary readout: FVU's
+  with 4.06%; <a href="#fig-11">Fig.&nbsp;11</a>a) — hence the adopted size. Raw MSE stays the primary readout: FVU's
   pooled variance-reduction over seeds is \(\approx0\) (target standardization already pins
   \(\mathrm{Var}(y)\approx1\)), so FVU is reported secondary.</p>
-  <figure>
+  <figure id="fig-11">
     <img class="fig" src="fig/fig_fv3_protocol.png" alt="CV vs test size and the banding decomposition"/>
     <figcaption><strong>Figure 11.</strong> Only the largest test set stabilizes the estimates; the
-    per-seed bands are task-draw difficulty, not test noise. Measurement facts behind the §4 setup
+    per-seed bands are task-draw difficulty, not test noise. Measurement facts behind the <a href="#sec-4">§4</a> setup
     (10 seeds, \(R=8\) test draws per size). <em>(a)</em> Test-draw CV of MSE vs \(n_{\text{test}}\):
     only 65,536 clears the 2% rule in all three cells. <em>(b)</em> Variance decomposition of log MSE
     at \(n_{\text{test}}=1024\) (noreg): the task-draw component dwarfs the test-draw
@@ -1340,7 +1341,7 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
   <p><strong>Measurement design.</strong> Test and validation draws are disjoint in every
   cell, asserted mechanically at materialization — a sampler that reseeds on the sample count alone
   would make them byte-identical and let each net select on its own test set. Selection runs
-  over the nine-rung \(\lambda\) ladders and extension rule of §4, because narrower grids pin the
+  over the nine-rung \(\lambda\) ladders and extension rule of <a href="#sec-4">§4</a>, because narrower grids pin the
   winning hyperparameter at an edge (group-lasso takes its top rung in 10/10 seeds in every
   data-limited cell, M1 its top \(\lambda_{\text{mod}}\) in most), so a too-short ladder reports a grid
   ceiling as a margin. And the primary readout is in-distribution test MSE, not the extrapolation
@@ -1349,7 +1350,7 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
   inflate every margin. The structural probes keep the extrapolation convention (draws disjoint from
   train/val/test), so their calibration is unchanged; every comparative number in this report comes
   from nets trained and selected under this design.</p>
-  <p><strong>Planted comparison</strong> (all 9 conditions, §4 grids and splits, seeds
+  <p><strong>Planted comparison</strong> (all 9 conditions, <a href="#sec-4">§4</a> grids and splits, seeds
   10–29; descriptive):</p>
   <div class="tablewrap"><table>
     <thead><tr><th>geo-mean test MSE (n=20)</th><th>noreg</th><th>\(\ell_1\)</th><th>\(\ell_2\)</th><th>glasso</th><th>M1</th><th>M2</th><th>M3</th><th>W</th><th>M2c</th></tr></thead>
@@ -1364,15 +1365,15 @@ doing?</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou
   non-deciding group-lasso and M1 tables concur (both minimized at depth 5, val FVU 0.0184 / 0.0249 vs
   noreg 0.0199). A companion leg at @16384 never converged (30/30 at the 12k-step cap), so the choice
   rests on the @2048 leg alone with depth-3-calibrated hyperparameters — the declared price of a
-  non-adaptive pilot (§9). A spot-check of the 2% CV rule on the adopted-depth nets passes at 65,536
+  non-adaptive pilot (<a href="#sec-9">§9</a>). A spot-check of the 2% CV rule on the adopted-depth nets passes at 65,536
   (1.65%); the never-converged 16384 legs reach only 3.82%.</p>
   <p><strong>Analysis map.</strong> <code>src/analyze.py</code> → <code>results/analysis.json</code>
-  (§3); <code>src/analyze_followup.py</code> → <code>results/analysis_followup.json</code> (the §2
+  (<a href="#sec-3">§3</a>); <code>src/analyze_followup.py</code> → <code>results/analysis_followup.json</code> (the <a href="#sec-2">§2</a>
   detachment check); <code>src/analyze_fv3p0.py</code> → <code>results/fv3p0_protocol_v1.json</code>
-  (this appendix); <code>src/analyze_fv3.py</code> → <code>results/fv3_analysis.json</code> (§5.1,
-  §7, planted table); <code>src/analyze_artifacts.py</code> →
-  <code>results/fv3_artifacts_analysis.json</code> (§5); <code>src/verify_item2a.py</code> →
-  <code>results/item2a_toy.json</code> (§6); figures <code>report/fig/gen_figs*.py</code>; raw run
+  (this appendix); <code>src/analyze_fv3.py</code> → <code>results/fv3_analysis.json</code> (<a href="#sec-5-1">§5.1</a>,
+  <a href="#sec-7">§7</a>, planted table); <code>src/analyze_artifacts.py</code> →
+  <code>results/fv3_artifacts_analysis.json</code> (<a href="#sec-5">§5</a>); <code>src/verify_item2a.py</code> →
+  <code>results/item2a_toy.json</code> (<a href="#sec-6">§6</a>); figures <code>report/fig/gen_figs*.py</code>; raw run
   shards under <code>results/runs/</code>.</p>
 
 </article></main>
