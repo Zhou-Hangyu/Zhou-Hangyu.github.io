@@ -22,6 +22,7 @@
   --bad:#9a3b2f;         /* status: refuted */
   --wip:#8a6d1f;         /* status: wip/draft (parked) */
   --active:#c2701c;      /* status: active — the live frontier (warm amber, set apart from the muted wip) */
+  --revise:#c2871f;      /* status: revise — needs more work (warm orange-gold; a softer signal than refuted-red) */
   --disp:'Manrope',-apple-system,'Segoe UI',Roboto,sans-serif;  /* display/UI */
   --serif:Georgia,'Iowan Old Style','Times New Roman',serif;     /* body */
 }
@@ -155,8 +156,9 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
 .context .dep{color:var(--mut)}
 .status{display:inline-block;font:600 .72rem/1 var(--disp);text-transform:uppercase;letter-spacing:.08em;
   padding:.22em .5em;border-radius:.4em;border:1px solid var(--line)}
-.status.supported{color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}
+.status.supported,.status.verified{color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}
 .status.refuted{color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,transparent)}
+.status.revise{color:var(--revise);background:color-mix(in srgb,var(--revise) 14%,transparent)}
 .status.wip,.status.draft{color:var(--wip);background:color-mix(in srgb,var(--wip) 12%,transparent)}
 .status.active{color:var(--active);background:color-mix(in srgb,var(--active) 14%,transparent)}
 .status.reference{color:var(--violet);background:color-mix(in srgb,var(--violet) 12%,transparent)}
@@ -235,8 +237,9 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
 @keyframes apulse{
   0%,100%{box-shadow:0 0 0 3px color-mix(in srgb,var(--active) 42%,transparent)}
   50%    {box-shadow:0 0 0 9px color-mix(in srgb,var(--active) 6%,transparent)}}
-.st-supported{--dot:var(--ok)}
+.st-supported,.st-verified{--dot:var(--ok)}
 .st-refuted{--dot:var(--bad)}
+.st-revise{--dot:var(--revise)}
 .st-wip,.st-draft{--dot:var(--wip)}
 .st-active{--dot:var(--active)}                                        /* the live frontier */
 .st-reference{--dot:var(--violet)}                                     /* shared reference (not a verdict) */

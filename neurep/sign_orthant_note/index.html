@@ -179,6 +179,7 @@ transition:color .15s ease,border-color .15s ease}\
   --bad:#9a3b2f;         /* status: refuted */
   --wip:#8a6d1f;         /* status: wip/draft (parked) */
   --active:#c2701c;      /* status: active — the live frontier (warm amber, set apart from the muted wip) */
+  --revise:#c2871f;      /* status: revise — needs more work (warm orange-gold; a softer signal than refuted-red) */
   --disp:'Manrope',-apple-system,'Segoe UI',Roboto,sans-serif;  /* display/UI */
   --serif:Georgia,'Iowan Old Style','Times New Roman',serif;     /* body */
 }
@@ -312,8 +313,9 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
 .context .dep{color:var(--mut)}
 .status{display:inline-block;font:600 .72rem/1 var(--disp);text-transform:uppercase;letter-spacing:.08em;
   padding:.22em .5em;border-radius:.4em;border:1px solid var(--line)}
-.status.supported{color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}
+.status.supported,.status.verified{color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}
 .status.refuted{color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,transparent)}
+.status.revise{color:var(--revise);background:color-mix(in srgb,var(--revise) 14%,transparent)}
 .status.wip,.status.draft{color:var(--wip);background:color-mix(in srgb,var(--wip) 12%,transparent)}
 .status.active{color:var(--active);background:color-mix(in srgb,var(--active) 14%,transparent)}
 .status.reference{color:var(--violet);background:color-mix(in srgb,var(--violet) 12%,transparent)}
@@ -392,8 +394,9 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
 @keyframes apulse{
   0%,100%{box-shadow:0 0 0 3px color-mix(in srgb,var(--active) 42%,transparent)}
   50%    {box-shadow:0 0 0 9px color-mix(in srgb,var(--active) 6%,transparent)}}
-.st-supported{--dot:var(--ok)}
+.st-supported,.st-verified{--dot:var(--ok)}
 .st-refuted{--dot:var(--bad)}
+.st-revise{--dot:var(--revise)}
 .st-wip,.st-draft{--dot:var(--wip)}
 .st-active{--dot:var(--active)}                                        /* the live frontier */
 .st-reference{--dot:var(--violet)}                                     /* shared reference (not a verdict) */
@@ -515,7 +518,7 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
 </style>
 </head>
 <body>
-<header class="nav"><a class="brand" href="../index.html"><span>neurep</span></a></header><main class="study"><header class="study-head"><h1>Fan-in, then fan-out: the density prior's two-act dynamics on axon positions</h1><p class=sub>A mechanism note (companion to the axon–dendrite forensics report, §3): why the axons pack onto \(2^d\) sign-orthant corners and then melt — optimizer geometry, not the task.</p><div class="rule"></div></header><div class="context"><span class="crumb"><a href="../studies.html#thread-wiring">Axon–dendrite wiring prior</a></span><span class="status supported">supported</span><span class="dep">builds on: <a href="../axdn_forensics_report/">The axon–dendrite wiring prior: a capacity governor, not a decomposer</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou-Hangyu/neurep/commit/3394642"><code>3394642</code></a> <span class="git">· master</span></span></div><article>
+<header class="nav"><a class="brand" href="../index.html"><span>neurep</span></a></header><main class="study"><header class="study-head"><h1>Fan-in, then fan-out: the density prior's two-act dynamics on axon positions</h1><p class=sub>A mechanism note (companion to the axon–dendrite forensics report, §3): why the axons pack onto \(2^d\) sign-orthant corners and then melt — optimizer geometry, not the task.</p><div class="rule"></div></header><div class="context"><span class="crumb"><a href="../studies.html#thread-wiring">Axon–dendrite wiring prior</a></span><span class="status verified">verified</span><span class="dep">builds on: <a href="../axdn_forensics_report/">The axon–dendrite wiring prior: a capacity governor, not a decomposer</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou-Hangyu/neurep/commit/3394642"><code>3394642</code></a> <span class="git">· master</span></span></div><article>
 
   <div class="tldr"><p><strong>TL;DR.</strong> On <code>flat_modular</code> the axon positions of <code>nr.axdn-euc-abs</code> do something striking and entirely optimizer-driven. Early in training they <strong>fan in</strong>: a diffuse cloud packs into exactly \(2^d\) tight clusters on the <em>sign-orthant corners</em> of position space (four, at \(d{=}2\)). Then they <strong>fan out</strong>: the clusters melt into a diffuse spread — yet no axon ever leaves its orthant. One term drives both acts (the anti-collapse <em>density</em> prior), and the data drives neither, because positions get no gradient from the loss (\(\partial\,\mathrm{MSE}/\partial(a,D)\equiv0\)). The whole story in one sentence: a short-range repulsion, rounded onto the coordinate axes by AdamW, builds corners while the cloud is small and dissolves them once it is large. <span class="status supported">supported</span></p></div>
 

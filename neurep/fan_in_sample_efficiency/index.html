@@ -179,6 +179,7 @@ transition:color .15s ease,border-color .15s ease}\
   --bad:#9a3b2f;         /* status: refuted */
   --wip:#8a6d1f;         /* status: wip/draft (parked) */
   --active:#c2701c;      /* status: active — the live frontier (warm amber, set apart from the muted wip) */
+  --revise:#c2871f;      /* status: revise — needs more work (warm orange-gold; a softer signal than refuted-red) */
   --disp:'Manrope',-apple-system,'Segoe UI',Roboto,sans-serif;  /* display/UI */
   --serif:Georgia,'Iowan Old Style','Times New Roman',serif;     /* body */
 }
@@ -312,8 +313,9 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
 .context .dep{color:var(--mut)}
 .status{display:inline-block;font:600 .72rem/1 var(--disp);text-transform:uppercase;letter-spacing:.08em;
   padding:.22em .5em;border-radius:.4em;border:1px solid var(--line)}
-.status.supported{color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}
+.status.supported,.status.verified{color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}
 .status.refuted{color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,transparent)}
+.status.revise{color:var(--revise);background:color-mix(in srgb,var(--revise) 14%,transparent)}
 .status.wip,.status.draft{color:var(--wip);background:color-mix(in srgb,var(--wip) 12%,transparent)}
 .status.active{color:var(--active);background:color-mix(in srgb,var(--active) 14%,transparent)}
 .status.reference{color:var(--violet);background:color-mix(in srgb,var(--violet) 12%,transparent)}
@@ -392,8 +394,9 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
 @keyframes apulse{
   0%,100%{box-shadow:0 0 0 3px color-mix(in srgb,var(--active) 42%,transparent)}
   50%    {box-shadow:0 0 0 9px color-mix(in srgb,var(--active) 6%,transparent)}}
-.st-supported{--dot:var(--ok)}
+.st-supported,.st-verified{--dot:var(--ok)}
 .st-refuted{--dot:var(--bad)}
+.st-revise{--dot:var(--revise)}
 .st-wip,.st-draft{--dot:var(--wip)}
 .st-active{--dot:var(--active)}                                        /* the live frontier */
 .st-reference{--dot:var(--violet)}                                     /* shared reference (not a verdict) */
@@ -515,7 +518,7 @@ caption{caption-side:bottom;color:var(--mut);font:400 13.5px/1.5 var(--disp);mar
 </style>
 </head>
 <body>
-<header class="nav"><a class="brand" href="../index.html"><span>neurep</span></a></header><main class="study"><header class="study-head"><h1>Sample complexity of bounded-arity DAG classes and their fan-in-limited MLP realizations</h1><p class=sub>Local arity sets the rate, ambient dimension only logarithmically; fan-in-2 MLPs realize the class exactly.</p><div class="rule"></div></header><div class="context"><span class="crumb"><a href="../studies.html#thread-fan_in">Bounded fan-in: realizing the sample-efficiency separation by GD</a></span><span class="status supported">supported</span><span class="dep">builds on: <a href="../neurep_mlp_encoding/">An Exact MLP Encoding of Computation Graphs</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou-Hangyu/neurep/commit/84d947b"><code>84d947b</code></a> <span class="git">· worktree-fan-in-sample-efficiency-plan</span></span></div><article>
+<header class="nav"><a class="brand" href="../index.html"><span>neurep</span></a></header><main class="study"><header class="study-head"><h1>Sample complexity of bounded-arity DAG classes and their fan-in-limited MLP realizations</h1><p class=sub>Local arity sets the rate, ambient dimension only logarithmically; fan-in-2 MLPs realize the class exactly.</p><div class="rule"></div></header><div class="context"><span class="crumb"><a href="../studies.html#thread-fan_in">Bounded fan-in: realizing the sample-efficiency separation by GD</a></span><span class="status verified">verified</span><span class="dep">builds on: <a href="../neurep_mlp_encoding/">An Exact MLP Encoding of Computation Graphs</a></span><span class="repro">reproduce: <a href="https://github.com/Zhou-Hangyu/neurep/commit/84d947b"><code>84d947b</code></a> <span class="git">· worktree-fan-in-sample-efficiency-plan</span></span></div><article>
 
   <div class="tldr"><p><strong>Abstract.</strong> We study realizable learning of
   finite-alphabet functions computed by <em>bounded-arity computation DAGs</em>: \(N\)
