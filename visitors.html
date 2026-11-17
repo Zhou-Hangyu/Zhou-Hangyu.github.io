@@ -1,99 +1,271 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Visitor Map - Hangyu Zhou</title>
-  <style>
-    body {
-      font-family: Verdana, sans-serif;
-      margin: 0;
-      padding: 40px 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      background-color: #fff;
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Visitors — Hangyu Zhou</title>
+<meta name="description" content="How often each page on zhou-hangyu.github.io is viewed, and where visitors come from.">
+<link rel="canonical" href="https://zhou-hangyu.github.io/visitors.html">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<style>
+  /* Visitors. Views per page come from GoatCounter (every page loads its count.js);
+     the map comes from MapMyVisitors (every page loads its pixel). */
+  :root {
+    --paper: #fbfbfc;
+    --ink: #191c22;
+    --ink-2: #474d58;
+    --muted: #666d79;
+    --rule: #e2e5ea;
+    --wash: #f1f3f6;
+    --bar: #c9741c;        /* validated: 3:1+ on paper, inside the light lightness band */
+    --bar-hover: #b4640f;
+    --link: #9a4d0a;
+    --dot: #c9741c;
+    --font: Verdana, sans-serif;   /* same face as the homepage */
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #15171b;
+      --ink: #e7e8eb;
+      --ink-2: #b9bec7;
+      --muted: #9298a4;
+      --rule: #2a2e36;
+      --wash: #1c1f25;
+      --bar: #d07c26;      /* validated: its own dark step, not an automatic flip */
+      --bar-hover: #e08d38;
+      --link: #f3b26b;
+      color-scheme: dark;
     }
+  }
 
-    h1 {
-      font-size: 22px;
-      margin-bottom: 5px;
-    }
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font);
+    font-size: 1rem;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--link); text-underline-offset: 0.2em; }
+  :focus-visible { outline: 2px solid var(--link); outline-offset: 3px; border-radius: 3px; }
+  .vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
-    .back-link {
-      margin-bottom: 20px;
-      font-size: 14px;
-    }
+  .page { max-width: 62rem; margin: 0 auto; padding: clamp(2rem, 6vh, 4rem) clamp(1rem, 4vw, 2.5rem) 5rem; }
+  .home { margin: 0 0 2rem; font-size: 0.9375rem; }
+  .home a { color: var(--ink-2); text-decoration: none; }
+  .home a:hover { color: var(--ink); text-decoration: underline; }
+  h1 { margin: 0 0 0.35rem; font-size: clamp(1.9rem, 4vw, 2.4rem); font-weight: 650; letter-spacing: -0.02em; line-height: 1.1; }
+  .intro { margin: 0; color: var(--ink-2); max-width: 40rem; }
 
-    .back-link a {
-      color: #007bff;
-      text-decoration: none;
-    }
+  section { margin-top: clamp(2.5rem, 7vh, 3.75rem); }
+  h2 { margin: 0; font-size: 1.125rem; font-weight: 600; letter-spacing: -0.005em; }
+  .head-row { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; margin-bottom: 1rem; }
+  .total { margin: 0; color: var(--muted); font-size: 0.875rem; }
+  .total-value { margin-left: 0.35rem; color: var(--ink); font-size: 1.5rem; font-weight: 650; letter-spacing: -0.01em; }
 
-    .back-link a:hover {
-      text-decoration: underline;
-    }
+  /* Ranked bar list = a real table, so the values never depend on the chart */
+  .views { width: 100%; border-collapse: collapse; }
+  .views th {
+    padding: 0 0 0.5rem; border-bottom: 1px solid var(--rule);
+    color: var(--muted); font-size: 0.8125rem; font-weight: 500; text-align: left;
+  }
+  .views td { padding: 0.75rem 0; border-bottom: 1px solid var(--rule); vertical-align: middle; }
+  .views tbody tr { cursor: default; }
+  .views tbody tr:hover td { background: var(--wash); }
+  .page-cell { width: 40%; padding-right: 1.5rem !important; padding-left: 0.5rem !important; }
+  .page-cell a { color: var(--ink); font-weight: 550; text-decoration: none; }
+  .page-cell a:hover { text-decoration: underline; }
+  .path { display: block; color: var(--muted); font-size: 0.8125rem; overflow-wrap: anywhere; }
+  .bar-cell { padding-right: 0.5rem !important; }
+  .track { display: flex; align-items: center; gap: 0.6rem; }
+  .bar {
+    flex: none; height: 10px;
+    width: calc((100% - 4.5rem) * var(--p, 0));
+    background: var(--bar);
+    border-radius: 0 4px 4px 0;   /* square at the baseline, rounded at the data end */
+    transition: background-color 0.15s ease;
+  }
+  .views tbody tr:hover .bar { background: var(--bar-hover); }
+  .val { font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
+  .val.pending { color: var(--muted); font-weight: 400; }
+  .note { margin: 0.9rem 0 0; color: var(--muted); font-size: 0.875rem; }
 
-    .map-container {
-      max-width: 1000px;
-      width: 100%;
-      text-align: center;
-    }
+  .tip {
+    position: fixed; z-index: 20; pointer-events: none;
+    padding: 0.45rem 0.65rem; border-radius: 6px;
+    background: var(--ink); color: var(--paper);
+    font-size: 0.8125rem; line-height: 1.4;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+  }
+  .tip strong { display: block; font-size: 0.9375rem; }
 
-    /* Scale down the 3200px widget to fit ~1000px, giving 3x+ resolution on retina */
-    .map-scaler {
-      width: 3200px;
-      transform: scale(0.3125);
-      transform-origin: top left;
-    }
+  /* The map widget renders at 3200px for sharpness; script scales it to fit. */
+  .map-fit { position: relative; overflow: hidden; margin-top: 1rem; border-radius: 10px; background: #fff; }
+  .map-scaler { width: 3200px; transform-origin: top left; }
+  .map-scaler .jvectormap-marker {
+    fill: var(--dot);
+    stroke: #fff; stroke-width: 0.75;
+    transform: scale(var(--dot-k, 6.4));   /* --dot-k keeps dots the same on-screen size at any width */
+    transform-origin: center; transform-box: fill-box;
+  }
+  .map-scaler .jvectormap-zoomin, .map-scaler .jvectormap-zoomout, .map-scaler .jvectormap-goback,
+  .map-scaler .mpmvs, .map-scaler #clstminf { display: none; }   /* empty widget overlays */
+  @media (prefers-color-scheme: dark) {
+    /* Inverts the map's lightness but keeps its hues, so the dots stay amber. */
+    .map-fit { filter: invert(0.9) hue-rotate(180deg); }
+  }
 
-    @media (max-width: 850px) {
-      .map-container {
-        max-width: 100%;
-        overflow: hidden;
-      }
-
-      .map-scaler {
-        transform: scale(calc(50vw / 1600));
-        transform-origin: top left;
-      }
-    }
-  </style>
+  @media (max-width: 560px) {
+    .head-row { flex-direction: column; gap: 0.25rem; }
+    .page-cell { width: 46%; }
+  }
+</style>
 </head>
-
 <body>
-  <h1>Visitor Map</h1>
-  <div class="back-link"><a href="index.html">&larr; Back to homepage</a></div>
-  <div class="map-container">
-    <div class="map-scaler">
-      <script type='text/javascript' id='mapmyvisitors'
-        src='https://mapmyvisitors.com/map.js?cl=777777&w=3200&t=n&d=NCtmPpXBb5jvZC6scJCH9XjYBcQ2pgp4uDpI4EXO_sA&co=ffffff&cmo=b5b5b5&cmn=afd5ff&ct=000000'></script>
+<main class="page">
+  <p class="home"><a href="./">Hangyu Zhou</a></p>
+  <h1>Visitors</h1>
+  <p class="intro">How many times each page on this site has been viewed, and where visitors come from.</p>
+
+  <section aria-labelledby="views-title">
+    <div class="head-row">
+      <h2 id="views-title">Views by page</h2>
+      <p class="total">All pages<span class="total-value" id="total">&ndash;</span></p>
     </div>
-  </div>
+    <table class="views">
+      <caption class="vh">Views of each page, most viewed first</caption>
+      <thead><tr><th scope="col" class="page-cell">Page</th><th scope="col">Views</th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <p class="note" id="status" role="status">Loading counts&hellip;</p>
+  </section>
 
-  <script>
-    // Fix the container height after widget loads since transform: scale doesn't shrink layout
-    window.addEventListener('load', function () {
-      setTimeout(function () {
-        var scaler = document.querySelector('.map-scaler');
-        var container = document.querySelector('.map-container');
-        if (scaler && container) {
-          var scale = parseFloat(getComputedStyle(scaler).transform.split(',')[3]) || 0.3125;
-          container.style.height = (scaler.offsetHeight * scale) + 'px';
-          container.style.overflow = 'hidden';
-        }
-      }, 2000);
+  <section aria-labelledby="map-title">
+    <h2 id="map-title">Where visitors come from</h2>
+    <div class="map-fit" id="mapFit">
+      <div class="map-scaler" id="mapScaler">
+        <script type="text/javascript" id="mapmyvisitors" src="https://mapmyvisitors.com/map.js?cl=777777&amp;w=3200&amp;t=n&amp;d=NCtmPpXBb5jvZC6scJCH9XjYBcQ2pgp4uDpI4EXO_sA&amp;co=ffffff&amp;cmo=b5b5b5&amp;cmn=afd5ff&amp;ct=000000"></script>
+      </div>
+    </div>
+    <p class="note">Each dot is a place visitors have come from. Recorded by MapMyVisitors on every page of the site.</p>
+  </section>
+</main>
+<div class="tip" id="tip" role="tooltip" hidden></div>
 
-  <style>
-    /* Scale up visitor dots via CSS — widget JS can't overwrite this */
-    .jvectormap-marker,
-    .mapmyvisitors-map svg circle {
-      transform: scale(8);
-      transform-origin: center;
-      transform-box: fill-box;
+<script>
+  /* ---------- Views by page (GoatCounter public counter) ----------
+     To list a new page: add it here, and make sure that page loads GoatCounter's count.js. */
+  const GOATCOUNTER = 'https://zhou-hangyu.goatcounter.com';
+  const PAGES = [
+    { name: 'Homepage', path: '/' },
+    { name: 'LeWi project page', path: '/lewi/' },
+    { name: 'LeWi interactive demo', path: '/lewi/demo/' },
+    { name: 'CSFRBench', path: '/lewi/csfrbench/' },
+    { name: 'The Desire Model', path: '/desire-model/' },
+  ];
+  const SITE = 'https://zhou-hangyu.github.io';
+  const fmt = new Intl.NumberFormat('en-US');
+  const rowsEl = document.getElementById('rows');
+  const statusEl = document.getElementById('status');
+  const tip = document.getElementById('tip');
+
+  function makeRow(page) {
+    const tr = document.createElement('tr');
+    const name = document.createElement('td');
+    name.className = 'page-cell';
+    const a = document.createElement('a');
+    a.href = SITE + page.path;
+    a.textContent = page.name;
+    const path = document.createElement('span');
+    path.className = 'path';
+    path.textContent = page.path;
+    name.append(a, path);
+    const cell = document.createElement('td');
+    cell.className = 'bar-cell';
+    const track = document.createElement('div');
+    track.className = 'track';
+    const bar = document.createElement('div');
+    bar.className = 'bar';
+    const val = document.createElement('span');
+    val.className = 'val pending';
+    val.textContent = '–';
+    track.append(bar, val);
+    cell.append(track);
+    tr.append(name, cell);
+    page.tr = tr; page.bar = bar; page.val = val; page.link = a;
+    return tr;
+  }
+  PAGES.forEach((p) => rowsEl.append(makeRow(p)));
+
+  async function getCount(path) {
+    const res = await fetch(GOATCOUNTER + '/counter/' + encodeURIComponent(path) + '.json');
+    if (res.status === 404) return 0;                 // no views recorded for this path yet
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    return parseInt(String(data.count).replace(/[^0-9]/g, ''), 10) || 0;
+  }
+
+  let total = 0;
+  function showTip(page, x, y) {
+    tip.textContent = '';
+    const strong = document.createElement('strong');
+    strong.textContent = fmt.format(page.views) + (page.views === 1 ? ' view' : ' views');
+    const share = document.createElement('span');
+    share.textContent = total ? Math.round((page.views / total) * 100) + '% of all views' : '';
+    tip.append(strong, share);
+    tip.hidden = false;
+    const w = tip.offsetWidth, h = tip.offsetHeight;
+    tip.style.left = Math.min(window.innerWidth - w - 8, x + 14) + 'px';
+    tip.style.top = Math.max(8, y - h - 10) + 'px';
+  }
+  function hideTip() { tip.hidden = true; }
+
+  (async () => {
+    const results = await Promise.allSettled([getCount('TOTAL'), ...PAGES.map((p) => getCount(p.path))]);
+    const failed = results.filter((r) => r.status === 'rejected').length;
+    if (failed === results.length) {
+      statusEl.textContent = 'Counts couldn’t be loaded from GoatCounter. If the site was just set up, turn on “Allow adding visitor counts on your website” in its settings.';
+      PAGES.forEach((p) => { p.val.textContent = 'unavailable'; });
+      return;
     }
-  </style>
-</body>
+    total = results[0].status === 'fulfilled' ? results[0].value : 0;
+    PAGES.forEach((p, i) => { const r = results[i + 1]; p.views = r.status === 'fulfilled' ? r.value : null; });
+    if (!total) total = PAGES.reduce((s, p) => s + (p.views || 0), 0);
+    document.getElementById('total').textContent = fmt.format(total);
 
+    const max = Math.max(1, ...PAGES.map((p) => p.views || 0));
+    PAGES.slice().sort((a, b) => (b.views ?? -1) - (a.views ?? -1)).forEach((p) => {
+      rowsEl.append(p.tr);                            // ranked: most viewed first
+      p.val.classList.remove('pending');
+      if (p.views === null) { p.val.textContent = 'unavailable'; p.val.classList.add('pending'); return; }
+      p.val.textContent = fmt.format(p.views);
+      p.bar.style.setProperty('--p', (p.views / max).toFixed(4));
+      p.tr.addEventListener('pointermove', (e) => showTip(p, e.clientX, e.clientY));
+      p.tr.addEventListener('pointerleave', hideTip);
+      p.link.addEventListener('focus', () => { const r = p.bar.getBoundingClientRect(); showTip(p, r.right, r.top); });
+      p.link.addEventListener('blur', hideTip);
+    });
+    statusEl.textContent = 'Counts from GoatCounter, updated every few hours.' + (failed ? ' Some pages couldn’t be loaded.' : '');
+  })();
+
+  /* ---------- Map: scale the 3200px widget to the container ---------- */
+  (() => {
+    const fit = document.getElementById('mapFit');
+    const scaler = document.getElementById('mapScaler');
+    function layout() {
+      const s = fit.clientWidth / 3200;
+      const dotPx = Math.min(4, Math.max(2.5, fit.clientWidth / 230));  // on-screen radius of a base dot (r=2)
+      scaler.style.transform = 'scale(' + s + ')';
+      scaler.style.setProperty('--dot-k', (dotPx / (2 * s)).toFixed(2));
+      fit.style.height = Math.ceil(scaler.offsetHeight * s) + 'px';
+    }
+    new ResizeObserver(layout).observe(scaler);   // re-runs when the widget finishes drawing
+    window.addEventListener('resize', layout);
+    layout();
+  })();
+</script>
+</body>
 </html>
