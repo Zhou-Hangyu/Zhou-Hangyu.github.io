@@ -5,6 +5,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hangyu Zhou</title>
+  <meta name="description" content="Hangyu Zhou is a Machine Learning PhD student at Georgia Tech working on sample-efficient world model learning.">
+  <link rel="canonical" href="https://zhou-hangyu.github.io/">
+  <meta property="og:type" content="profile">
+  <meta property="og:title" content="Hangyu Zhou">
+  <meta property="og:description" content="Machine Learning PhD student at Georgia Tech working on sample-efficient world model learning.">
+  <meta property="og:url" content="https://zhou-hangyu.github.io/">
+  <meta property="og:image" content="https://zhou-hangyu.github.io/assets/hangyu-portrait.jpg">
+  <meta name="twitter:card" content="summary">
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
   <style>
     /* body {
@@ -61,13 +69,19 @@
       margin-top: 20px;
     }
 
-    .left-column h2 {
+    .left-column h1 {
       font-size: 24px;
       margin: 10px 0;
     }
 
     .left-column p {
       margin: 5px 0;
+    }
+
+    .email {
+      font-family: Courier;
+      color: inherit;
+      text-decoration: none;
     }
 
     .icons {
@@ -111,6 +125,10 @@
       text-decoration: underline;
     }
 
+    .right-column li + li {
+      margin-top: 10px;
+    }
+
     @media screen and (max-width: 768px) {
       .container {
         flex-direction: column;
@@ -143,7 +161,8 @@
   </script>
   <!-- End Google Analytics -->
 
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <!-- Per-page view counts (GoatCounter), listed on /visitors.html -->
+  <script data-goatcounter="https://zhou-hangyu.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
 
 </head>
 
@@ -151,21 +170,21 @@
   <div class="container">
     <div class="left-column">
       <!-- <img src="assets/hangyu.png" alt="Hangyu Zhou" class="profile-photo"> -->
-      <img src="assets/hangyu5.jpg" alt="Hangyu Zhou" class="profile-photo">
-      <h2>Hangyu Zhou</h2>
+      <img src="assets/hangyu-portrait.jpg" alt="Hangyu Zhou" class="profile-photo" width="600" height="800">
+      <h1>Hangyu Zhou</h1>
       <!-- <p><a href="mailto:hz477@cornell.edu">hz477@cornell.edu</a></p> -->
-      <p><span style="font-family: Courier;">zhybrid1021@gmail.com</span></p>
+      <p><a class="email" href="mailto:hzhou411@gatech.edu">hzhou411@gatech.edu</a></p>
       <div class="icons">
-        <a href="https://scholar.google.com/citations?user=_-xskAQAAAAJ&hl=en&inst=7707536466893209563" target="_blank">
+        <a href="https://scholar.google.com/citations?user=_-xskAQAAAAJ&amp;hl=en&amp;inst=7707536466893209563" target="_blank" rel="noopener noreferrer" aria-label="Google Scholar">
           <i class="fas fa-graduation-cap" aria-hidden="true"></i>
         </a>
-        <a href="assets/cv.pdf" target="_blank">
+        <a href="assets/cv.pdf" target="_blank" aria-label="CV (PDF)">
           <i class="fas fa-file-alt" aria-hidden="true"></i>
         </a>
-        <a href="https://github.com/Zhou-Hangyu" target="_blank">
+        <a href="https://github.com/Zhou-Hangyu" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
           <i class="fab fa-github" aria-hidden="true"></i>
         </a>
-        <a href="https://www.linkedin.com/in/hangyu-zhou-b146931b2/" target="_blank">
+        <a href="https://www.linkedin.com/in/hangyu-zhou-b146931b2/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
           <i class="fab fa-linkedin" aria-hidden="true"></i>
         </a>
       </div>
@@ -173,7 +192,7 @@
     <div class="right-column">
       <h2>About Me</h2>
       <p>
-        I am a first-year ML PhD student at Georgia Tech, advised by <a href="https://steve.mussmann.us/">Prof. Steve Mussmann</a>. 
+        I am an ML PhD student at Georgia Tech, advised by <a href="https://steve.mussmann.us/">Prof. Steve Mussmann</a>.
         Previously, I obtained my MS degree in Computer Science and Bachelor's degree in Biological Engineering from Cornell University,
         advised by <a href="https://www.cs.cornell.edu/~bharathh/">Prof. Bharath Hariharan</a>.
         During my time at Cornell, I have also had the opportunity to work with
@@ -181,8 +200,8 @@
         and <a href="https://www.cs.cornell.edu/~kuleshov/">Prof. Volodymyr Kuleshov</a>.
       </p>
       <p>
-        I am interested in developing tools to help people build affordable and reliable AI models.
-        Currently, I am exploring how <i>structure</i> can be used to improve the sample efficiency of AI models.
+        I am interested in sample-efficient world model learning, with a focus on discovering and exploiting
+        computational <i>structure</i> in environment dynamics for prediction, planning, and adaptation.
       </p>
 
       <!-- <section id="interest">
@@ -199,19 +218,31 @@
             <a href="https://arxiv.org/abs/2410.23891">AllClear: A Comprehensive Dataset and Benchmark for Cloud Removal
               in Satellite Imagery</a>
             <br>
-            <b>Hangyu Zhou*</b>, Chia Hsiang Kao*, Cheng Perng Phoo, Utkarsh Mall, Bharath Hariharan, Kavita Bala
+            <b>Hangyu Zhou*</b>, Chia-Hsiang Kao*, Cheng Perng Phoo, Utkarsh Mall, Bharath Hariharan, Kavita Bala
             <br>
             <i>NeurIPS 2024 Datasets and Benchmarks Track</i>
+            [<a href="https://allclear.cs.cornell.edu/">Project page</a>]
+            [<a href="https://github.com/Zhou-Hangyu/allclear">Code</a>]
           </li>
         </ul>
         <h3>Preprints</h3>
         <ul>
           <li>
+            <a href="https://arxiv.org/abs/2610.28555">Learning Computational Structure for Sample-Efficient Prediction</a>
+            <br>
+            <b>Hangyu Zhou</b>, Constantine Dovrolis, Stephen Mussmann
+            <br>
+            <i>arXiv, 2026</i>
+            [<a href="https://zhou-hangyu.github.io/lewi/">Project page</a>]
+            [<a href="https://github.com/Zhou-Hangyu/lewi-code">Code</a>]
+          </li>
+          <li>
             <a href="https://arxiv.org/abs/2505.11204">RanDeS: Randomized Delta Superposition for Multi-Model Compression</a>
             <br>
             <b>Hangyu Zhou</b>, Aaron Gokaslan, Volodymyr Kuleshov, Bharath Hariharan
             <br>
-            <i>ArXiv</i>
+            <i>arXiv, 2025</i>
+            [<a href="https://github.com/Zhou-Hangyu/randes">Code</a>]
           </li>
         </ul>
       </section>
@@ -255,12 +286,13 @@
             CS 4/5670: Introduction to Computer Vision (<a
               href="https://docs.google.com/document/d/1attNjxvgwCxwGLwm2_VB7hDRY2esBB5LiVVCiILmRBw/edit">Spring
               2023</a>)
-          </li> -->
+          </li>
+        </ul>
+      </section> -->
 
-      </section>
     </div>
   </div>
-  <img src="https://mapmyvisitors.com/map.png?d=NCtmPpXBb5jvZC6scJCH9XjYBcQ2pgp4uDpI4EXO_sA&cl=ffffff" style="display:none" alt="">
+  <img src="https://mapmyvisitors.com/map.png?d=NCtmPpXBb5jvZC6scJCH9XjYBcQ2pgp4uDpI4EXO_sA&amp;cl=ffffff" style="display:none" alt="">
 </body>
 
 </html>
