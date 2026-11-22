@@ -8,7 +8,7 @@
 <link rel="canonical" href="https://zhou-hangyu.github.io/visitors.html">
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 <style>
-  /* Visitors. Views per page come from GoatCounter (every page loads its count.js);
+  /* Visitors. Views per page and over time come from GoatCounter (every page loads its count.js);
      the map comes from MapMyVisitors (every page loads its pixel). */
   :root {
     --paper: #fbfbfc;
@@ -19,6 +19,7 @@
     --wash: #f1f3f6;
     --bar: #c9741c;        /* validated: 3:1+ on paper, inside the light lightness band */
     --bar-hover: #b4640f;
+    --bar-partial: #dba36a;  /* the period still in progress: a lighter step of --bar, validated 2:1+ */
     --link: #9a4d0a;
     --dot: #c9741c;
     --font: Verdana, sans-serif;   /* same face as the homepage */
@@ -34,6 +35,7 @@
       --wash: #1c1f25;
       --bar: #d07c26;      /* validated: its own dark step, not an automatic flip */
       --bar-hover: #e08d38;
+      --bar-partial: #85541f;
       --link: #f3b26b;
       color-scheme: dark;
     }
@@ -93,6 +95,30 @@
   .val.pending { color: var(--muted); font-weight: 400; }
   .note { margin: 0.9rem 0 0; color: var(--muted); font-size: 0.875rem; }
 
+  /* Views over time: one column per day, week or month, drawn as SVG by the script */
+  .pick { color: var(--muted); font-size: 0.875rem; }
+  .pick select {
+    margin-left: 0.4rem; padding: 0.3rem 0.5rem;
+    font: inherit; color: var(--ink); background: var(--paper);
+    border: 1px solid var(--rule); border-radius: 6px;
+  }
+  .trend { margin: 0; }
+  .trend svg { display: block; width: 100%; transition: opacity 0.15s ease; }
+  .trend svg.loading { opacity: 0.45; }   /* refetch keeps the old chart, dimmed */
+  .trend .grid { stroke: var(--rule); stroke-width: 1; }
+  .trend .tick { fill: var(--muted); font-family: var(--font); font-size: 12px; font-variant-numeric: tabular-nums; }
+  .trend .col { fill: var(--bar); transition: fill 0.15s ease; }
+  .trend .col.partial { fill: var(--bar-partial); }
+  .trend .col.on { fill: var(--bar-hover); }
+  .trend .col.partial.on { fill: var(--bar); }
+  .trend .hit { fill: transparent; }
+  .table-view { margin-top: 0.75rem; font-size: 0.875rem; }
+  .table-view summary { cursor: pointer; color: var(--ink-2); }
+  .mini { margin-top: 0.5rem; border-collapse: collapse; min-width: 15rem; }
+  .mini th, .mini td { padding: 0.35rem 2rem 0.35rem 0; border-bottom: 1px solid var(--rule); text-align: left; }
+  .mini th { color: var(--muted); font-weight: 500; }
+  .mini th:last-child, .mini td:last-child { padding-right: 0; text-align: right; font-variant-numeric: tabular-nums; }
+
   .tip {
     position: fixed; z-index: 20; pointer-events: none;
     padding: 0.45rem 0.65rem; border-radius: 6px;
@@ -141,6 +167,25 @@
       <tbody id="rows"></tbody>
     </table>
     <p class="note" id="status" role="status">Loading counts&hellip;</p>
+  </section>
+
+  <section aria-labelledby="time-title">
+    <div class="head-row">
+      <h2 id="time-title">Views over time</h2>
+      <label class="pick">Page<select id="series"></select></label>
+    </div>
+    <figure class="trend">
+      <svg id="trendChart" role="img" tabindex="0" aria-label="Views over time"></svg>
+      <figcaption class="note" id="trendNote">Loading&hellip;</figcaption>
+    </figure>
+    <details class="table-view">
+      <summary>Show as a table</summary>
+      <table class="mini">
+        <caption class="vh">Views in each period</caption>
+        <thead><tr><th scope="col" id="trendUnit">Day</th><th scope="col">Views</th></tr></thead>
+        <tbody id="trendRows"></tbody>
+      </table>
+    </details>
   </section>
 
   <section aria-labelledby="map-title">
@@ -200,10 +245,11 @@
   }
   PAGES.forEach((p) => rowsEl.append(makeRow(p)));
 
-  async function getCount(path) {
+  async function getCount(path, end) {   // end: 'YYYY-MM-DD' counts only views up to that UTC midnight
     // 'no-cache': GoatCounter marks every counter reply, errors included, fresh for 4 hours, so a
     // browser would reuse an old count or failure. GoatCounter's own server cache still applies.
-    const res = await fetch(GOATCOUNTER + '/counter/' + encodeURIComponent(path) + '.json', { cache: 'no-cache' });
+    const url = GOATCOUNTER + '/counter/' + encodeURIComponent(path) + '.json' + (end ? '?end=' + end : '');
+    const res = await fetch(url, { cache: 'no-cache' });
     if (res.status === 404) return 0;                 // no views recorded for this path yet
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
@@ -211,19 +257,198 @@
   }
 
   let total = 0;
-  function showTip(page, x, y) {
+  const viewsText = (n) => fmt.format(n) + (n === 1 ? ' view' : ' views');
+  function placeTip(value, label, x, y) {     // the value leads; the label is secondary
     tip.textContent = '';
     const strong = document.createElement('strong');
-    strong.textContent = fmt.format(page.views) + (page.views === 1 ? ' view' : ' views');
-    const share = document.createElement('span');
-    share.textContent = total ? Math.round((page.views / total) * 100) + '% of all views' : '';
-    tip.append(strong, share);
+    strong.textContent = value;
+    const span = document.createElement('span');
+    span.textContent = label;
+    tip.append(strong, span);
     tip.hidden = false;
     const w = tip.offsetWidth, h = tip.offsetHeight;
     tip.style.left = Math.min(window.innerWidth - w - 8, x + 14) + 'px';
     tip.style.top = Math.max(8, y - h - 10) + 'px';
   }
+  function showTip(page, x, y) {
+    placeTip(viewsText(page.views), total ? Math.round((page.views / total) * 100) + '% of all views' : '', x, y);
+  }
   function hideTip() { tip.hidden = true; }
+
+  /* ---------- Views over time ----------
+     The counter API has no time series, but ?end=YYYY-MM-DD gives the count up to that UTC midnight
+     (that hour included), so each period is the difference between two such counts. Past counts never
+     change, so GoatCounter's cache serves them well. A period is a day for the first month, then a week
+     (from Monday), then a month, which keeps one series to about 30 requests. */
+  const SINCE = '2026-11-17';   // the first day GoatCounter recorded views; it has none before this
+  const DAY = 864e5;
+  const isoDay = (t) => new Date(t).toISOString().slice(0, 10);
+  const dateFmt = (o) => new Intl.DateTimeFormat('en-US', { timeZone: 'UTC', ...o });
+  const shortDay = dateFmt({ month: 'short', day: 'numeric' });
+  const longDay = dateFmt({ weekday: 'short', month: 'short', day: 'numeric' });
+  const shortMonth = dateFmt({ month: 'short', year: 'numeric' });
+  const longMonth = dateFmt({ month: 'long', year: 'numeric' });
+  function periodName(unit, t, long) {
+    if (unit === 'month') return (long ? longMonth : shortMonth).format(t);
+    if (unit === 'week') return (long ? 'Week of ' : '') + shortDay.format(t);
+    return (long ? longDay : shortDay).format(t);
+  }
+
+  function periods() {          // start (UTC ms) of each period from SINCE through the current one
+    const start = Date.parse(SINCE + 'T00:00:00Z');
+    const today = Date.parse(isoDay(Date.now()) + 'T00:00:00Z');
+    const days = Math.round((today - start) / DAY) + 1;
+    const unit = days <= 31 ? 'day' : days <= 7 * 26 ? 'week' : 'month';
+    const starts = [start];
+    for (;;) {
+      const d = new Date(starts[starts.length - 1]);
+      const next = unit === 'day' ? d.getTime() + DAY
+        : unit === 'week' ? d.getTime() + ((8 - d.getUTCDay()) % 7 || 7) * DAY   // next Monday
+        : Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1);                 // next 1st of a month
+      if (next > today) break;
+      starts.push(next);
+    }
+    return { unit, starts };
+  }
+
+  const nowCounts = new Map();    // all-time counts already fetched for the table, by path
+  const seriesCache = new Map();
+  async function loadSeries(key) {
+    if (seriesCache.has(key)) return seriesCache.get(key);
+    const { unit, starts } = periods();
+    const [now, ...marks] = await Promise.all([
+      nowCounts.has(key) ? nowCounts.get(key) : getCount(key),
+      ...starts.slice(1).map((t) => getCount(key, isoDay(t))),
+    ]);
+    const cum = [0, ...marks, now];          // views before each period starts, then views up to now
+    const series = { unit, starts, values: starts.map((_, i) => Math.max(0, cum[i + 1] - cum[i])) };
+    seriesCache.set(key, series);
+    return series;
+  }
+
+  const NS = 'http://www.w3.org/2000/svg';
+  const chart = document.getElementById('trendChart');
+  const trendNote = document.getElementById('trendNote');
+  const trendRows = document.getElementById('trendRows');
+  const select = document.getElementById('series');
+  [{ name: 'All pages', path: 'TOTAL' }, ...PAGES].forEach((p) => select.append(new Option(p.name, p.path)));
+  let shown = null, cols = [], geom = null, active = -1, drawnWidth = 0, seq = 0;
+
+  function svgEl(name, attrs) {
+    const node = document.createElementNS(NS, name);
+    for (const k in attrs) node.setAttribute(k, attrs[k]);
+    chart.append(node);
+    return node;
+  }
+  function niceTicks(max) {     // 0 up to a clean top: steps of 1, 2 or 5 times a power of ten
+    const raw = Math.max(1, max) / 4;
+    const mag = 10 ** Math.floor(Math.log10(raw));
+    const step = Math.max(1, [1, 2, 5, 10].map((m) => m * mag).find((s) => s >= raw));
+    const ticks = [];
+    for (let v = 0; v < Math.max(1, max) + step; v += step) ticks.push(v);
+    return ticks;
+  }
+
+  function drawTrend() {
+    if (!shown) return;
+    const W = Math.round(chart.getBoundingClientRect().width), H = 220;
+    if (!W) return;
+    drawnWidth = W;
+    const { unit, starts, values } = shown;
+    const n = values.length, ticks = niceTicks(Math.max(...values)), top = ticks[ticks.length - 1];
+    const left = 10 + 7.5 * fmt.format(top).length, right = W - 1, y0 = 8, y1 = H - 28;
+    const band = (right - left) / n, w = Math.min(24, Math.max(2, band * 0.62));
+    const y = (v) => y1 - (v / top) * (y1 - y0);
+    geom = { left, band, y };
+    chart.textContent = '';
+    chart.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    chart.setAttribute('height', H);
+    for (const v of ticks) {                                   // hairline grid; labels in muted ink
+      const yy = Math.round(y(v)) + 0.5;
+      svgEl('line', { class: 'grid', x1: left, x2: right, y1: yy, y2: yy });
+      svgEl('text', { class: 'tick', x: left - 8, y: yy + 4, 'text-anchor': 'end' }).textContent = fmt.format(v);
+    }
+    const every = Math.ceil(n / Math.max(1, Math.floor((right - left) / (unit === 'month' ? 80 : 64))));
+    cols = values.map((v, i) => {
+      const cx = left + band * (i + 0.5);
+      if ((n - 1 - i) % every === 0) {                          // date labels, thinned back from the latest
+        const text = periodName(unit, starts[i]), half = text.length * 3.7;
+        svgEl('text', { class: 'tick', x: Math.min(Math.max(cx, left + half), right - half), y: H - 8, 'text-anchor': 'middle' }).textContent = text;
+      }
+      if (!v) return null;
+      const x = cx - w / 2, yt = y(v), r = Math.min(4, w / 2, y1 - yt);   // rounded data end, square at the baseline
+      return svgEl('path', {
+        class: 'col' + (i === n - 1 ? ' partial' : ''),
+        d: `M${x},${y1}V${yt + r}A${r},${r} 0 0 1 ${x + r},${yt}H${x + w - r}A${r},${r} 0 0 1 ${x + w},${yt + r}V${y1}Z`,
+      });
+    });
+    values.forEach((v, i) => {                                 // hover target: the whole slot, not just the column
+      const hit = svgEl('rect', { class: 'hit', x: left + band * i, y: y0, width: band, height: H - y0 });
+      hit.addEventListener('pointermove', (e) => setActive(i, e.clientX, e.clientY));
+      hit.addEventListener('pointerleave', () => setActive(-1));
+    });
+    active = -1;
+  }
+
+  function setActive(i, x, y) {
+    if (cols[active]) cols[active].classList.remove('on');
+    active = i;
+    if (i < 0 || !shown) return hideTip();
+    if (cols[i]) cols[i].classList.add('on');
+    const last = i === shown.values.length - 1;
+    placeTip(viewsText(shown.values[i]), periodName(shown.unit, shown.starts[i], true) + (last ? ' (so far)' : ''), x, y);
+  }
+  function focusColumn(i) {
+    const r = chart.getBoundingClientRect();
+    setActive(i, r.left + geom.left + geom.band * (i + 0.5), r.top + geom.y(shown.values[i]));
+  }
+  chart.addEventListener('focus', () => { if (shown && chart.matches(':focus-visible')) focusColumn(shown.values.length - 1); });
+  chart.addEventListener('blur', () => setActive(-1));
+  chart.addEventListener('keydown', (e) => {                   // arrow keys step through the periods
+    const step = { ArrowLeft: -1, ArrowRight: 1 }[e.key];
+    if (!shown || !step) return;
+    e.preventDefault();
+    focusColumn(Math.min(shown.values.length - 1, Math.max(0, (active < 0 ? shown.values.length : active) + step)));
+  });
+
+  function describe() {         // caption, accessible name and table view for the series on screen
+    const { unit, starts, values } = shown;
+    const sum = values.reduce((s, v) => s + v, 0), peak = values.indexOf(Math.max(...values));
+    const since = shortDay.format(starts[0]);
+    trendNote.textContent = sum
+      ? `${viewsText(sum)} since ${since}, counted per ${unit} in UTC. The last ${unit} is still in progress.`
+      : `No views recorded since ${since}.`;
+    const when = unit === 'day' ? 'on ' + periodName(unit, starts[peak], true)
+      : unit === 'week' ? 'in the week of ' + shortDay.format(starts[peak]) : 'in ' + periodName(unit, starts[peak], true);
+    chart.setAttribute('aria-label', `Views per ${unit} for ${select.selectedOptions[0].text} since ${since}: ${fmt.format(sum)} in total` +
+      (sum ? `, most ${when} (${fmt.format(values[peak])})` : '') +
+      '. Arrow keys step through the periods; the table below lists them all.');
+    document.getElementById('trendUnit').textContent = { day: 'Day', week: 'Week of', month: 'Month' }[unit];
+    trendRows.textContent = '';
+    starts.forEach((t, i) => {
+      const tr = trendRows.insertRow();
+      tr.insertCell().textContent = periodName(unit, t, unit !== 'week') + (i === starts.length - 1 ? ' (so far)' : '');
+      tr.insertCell().textContent = fmt.format(values[i]);
+    });
+  }
+
+  async function showSeries(key) {
+    const mine = ++seq;
+    chart.classList.add('loading');
+    try {
+      const series = await loadSeries(key);
+      if (mine !== seq) return;                                // a later choice is loading; let it draw
+      shown = series;
+      drawTrend();
+      describe();
+    } catch {
+      if (mine === seq) trendNote.textContent = 'Views over time couldn’t be loaded.';
+    } finally {
+      if (mine === seq) chart.classList.remove('loading');
+    }
+  }
+  select.addEventListener('change', () => { hideTip(); showSeries(select.value); });
+  new ResizeObserver(() => { if (Math.round(chart.getBoundingClientRect().width) !== drawnWidth) drawTrend(); }).observe(chart);
 
   (async () => {
     const results = await Promise.allSettled([getCount('TOTAL'), ...PAGES.map((p) => getCount(p.path))]);
@@ -231,10 +456,15 @@
     if (failed === results.length) {
       statusEl.textContent = 'Counts couldn’t be loaded from GoatCounter. This usually means a content blocker stopped the requests, or that “Allow adding visitor counts on your website” is off in GoatCounter’s settings.';
       PAGES.forEach((p) => { p.val.textContent = 'unavailable'; });
+      trendNote.textContent = 'Views over time couldn’t be loaded either.';
+      select.disabled = true;
       return;
     }
     total = results[0].status === 'fulfilled' ? results[0].value : 0;
     PAGES.forEach((p, i) => { const r = results[i + 1]; p.views = r.status === 'fulfilled' ? r.value : null; });
+    if (results[0].status === 'fulfilled') nowCounts.set('TOTAL', results[0].value);
+    PAGES.forEach((p) => { if (p.views !== null) nowCounts.set(p.path, p.views); });
+    showSeries(select.value);
     if (!total) total = PAGES.reduce((s, p) => s + (p.views || 0), 0);
     document.getElementById('total').textContent = fmt.format(total);
 
