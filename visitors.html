@@ -201,7 +201,9 @@
   PAGES.forEach((p) => rowsEl.append(makeRow(p)));
 
   async function getCount(path) {
-    const res = await fetch(GOATCOUNTER + '/counter/' + encodeURIComponent(path) + '.json');
+    // 'no-cache': GoatCounter marks every counter reply, errors included, fresh for 4 hours, so a
+    // browser would reuse an old count or failure. GoatCounter's own server cache still applies.
+    const res = await fetch(GOATCOUNTER + '/counter/' + encodeURIComponent(path) + '.json', { cache: 'no-cache' });
     if (res.status === 404) return 0;                 // no views recorded for this path yet
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
@@ -227,7 +229,7 @@
     const results = await Promise.allSettled([getCount('TOTAL'), ...PAGES.map((p) => getCount(p.path))]);
     const failed = results.filter((r) => r.status === 'rejected').length;
     if (failed === results.length) {
-      statusEl.textContent = 'Counts couldn’t be loaded from GoatCounter. If the site was just set up, turn on “Allow adding visitor counts on your website” in its settings.';
+      statusEl.textContent = 'Counts couldn’t be loaded from GoatCounter. This usually means a content blocker stopped the requests, or that “Allow adding visitor counts on your website” is off in GoatCounter’s settings.';
       PAGES.forEach((p) => { p.val.textContent = 'unavailable'; });
       return;
     }
